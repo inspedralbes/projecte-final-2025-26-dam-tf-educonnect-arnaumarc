@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './views/Dashboard';
@@ -9,8 +9,20 @@ import { ProfileView } from './views/ProfileView';
 import { AppView } from './types';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    return (localStorage.getItem('currentView') as AppView) || AppView.DASHBOARD;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isLoggedIn', isLoggedIn.toString());
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    localStorage.setItem('currentView', currentView);
+  }, [currentView]);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -20,6 +32,8 @@ function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentView(AppView.LOGIN);
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentView');
   };
 
   if (!isLoggedIn) {

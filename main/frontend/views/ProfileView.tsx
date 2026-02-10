@@ -1,22 +1,58 @@
-import React from 'react';
-import { User, Mail, Shield, Bell, Settings, CreditCard, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, Mail, Shield, Bell, Settings, CreditCard, ChevronRight, Camera } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const savedImage = localStorage.getItem('user_profile_image');
+        if (savedImage) {
+            setProfileImage(savedImage);
+        }
+    }, []);
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setProfileImage(base64String);
+                localStorage.setItem('user_profile_image', base64String);
+                // Dispatch custom event to notify Navbar and other components
+                window.dispatchEvent(new Event('profile_image_updated'));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <div className="flex-1 bg-gray-50 min-h-screen p-4 md:p-8 overflow-auto">
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Header Section */}
                 <div className="flex flex-col items-center space-y-4">
-                    <div className="relative">
-                        <div className="w-32 h-32 rounded-full bg-indigo-500 border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                            <User size={64} className="text-white" />
+                    <div className="relative group">
+                        <div className="w-32 h-32 rounded-full bg-indigo-500 border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden bg-cover bg-center"
+                            style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}>
+                            {!profileImage && <User size={64} className="text-white" />}
                         </div>
-                        <button className="absolute bottom-0 right-0 bg-black text-white px-3 py-1 rounded-full text-xs font-bold border-2 border-white hover:bg-gray-800 transition-colors">
-                            Editar
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full border-2 border-white hover:bg-gray-800 transition-all transform hover:scale-110 shadow-lg"
+                        >
+                            <Camera size={16} />
                         </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            accept=".jpg,.jpeg,.png"
+                        />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-3xl font-black text-black">Arnau Marc</h1>
+                        <h1 className="text-3xl font-black text-black">Arnau Perera</h1>
                         <p className="text-indigo-600 font-bold uppercase tracking-wider text-sm mt-1">Estudiante Premium</p>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppView } from '../types';
 import { LogOut, UserCircle } from 'lucide-react';
 
@@ -9,6 +9,18 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }) => {
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const loadProfileImage = () => {
+    const savedImage = localStorage.getItem('user_profile_image');
+    setProfileImage(savedImage);
+  };
+
+  useEffect(() => {
+    loadProfileImage();
+    window.addEventListener('profile_image_updated', loadProfileImage);
+    return () => window.removeEventListener('profile_image_updated', loadProfileImage);
+  }, []);
   const getTabClass = (view: AppView) => {
     const isActive = currentView === view;
     // Added text-black explicitly to ensure visibility
@@ -53,12 +65,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
       <div className="px-4 flex items-center space-x-3">
         <button
           onClick={() => setView(AppView.PROFILE)}
-          className="w-8 h-8 rounded-full bg-cyan-400 border-2 border-black flex items-center justify-center hover:bg-cyan-300 transition-colors"
+          className="w-10 h-10 rounded-full bg-cyan-400 border-2 border-black flex items-center justify-center hover:bg-cyan-300 transition-colors overflow-hidden bg-cover bg-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+          style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}
         >
-          <UserCircle size={20} className="text-white" />
+          {!profileImage && <UserCircle size={24} className="text-white" />}
         </button>
-        <button onClick={onLogout} className="text-red-500 hover:text-red-700">
-          <LogOut size={20} />
+        <button onClick={onLogout} className="text-red-500 hover:text-red-700 transition-colors">
+          <LogOut size={24} />
         </button>
       </div>
     </div>
