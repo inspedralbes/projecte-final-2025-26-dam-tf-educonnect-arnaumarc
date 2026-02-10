@@ -4,7 +4,8 @@ export enum AppView {
   COURSES = 'COURSES',
   CHAT = 'CHAT',
   MEET = 'MEET',
-  WORKSHOPS = 'WORKSHOPS'
+  WORKSHOPS = 'WORKSHOPS',
+  PROFILE = 'PROFILE'
 }
 
 export interface Course {

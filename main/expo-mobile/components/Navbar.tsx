@@ -53,9 +53,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
                 </TouchableOpacity>
             </ScrollView>
             <View style={styles.actions}>
-                <View style={styles.avatar}>
+                <TouchableOpacity onPress={() => setView(AppView.PROFILE)} style={styles.avatar}>
                     <UserCircle size={24} color="white" />
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={onLogout} style={styles.logout}>
                     <LogOut size={24} color="#ef4444" />
                 </TouchableOpacity>

@@ -7,6 +7,7 @@ import { Dashboard } from './views/Dashboard';
 import { CoursesView } from './views/CoursesView';
 import { ChatView } from './views/ChatView';
 import { MeetView } from './views/MeetView';
+import { ProfileView } from './views/ProfileView';
 import { AppView } from './types';
 
 export default function App() {
@@ -42,6 +43,8 @@ export default function App() {
         return <ChatView />;
       case AppView.MEET:
         return <MeetView />;
+      case AppView.PROFILE:
+        return <ProfileView />;
       case AppView.WORKSHOPS:
         return (
           <View style={styles.construction}>
