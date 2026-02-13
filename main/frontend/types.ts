@@ -28,3 +28,21 @@ export interface User {
   email: string;
   name: string;
 }
+
+export interface Activity {
+  id: string;
+  title: string;
+  dueDate: string;
+  courseId: string;
+}
+
+export interface Exam {
+  id: string;
+  title: string;
+  date: string;
+  courseId: string;
+}
+
+export type CalendarEvent =
+  | { type: 'activity'; data: Activity }
+  | { type: 'exam'; data: Exam };
