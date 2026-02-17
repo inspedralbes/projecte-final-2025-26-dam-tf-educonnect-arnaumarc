@@ -42,13 +42,41 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
 
     const getEventsForDay = (day: number) => {
         return events.filter(event => {
-            const eventDate = new Date(event.type === 'activity' ? event.data.dueDate : event.data.date);
+            let dateString: string;
+            if (event.type === 'activity') {
+                dateString = event.data.dueDate;
+            } else {
+                dateString = event.data.date;
+            }
+            const eventDate = new Date(dateString);
             return (
                 eventDate.getDate() === day &&
                 eventDate.getMonth() === month &&
                 eventDate.getFullYear() === year
             );
         });
+    };
+
+    const getEventStyle = (type: CalendarEvent['type']) => {
+        switch (type) {
+            case 'activity': return 'bg-cyan-200';
+            case 'exam': return 'bg-rose-300';
+            case 'event': return 'bg-orange-200';
+            case 'holiday': return 'bg-green-200';
+            case 'strike': return 'bg-yellow-400';
+            default: return 'bg-gray-200';
+        }
+    };
+
+    const getEventPrefix = (type: CalendarEvent['type']) => {
+        switch (type) {
+            case 'activity': return 'Act: ';
+            case 'exam': return 'Ex: ';
+            case 'event': return 'Ev: ';
+            case 'holiday': return 'Fes: ';
+            case 'strike': return 'Vag: ';
+            default: return '';
+        }
     };
 
     return (
@@ -111,10 +139,10 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
                                                 title={event.data.title}
                                                 className={`
                           text-[10px] p-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] leading-tight truncate
-                          ${event.type === 'activity' ? 'bg-cyan-200' : 'bg-rose-300'}
+                          ${getEventStyle(event.type)}
                         `}
                                             >
-                                                {event.type === 'activity' ? 'Act: ' : 'Ex: '}
+                                                {getEventPrefix(event.type)}
                                                 {event.data.title}
                                             </div>
                                         ))}
@@ -135,6 +163,18 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
                 <div className="flex items-center gap-1.5">
                     <div className="w-3 h-3 bg-rose-300 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"></div>
                     <span>EXÀMENS</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-orange-200 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"></div>
+                    <span>EVENTOS</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-green-200 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"></div>
+                    <span>FIESTAS</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-yellow-400 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"></div>
+                    <span>VAGAS</span>
                 </div>
             </div>
         </div>

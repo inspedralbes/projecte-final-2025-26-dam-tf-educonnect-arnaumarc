@@ -1,9 +1,7 @@
 export enum AppView {
   LOGIN = 'LOGIN',
-  DASHBOARD = 'DASHBOARD',
-  COURSES = 'COURSES',
-  CHAT = 'CHAT',
-  MEET = 'MEET',
+  TABLON = 'TABLON',
+  ASIGNATURAS = 'ASIGNATURAS',
   WORKSHOPS = 'WORKSHOPS',
   PROFILE = 'PROFILE'
 }
@@ -43,6 +41,28 @@ export interface Exam {
   courseId: string;
 }
 
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  courseId?: string;
+}
+
+export interface Holiday {
+  id: string;
+  title: string;
+  date: string;
+}
+
+export interface Strike {
+  id: string;
+  title: string;
+  date: string;
+}
+
 export type CalendarEvent =
   | { type: 'activity'; data: Activity }
-  | { type: 'exam'; data: Exam };
+  | { type: 'exam'; data: Exam }
+  | { type: 'event'; data: Event }
+  | { type: 'holiday'; data: Holiday }
+  | { type: 'strike'; data: Strike };

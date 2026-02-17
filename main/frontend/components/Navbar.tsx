@@ -32,10 +32,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
     <div className="w-full border-b-4 border-black bg-white flex justify-between items-center sticky top-0 z-50">
       <div className="flex overflow-x-auto no-scrollbar">
         <button
-          onClick={() => setView(AppView.DASHBOARD)}
-          className={getTabClass(AppView.DASHBOARD)}
+          onClick={() => setView(AppView.TABLON)}
+          className={getTabClass(AppView.TABLON)}
         >
-          Inicio
+          Tablón
         </button>
         <button
           onClick={() => setView(AppView.WORKSHOPS)}
@@ -44,22 +44,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
           Talleres
         </button>
         <button
-          onClick={() => setView(AppView.COURSES)}
-          className={getTabClass(AppView.COURSES)}
+          onClick={() => setView(AppView.ASIGNATURAS)}
+          className={getTabClass(AppView.ASIGNATURAS)}
         >
-          Mis Cursos
-        </button>
-        <button
-          onClick={() => setView(AppView.MEET)}
-          className={getTabClass(AppView.MEET)}
-        >
-          Meet
-        </button>
-        <button
-          onClick={() => setView(AppView.CHAT)}
-          className={getTabClass(AppView.CHAT)}
-        >
-          Chat
+          Asignaturas
         </button>
       </div>
       <div className="px-4 flex items-center space-x-3">

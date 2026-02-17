@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
-import { Dashboard } from './views/Dashboard';
-import { CoursesView } from './views/CoursesView';
-import { ChatView } from './views/ChatView';
-import { MeetView } from './views/MeetView';
+import { TablonView } from './views/TablonView';
+import { AsignaturasView } from './views/AsignaturasView';
 import { ProfileView } from './views/ProfileView';
 import { AppView } from './types';
 
@@ -13,7 +11,7 @@ function App() {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
   const [currentView, setCurrentView] = useState<AppView>(() => {
-    return (localStorage.getItem('currentView') as AppView) || AppView.DASHBOARD;
+    return (localStorage.getItem('currentView') as AppView) || AppView.TABLON;
   });
 
   useEffect(() => {
@@ -26,7 +24,7 @@ function App() {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    setCurrentView(AppView.DASHBOARD);
+    setCurrentView(AppView.TABLON);
   };
 
   const handleLogout = () => {
@@ -42,14 +40,11 @@ function App() {
 
   const renderContent = () => {
     switch (currentView) {
-      case AppView.DASHBOARD:
-        return <Dashboard />;
-      case AppView.COURSES:
-        return <CoursesView />;
-      case AppView.CHAT:
-        return <ChatView />;
-      case AppView.MEET:
-        return <MeetView />;
+      case AppView.TABLON:
+        return <TablonView />;
+      case AppView.ASIGNATURAS:
+        return <AsignaturasView />;
+
       case AppView.PROFILE:
         return <ProfileView />;
       case AppView.WORKSHOPS:
@@ -59,7 +54,7 @@ function App() {
           </div>
         );
       default:
-        return <Dashboard />;
+        return <TablonView />;
     }
   };
 
