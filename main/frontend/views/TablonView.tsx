@@ -1,40 +1,10 @@
 import React from 'react';
 import { Bell, Clock } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
-import { CalendarEvent } from '../types';
+import { MOCK_EVENTS } from '../constants';
 
 export const TablonView: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>('personal');
-  const mockEvents: CalendarEvent[] = [
-    {
-      type: 'activity',
-      data: { id: '1', title: 'Entrega Projecte Final', dueDate: new Date(2026, 1, 18).toISOString(), courseId: '1' }
-    },
-    {
-      type: 'activity',
-      data: { id: '2', title: 'Exercicis Unitat 3', dueDate: new Date(2026, 1, 20).toISOString(), courseId: '2' }
-    },
-    {
-      type: 'exam',
-      data: { id: '3', title: 'Examen Matemàtiques', date: new Date(2026, 1, 25).toISOString(), courseId: '3' }
-    },
-    {
-      type: 'exam',
-      data: { id: '4', title: 'Global Història', date: new Date(2026, 1, 27).toISOString(), courseId: '4' }
-    },
-    {
-      type: 'event',
-      data: { id: '5', title: 'Xerrada Ciberseguretat', date: new Date(2026, 1, 12).toISOString() }
-    },
-    {
-      type: 'holiday',
-      data: { id: '6', title: 'Lliure Disposició', date: new Date(2026, 1, 28).toISOString() }
-    },
-    {
-      type: 'strike',
-      data: { id: '7', title: 'Vaga Estudiants', date: new Date(2026, 1, 19).toISOString() }
-    }
-  ];
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -169,7 +139,7 @@ export const TablonView: React.FC = () => {
           CALENDARI ACADÈMIC
         </h3>
         <div className="h-[600px]">
-          <MonthlyCalendar events={mockEvents} />
+          <MonthlyCalendar events={MOCK_EVENTS} />
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { Course, ChatMessage } from './types';
+import { Course, ChatMessage, CalendarEvent } from './types';
 
 export const MOCK_COURSES: Course[] = [
   {
@@ -95,5 +95,47 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     text: 'Recordad que la entrega es mañana.',
     isMe: false,
     timestamp: '10:15 AM'
+  }
+];
+
+export const MOCK_USER = {
+  name: 'Arnau Perera',
+  role: 'Estudiante Premium',
+  email: 'arnau.marc@educonnect.com',
+  stats: {
+    courses: 12,
+    average: '85%',
+    certificates: 4
+  }
+};
+
+export const MOCK_EVENTS: CalendarEvent[] = [
+  {
+    type: 'activity',
+    data: { id: '1', title: 'Entrega Projecte Final', dueDate: new Date(2026, 1, 18).toISOString(), courseId: '1' }
+  },
+  {
+    type: 'activity',
+    data: { id: '2', title: 'Exercicis Unitat 3', dueDate: new Date(2026, 1, 20).toISOString(), courseId: '2' }
+  },
+  {
+    type: 'exam',
+    data: { id: '3', title: 'Examen Matemàtiques', date: new Date(2026, 1, 25).toISOString(), courseId: '3' }
+  },
+  {
+    type: 'exam',
+    data: { id: '4', title: 'Global Història', date: new Date(2026, 1, 27).toISOString(), courseId: '4' }
+  },
+  {
+    type: 'event',
+    data: { id: '5', title: 'Xerrada Ciberseguretat', date: new Date(2026, 1, 12).toISOString() }
+  },
+  {
+    type: 'holiday',
+    data: { id: '6', title: 'Lliure Disposició', date: new Date(2026, 1, 28).toISOString() }
+  },
+  {
+    type: 'strike',
+    data: { id: '7', title: 'Vaga Estudiants', date: new Date(2026, 1, 19).toISOString() }
   }
 ];

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Bell, Settings, CreditCard, ChevronRight, Camera } from 'lucide-react';
+import { MOCK_USER } from '../constants';
 
 export const ProfileView: React.FC = () => {
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -52,23 +53,23 @@ export const ProfileView: React.FC = () => {
                         />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-3xl font-black text-black">Arnau Perera</h1>
-                        <p className="text-indigo-600 font-bold uppercase tracking-wider text-sm mt-1">Estudiante Premium</p>
+                        <h1 className="text-3xl font-black text-black">{MOCK_USER.name}</h1>
+                        <p className="text-indigo-600 font-bold uppercase tracking-wider text-sm mt-1">{MOCK_USER.role}</p>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden divide-x-4 divide-black">
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black">12</span>
+                        <span className="text-2xl font-black">{MOCK_USER.stats.courses}</span>
                         <span className="text-xs text-gray-500 font-bold uppercase">Cursos</span>
                     </div>
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black">85%</span>
+                        <span className="text-2xl font-black">{MOCK_USER.stats.average}</span>
                         <span className="text-xs text-gray-500 font-bold uppercase">Promedio</span>
                     </div>
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black">4</span>
+                        <span className="text-2xl font-black">{MOCK_USER.stats.certificates}</span>
                         <span className="text-xs text-gray-500 font-bold uppercase">Certificados</span>
                     </div>
                 </div>
@@ -78,7 +79,7 @@ export const ProfileView: React.FC = () => {
                     <div className="space-y-4">
                         <h2 className="text-xl font-black text-black ml-2 uppercase italic">Información Personal</h2>
                         <div className="bg-white border-4 border-black rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                            <ProfileItem icon={<Mail size={20} className="text-indigo-600" />} label="Email" value="arnau.marc@educonnect.com" />
+                            <ProfileItem icon={<Mail size={20} className="text-indigo-600" />} label="Email" value={MOCK_USER.email} />
                             <ProfileItem icon={<Shield size={20} className="text-indigo-600" />} label="Seguridad" value="Verificada" last />
                         </div>
                     </div>
