@@ -24,7 +24,7 @@ export const AsignaturasView: React.FC = () => {
             <BookOpen size={24} className="text-black" />
           </div>
           <h2 className="text-3xl font-black text-black uppercase tracking-tight">
-            LES MEVES ASIGNATURAS
+            LES MEVES ASIGNARUTES
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
@@ -35,18 +35,16 @@ export const AsignaturasView: React.FC = () => {
       </section>
 
       {/* Horario Semanal */}
-      <section className="bg-gray-50 p-8 rounded-3xl border-2 border-dashed border-gray-300">
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <div className="w-10 h-10 bg-yellow-400 border-2 border-black flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-            <CalendarIcon size={20} className="text-black" />
+      <section>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-yellow-400 border-2 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <CalendarIcon size={24} className="text-black" />
           </div>
-          <h2 className="text-2xl font-black text-black uppercase tracking-tight">
+          <h2 className="text-3xl font-black text-black uppercase tracking-tight">
             HORARI DE CLASSES
           </h2>
         </div>
-        <div className="flex justify-center">
-          <WeeklyCalendar schedule={MOCK_SCHEDULE} courses={MOCK_COURSES} />
-        </div>
+        <WeeklyCalendar schedule={MOCK_SCHEDULE} courses={MOCK_COURSES} />
       </section>
     </div>
   );
