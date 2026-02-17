@@ -59,13 +59,13 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white border-8 border-black box-border">
+    <div className="flex flex-col h-screen w-full bg-white dark:bg-zinc-900 border-8 border-black dark:border-zinc-800 box-border transition-colors duration-300">
       <Navbar
         currentView={currentView}
         setView={setCurrentView}
         onLogout={handleLogout}
       />
-      <div className="flex-1 overflow-auto bg-gray-50">
+      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
         {renderContent()}
       </div>
     </div>

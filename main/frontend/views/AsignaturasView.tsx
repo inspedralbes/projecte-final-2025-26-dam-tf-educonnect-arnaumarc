@@ -6,13 +6,13 @@ import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 export const AsignaturasView: React.FC = () => {
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-16">
+    <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-black text-black uppercase tracking-tighter mb-4">
+        <h1 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter mb-4 transition-colors">
           GESTIÓ ACADÈMICA
         </h1>
-        <div className="inline-block bg-black text-white px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg]">
+        <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg] transition-colors">
           <span className="skew-x-[12deg] inline-block">{MOCK_COURSES.length} ASIGNATURAS ACTIVES</span>
         </div>
       </div>
@@ -20,10 +20,10 @@ export const AsignaturasView: React.FC = () => {
       {/* Lista de Asignaturas */}
       <section>
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-purple-400 border-2 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <BookOpen size={24} className="text-black" />
+          <div className="w-12 h-12 bg-purple-400 dark:bg-purple-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
+            <BookOpen size={24} className="text-black dark:text-white" />
           </div>
-          <h2 className="text-3xl font-black text-black uppercase tracking-tight">
+          <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tight transition-colors">
             LES MEVES ASIGNARUTES
           </h2>
         </div>
@@ -37,10 +37,10 @@ export const AsignaturasView: React.FC = () => {
       {/* Horario Semanal */}
       <section>
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-yellow-400 border-2 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <CalendarIcon size={24} className="text-black" />
+          <div className="w-12 h-12 bg-yellow-400 dark:bg-yellow-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
+            <CalendarIcon size={24} className="text-black dark:text-white" />
           </div>
-          <h2 className="text-3xl font-black text-black uppercase tracking-tight">
+          <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tight transition-colors">
             HORARI DE CLASSES
           </h2>
         </div>
