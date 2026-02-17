@@ -1,10 +1,13 @@
 import React from 'react';
 import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
-import { MOCK_COURSES, MOCK_SCHEDULE } from '../constants';
+import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 export const AsignaturasView: React.FC = () => {
+  const enrolledCoursesList = MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
+  const enrolledSchedule = MOCK_SCHEDULE.filter(session => MOCK_USER.enrolledCourses.includes(session.courseId));
+
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
       {/* Header */}
@@ -13,7 +16,7 @@ export const AsignaturasView: React.FC = () => {
           GESTIÓ ACADÈMICA
         </h1>
         <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg] transition-colors">
-          <span className="skew-x-[12deg] inline-block">{MOCK_COURSES.length} ASIGNATURAS ACTIVES</span>
+          <span className="skew-x-[12deg] inline-block">{enrolledCoursesList.length} ASIGNATURAS ACTIVES</span>
         </div>
       </div>
 
@@ -28,7 +31,7 @@ export const AsignaturasView: React.FC = () => {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {MOCK_COURSES.map((course) => (
+          {enrolledCoursesList.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
         </div>
@@ -44,7 +47,7 @@ export const AsignaturasView: React.FC = () => {
             HORARI DE CLASSES
           </h2>
         </div>
-        <WeeklyCalendar schedule={MOCK_SCHEDULE} courses={MOCK_COURSES} />
+        <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} />
       </section>
     </div>
   );

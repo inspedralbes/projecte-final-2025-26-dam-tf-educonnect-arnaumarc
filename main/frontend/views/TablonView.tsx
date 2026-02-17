@@ -1,10 +1,20 @@
 import React from 'react';
 import { Bell, Clock } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
-import { MOCK_EVENTS } from '../constants';
+import { MOCK_EVENTS, MOCK_USER } from '../constants';
 
 export const TablonView: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>('personal');
+
+  const filteredEvents = MOCK_EVENTS.filter(ev => {
+    if (ev.type === 'activity' || ev.type === 'exam') {
+      return MOCK_USER.enrolledCourses.includes(ev.data.courseId);
+    }
+    if (ev.type === 'event' && ev.data.courseId) {
+      return MOCK_USER.enrolledCourses.includes(ev.data.courseId);
+    }
+    return true;
+  });
 
   return (
     <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
@@ -139,7 +149,7 @@ export const TablonView: React.FC = () => {
           CALENDARI ACADÈMIC
         </h3>
         <div className="h-[600px]">
-          <MonthlyCalendar events={MOCK_EVENTS} />
+          <MonthlyCalendar events={filteredEvents} />
         </div>
       </div>
 

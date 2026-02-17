@@ -103,10 +103,11 @@ export const MOCK_USER = {
   role: 'Estudiante Premium',
   email: 'arnau.marc@educonnect.com',
   stats: {
-    courses: 12,
+    courses: 2,
     average: '85%',
     certificates: 4
-  }
+  },
+  enrolledCourses: ['1', '3'] // Matemáticas y Programación Web
 };
 
 export const MOCK_EVENTS: CalendarEvent[] = [
