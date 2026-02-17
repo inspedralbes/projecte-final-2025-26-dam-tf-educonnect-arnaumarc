@@ -31,6 +31,49 @@ export const MOCK_COURSES: Course[] = [
   }
 ];
 
+export const MOCK_SCHEDULE = [
+  {
+    id: '101',
+    courseId: '1', // Matematicas
+    day: 1, // Lunes
+    startTime: '09:00',
+    endTime: '11:00',
+    classroom: 'Aula 101'
+  },
+  {
+    id: '102',
+    courseId: '2', // Historia
+    day: 2, // Martes
+    startTime: '11:30',
+    endTime: '13:00',
+    classroom: 'Auditorio B'
+  },
+  {
+    id: '103',
+    courseId: '3', // Web
+    day: 3, // Miercoles
+    startTime: '15:00',
+    endTime: '17:00',
+    classroom: 'Lab Comp 2'
+  },
+  {
+    id: '104',
+    courseId: '4', // Fisica
+    day: 4, // Jueves
+    startTime: '08:00',
+    endTime: '10:00',
+    classroom: 'Lab Fisica'
+  },
+  {
+    id: '105',
+    courseId: '1', // Matematicas (again)
+    day: 3, // Miercoles
+    startTime: '11:00',
+    endTime: '13:00',
+    classroom: 'Aula 101'
+  }
+];
+
 export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: '1',

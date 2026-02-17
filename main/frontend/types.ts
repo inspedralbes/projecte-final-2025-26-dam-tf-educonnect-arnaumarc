@@ -66,3 +66,12 @@ export type CalendarEvent =
   | { type: 'event'; data: Event }
   | { type: 'holiday'; data: Holiday }
   | { type: 'strike'; data: Strike };
+
+export interface ClassSession {
+  id: string;
+  courseId: string;
+  day: number; // 1 = Monday, 5 = Friday
+  startTime: string; // 'HH:MM'
+  endTime: string; // 'HH:MM'
+  classroom: string;
+}
