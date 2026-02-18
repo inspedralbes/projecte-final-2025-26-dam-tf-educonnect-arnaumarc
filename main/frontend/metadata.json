@@ -1,8 +1,0 @@
-{
-  "name": "EduConnect Suite",
-  "description": "A hybrid platform combining LMS, Video Conferencing, and Real-time Messaging.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}

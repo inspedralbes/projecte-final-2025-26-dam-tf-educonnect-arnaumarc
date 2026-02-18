@@ -3,6 +3,7 @@ import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
 import { TablonView } from './views/TablonView';
 import { AsignaturasView } from './views/AsignaturasView';
+import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
 import { AppView } from './types';
 
@@ -43,7 +44,10 @@ function App() {
       case AppView.TABLON:
         return <TablonView />;
       case AppView.ASIGNATURAS:
+      case AppView.ASIGNATURAS:
         return <AsignaturasView />;
+      case AppView.MEET:
+        return <MeetView />;
 
       case AppView.PROFILE:
         return <ProfileView />;

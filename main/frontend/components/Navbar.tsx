@@ -43,6 +43,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
           Talleres
         </button>
         <button
+          onClick={() => setView(AppView.MEET)}
+          className={getTabClass(AppView.MEET)}
+        >
+          Meet
+        </button>
+        <button
           onClick={() => setView(AppView.ASIGNATURAS)}
           className={getTabClass(AppView.ASIGNATURAS)}
         >

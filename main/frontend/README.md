@@ -1,20 +1,21 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# EduConnect Frontend
 
-# Run and deploy your AI Studio app
+Aplicación web para la plataforma EduConnect.
 
-This contains everything you need to run your app locally.
+## Requisitos
 
-View your app in AI Studio: https://ai.studio/apps/drive/1bQeMPxsG7y4_remcsnwLKYvLgd7i00kp
+- Node.js (v18 o superior recomendado)
 
-## Run Locally
+## Instalación
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+```
 
+## Ejecución
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:5173` (o el puerto que indique Vite).

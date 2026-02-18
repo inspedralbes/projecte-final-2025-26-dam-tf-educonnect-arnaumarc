@@ -3,6 +3,7 @@ export enum AppView {
   TABLON = 'TABLON',
   ASIGNATURAS = 'ASIGNATURAS',
   WORKSHOPS = 'WORKSHOPS',
+  MEET = 'MEET',
   PROFILE = 'PROFILE'
 }
 

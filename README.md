@@ -1,16 +1,37 @@
-# transversals
-Esquema mínim de carpetes pels projectes transversals
+# EduConnect Project
 
-És obligatori seguir aquesta estructura tot i que la podeu ampliar.
+Proyecto final DAM - EduConnect.
+Integrantes: Arnau, Marc.
 
-## Atenció
-Un cop comenceu heu de canviar aquesta explicació amb la corresponent al vostre projecte (utilitzant markdown)
+## Estructura del Proyecto
 
-# Aquest fitxer ha de contenir com a mínim:
- * Nom dels integrants
- * Nom del projecte
- * Petita descripció
- * Adreça del gestor de tasques (taiga, jira, trello...)
- * Adreça del prototip gràfic del projecte (Penpot, figma, moqups...)
- * URL de producció (quan la tingueu)
- * Estat: (explicació d'en quin punt està)
+El proyecto está dividido en tres partes principales:
+
+- **main/backend**: Servidor Node.js con Express y MySQL.
+- **main/frontend**: Aplicación web React con Vite.
+- **main/expo-mobile**: Aplicación móvil con React Native y Expo.
+
+## Instrucciones de Inicio
+
+Para ejecutar todo el sistema, necesitas abrir **3 terminales** y ejecutar los siguientes comandos en cada una:
+
+### 1. Backend
+```powershell
+cd main/backend
+npm install
+npm run dev
+```
+
+### 2. Frontend
+```powershell
+cd main/frontend
+npm install
+npm run dev
+```
+
+### 3. Móvil
+```powershell
+cd main/expo-mobile
+npm install
+npm start
+```
