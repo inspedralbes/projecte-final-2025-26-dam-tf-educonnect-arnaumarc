@@ -58,6 +58,14 @@ async function seedData() {
                         clase: '2DAM',
                         tipo_horario: 'Mañana',
                         tutor: professor._id
+                    },
+                    {
+                        nombre: 'Nil',
+                        apellidos: 'Perera Ganuza',
+                        email: 'a24nilpergan@inspedralbes.cat',
+                        clase: '2DAM',
+                        tipo_horario: 'Mañana',
+                        tutor: professor._id
                     }
                 ]);
                 console.log('Seed: Alumnos created');
