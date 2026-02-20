@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { AppView } from '../types';
+import { AppView, UserRole } from '../types';
 import { LogOut, UserCircle } from 'lucide-react';
 
 interface NavbarProps {
   currentView: AppView;
   setView: (view: AppView) => void;
   onLogout: () => void;
+  userRole?: UserRole;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, userRole = 'STUDENT' }) => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const loadProfileImage = () => {
@@ -31,10 +32,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }
     <div className="w-full border-b-4 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300">
       <div className="flex overflow-x-auto no-scrollbar">
         <button
-          onClick={() => setView(AppView.TABLON)}
-          className={getTabClass(AppView.TABLON)}
+          onClick={() => setView(userRole === 'TEACHER' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
+          className={getTabClass(userRole === 'TEACHER' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
         >
-          Tablón
+          {userRole === 'TEACHER' ? 'Panel Docente' : 'Tablón'}
         </button>
         <button
           onClick={() => setView(AppView.WORKSHOPS)}
