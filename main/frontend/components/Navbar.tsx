@@ -37,18 +37,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
         >
           {userRole === 'TEACHER' ? 'Panel Docente' : 'Tablón'}
         </button>
-        <button
-          onClick={() => setView(AppView.WORKSHOPS)}
-          className={getTabClass(AppView.WORKSHOPS)}
-        >
-          Talleres
-        </button>
-        <button
-          onClick={() => setView(AppView.MEET)}
-          className={getTabClass(AppView.MEET)}
-        >
-          Meet
-        </button>
+        {userRole !== 'TEACHER' && (
+          <>
+            <button
+              onClick={() => setView(AppView.WORKSHOPS)}
+              className={getTabClass(AppView.WORKSHOPS)}
+            >
+              Talleres
+            </button>
+            <button
+              onClick={() => setView(AppView.MEET)}
+              className={getTabClass(AppView.MEET)}
+            >
+              Meet
+            </button>
+          </>
+        )}
         <button
           onClick={() => setView(AppView.ASIGNATURAS)}
           className={getTabClass(AppView.ASIGNATURAS)}

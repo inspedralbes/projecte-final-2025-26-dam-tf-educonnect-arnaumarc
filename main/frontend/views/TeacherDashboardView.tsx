@@ -38,8 +38,8 @@ export const TeacherDashboardView: React.FC = () => {
                         <Clock className="text-orange-600 dark:text-orange-400" size={24} />
                         <h3 className="font-bold text-lg text-black dark:text-white">Propera Classe</h3>
                     </div>
-                    <p className="text-xl font-bold text-black dark:text-white">M07 - Desenvolupament</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">15:00 - Aula 204</p>
+                    <p className="text-xl font-bold text-black dark:text-white">M02 - Base de Dades</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">10:00 - Lab 2</p>
                 </div>
             </div>
 

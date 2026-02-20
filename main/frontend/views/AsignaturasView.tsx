@@ -1,12 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
-import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
-import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { MOCK_SCHEDULE, MOCK_USER } from '../constants';
+import { BookOpen, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
+import { courseService } from '../services/courseService';
+import { Course } from '../types';
 
 export const AsignaturasView: React.FC = () => {
-  const enrolledCoursesList = MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
-  const enrolledSchedule = MOCK_SCHEDULE.filter(session => MOCK_USER.enrolledCourses.includes(session.courseId));
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // MOCK_SCHEDULE uses courseId matching mocks.
+  // We assume user is enrolled in these courses.
+  const enrolledSchedule = MOCK_SCHEDULE;
+
+  useEffect(() => {
+    // Simulate fetching tailored data for the logged-in user
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        // Using "mock-user-id" as placeholder, real app would pass user.id
+        const data = await courseService.getEnrolledCourses('mock-user-id');
+        setCourses(data);
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[500px]">
+        <Loader2 className="animate-spin text-cyan-600" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
@@ -16,7 +48,7 @@ export const AsignaturasView: React.FC = () => {
           GESTIÓ ACADÈMICA
         </h1>
         <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg] transition-colors">
-          <span className="skew-x-[12deg] inline-block">{enrolledCoursesList.length} ASIGNATURAS ACTIVES</span>
+          <span className="skew-x-[12deg] inline-block">{courses.length} ASIGNATURAS ACTIVES</span>
         </div>
       </div>
 
@@ -31,7 +63,7 @@ export const AsignaturasView: React.FC = () => {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {enrolledCoursesList.map((course) => (
+          {courses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
         </div>
@@ -47,7 +79,7 @@ export const AsignaturasView: React.FC = () => {
             HORARI DE CLASSES
           </h2>
         </div>
-        <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} />
+        <WeeklyCalendar schedule={enrolledSchedule} courses={courses} />
       </section>
     </div>
   );
