@@ -86,12 +86,17 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ schedule, course
                 {schedule.map((s) => {
                     const course = getCourse(s.courseId);
                     if (!course) return null;
+
+                    // Simple hash to consistently pick a color from the string ID
+                    const idHash = s.courseId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    const colorClass = colors[idHash % colors.length];
+
                     return (
                         <div
                             key={s.id}
                             style={getPosition(s)}
                             onClick={() => onCourseClick?.(course)}
-                            className={`m-0.5 p-1 flex flex-col justify-between border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] cursor-pointer transition-all hover:-translate-y-0.5 ${colors[parseInt(s.courseId) % colors.length]}`}
+                            className={`m-0.5 p-1 flex flex-col justify-between border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] cursor-pointer transition-all hover:-translate-y-0.5 ${colorClass}`}
                             title={`${course.title} (${s.startTime} - ${s.endTime})`}
                         >
                             <span className="font-black uppercase truncate leading-tight">{course.title}</span>

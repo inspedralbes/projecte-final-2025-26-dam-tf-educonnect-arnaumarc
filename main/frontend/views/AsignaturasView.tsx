@@ -12,7 +12,11 @@ import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const [schedule, setSchedule] = useState<any[]>([]);
+
   const realCourses = user?.enrolledCourses as any[] || [];
+
+
 
   const enrolledCoursesList = realCourses.length > 0
     ? realCourses.map(c => ({
@@ -24,7 +28,25 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     }))
     : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
 
-  const enrolledSchedule = MOCK_SCHEDULE.filter(session => {
+
+  useEffect(() => {
+    fetch('http://localhost:3005/api/schedule')
+      .then(res => res.json())
+      .then(data => {
+        const formattedSchedule = data.map((s: any) => ({
+          id: s._id,
+          courseId: s.courseId,
+          day: s.day,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          classroom: s.classroom
+        }));
+        setSchedule(formattedSchedule);
+      })
+      .catch(err => console.error('Error fetching schedule:', err));
+  }, []);
+
+  const enrolledSchedule = (schedule.length > 0 ? schedule : MOCK_SCHEDULE).filter(session => {
     if (realCourses.length > 0) {
       return realCourses.some(c => (c._id || c) === session.courseId);
     }
@@ -40,6 +62,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       />
     );
   }
+
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">

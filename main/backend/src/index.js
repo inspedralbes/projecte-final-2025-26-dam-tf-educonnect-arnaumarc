@@ -110,6 +110,23 @@ async function seedData() {
             console.log('Seed: Events created');
         }
 
+        // 5. Ensure Schedule exists
+        const scheduleCount = await Schedule.countDocuments();
+        if (scheduleCount === 0) {
+            await Schedule.create([
+                { courseId: courseIds[0], day: 1, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
+                { courseId: courseIds[1], day: 1, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' },
+                { courseId: courseIds[1], day: 2, startTime: '08:00', endTime: '10:00', classroom: 'Aula 2' },
+                { courseId: courseIds[5], day: 2, startTime: '10:00', endTime: '12:30', classroom: 'Aula 3' },
+                { courseId: courseIds[2], day: 3, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
+                { courseId: courseIds[3], day: 4, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
+                { courseId: courseIds[4], day: 5, startTime: '08:00', endTime: '10:00', classroom: 'Aula 5' },
+                { courseId: courseIds[1], day: 5, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' }
+            ]);
+            console.log('Seed: Schedule created');
+        }
+
+
         // Migration logic for any other missing passwords
         const professorsToUpdate = await Professor.find({ password: { $exists: false } });
         for (const p of professorsToUpdate) {
@@ -180,6 +197,17 @@ app.get('/api/events', async (req, res) => {
         res.status(500).json({ error: 'Error fetching events' });
     }
 });
+
+// Schedule route
+app.get('/api/schedule', async (req, res) => {
+    try {
+        const schedule = await Schedule.find();
+        res.json(schedule);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching schedule' });
+    }
+});
+
 
 // User info route (to get populated version of user)
 app.get('/api/user/:id', async (req, res) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
+import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
 import { TablonView } from './views/TablonView';
 import { TeacherDashboardView } from './views/TeacherDashboardView';
@@ -9,6 +10,18 @@ import { ProfileView } from './views/ProfileView';
 import { AppView, User } from './types';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    return (localStorage.getItem('currentView') as AppView) || AppView.TABLON;
+  });
+  const [showRegister, setShowRegister] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<AppView>(AppView.TABLON);
@@ -60,8 +73,17 @@ function App() {
   };
 
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    if (showRegister) {
+      return (
+        <Register
+          onRegisterSuccess={() => setShowRegister(false)}
+          onNavigateToLogin={() => setShowRegister(false)}
+        />
+      );
+    }
+    return <Login onLogin={handleLogin} onNavigateToRegister={() => setShowRegister(true)} />;
   }
+
 
   const renderContent = () => {
     switch (currentView) {
@@ -69,6 +91,7 @@ function App() {
         return <TablonView user={user} />;
       case AppView.TEACHER_DASHBOARD:
         return <TeacherDashboardView />;
+
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
