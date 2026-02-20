@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
+import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
 import { TablonView } from './views/TablonView';
 import { TeacherDashboardView } from './views/TeacherDashboardView';
@@ -19,6 +20,8 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => {
     return (localStorage.getItem('currentView') as AppView) || AppView.TABLON;
   });
+  const [showRegister, setShowRegister] = useState(false);
+
 
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn.toString());
@@ -73,14 +76,22 @@ function App() {
   };
 
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    if (showRegister) {
+      return (
+        <Register
+          onRegisterSuccess={() => setShowRegister(false)}
+          onNavigateToLogin={() => setShowRegister(false)}
+        />
+      );
+    }
+    return <Login onLogin={handleLogin} onNavigateToRegister={() => setShowRegister(true)} />;
   }
+
 
   const renderContent = () => {
     switch (currentView) {
       case AppView.TABLON:
         return <TablonView user={user} />;
-      case AppView.ASIGNATURAS:
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
@@ -94,7 +105,7 @@ function App() {
           </div>
         );
       default:
-        return userRole === 'TEACHER' ? <TeacherDashboardView /> : <TablonView />;
+        return user?.type === 'professor' ? <TeacherDashboardView /> : <TablonView user={user} />;
     }
   };
 

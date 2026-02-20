@@ -3,11 +3,13 @@ import { UserRole } from '../types';
 
 interface LoginProps {
   onLogin: (userData: any) => void;
+  onNavigateToRegister: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLogin }) => {
+export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -99,6 +101,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             ENTRAR
           </button>
         </form>
+
+        <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+          <p className="text-gray-600 mb-2 font-medium">¿No tienes cuenta?</p>
+          <button
+            onClick={onNavigateToRegister}
+            className="text-cyan-500 font-bold hover:text-cyan-600 transition-colors uppercase tracking-wider"
+          >
+            Regístrate aquí
+          </button>
+        </div>
       </div>
     </div>
   );
