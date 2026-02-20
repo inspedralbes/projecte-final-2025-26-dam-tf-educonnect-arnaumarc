@@ -10,18 +10,7 @@ import { ProfileView } from './views/ProfileView';
 import { AppView, User } from './types';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-  const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  const [currentView, setCurrentView] = useState<AppView>(() => {
-    return (localStorage.getItem('currentView') as AppView) || AppView.TABLON;
-  });
   const [showRegister, setShowRegister] = useState(false);
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<AppView>(AppView.TABLON);

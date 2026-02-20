@@ -33,15 +33,19 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     fetch('http://localhost:3005/api/schedule')
       .then(res => res.json())
       .then(data => {
-        const formattedSchedule = data.map((s: any) => ({
-          id: s._id,
-          courseId: s.courseId,
-          day: s.day,
-          startTime: s.startTime,
-          endTime: s.endTime,
-          classroom: s.classroom
-        }));
-        setSchedule(formattedSchedule);
+        if (Array.isArray(data)) {
+          const formattedSchedule = data.map((s: any) => ({
+            id: s._id,
+            courseId: s.courseId,
+            day: s.day,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            classroom: s.classroom
+          }));
+          setSchedule(formattedSchedule);
+        } else {
+          console.error('Schedule fetch returned non-array:', data);
+        }
       })
       .catch(err => console.error('Error fetching schedule:', err));
   }, []);
