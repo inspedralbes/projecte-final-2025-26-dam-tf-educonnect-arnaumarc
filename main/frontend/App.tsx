@@ -92,6 +92,9 @@ function App() {
     switch (currentView) {
       case AppView.TABLON:
         return <TablonView user={user} />;
+      case AppView.TEACHER_DASHBOARD:
+        return <TeacherDashboardView />;
+
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:

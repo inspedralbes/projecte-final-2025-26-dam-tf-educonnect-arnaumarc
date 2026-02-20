@@ -5,9 +5,29 @@ import { MOCK_EVENTS } from '../constants';
 
 export const TeacherDashboardView: React.FC = () => {
     const [activeTab, setActiveTab] = React.useState<'claustre' | 'departament' | 'general'>('claustre');
+    const [events, setEvents] = React.useState<any[]>([]);
 
-    // Teachers might see all events or a different set. For now using MOCK_EVENTS.
-    const filteredEvents = MOCK_EVENTS;
+    React.useEffect(() => {
+        fetch('http://localhost:3005/api/events')
+            .then(res => res.json())
+            .then(data => {
+                const formattedEvents = data.map((ev: any) => ({
+                    type: ev.type,
+                    data: {
+                        id: ev._id,
+                        title: ev.title,
+                        date: ev.date,
+                        courseId: ev.courseId?._id
+                    }
+                }));
+                setEvents(formattedEvents);
+            })
+            .catch(err => console.error('Error fetching events:', err));
+    }, []);
+
+    // Teachers see all events for now
+    const filteredEvents = events.length > 0 ? events : MOCK_EVENTS;
+
 
     return (
         <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
