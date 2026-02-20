@@ -7,7 +7,7 @@ interface WeeklyCalendarProps {
     courses: Course[];
 }
 
-const DAYS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
+const DAYS = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres'];
 const START_HOUR = 8;
 const END_HOUR = 21;
 const HOURS = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);

@@ -4,10 +4,7 @@ services:
     ports:
       - "3005:3005"
     environment:
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=password
-      - DB_NAME=educonnect
+      - MONGO_URI=mongodb://root:password@db:27017/educonnect?authSource=admin
       - PORT=3005
     depends_on:
       - db
@@ -17,20 +14,27 @@ services:
     command: npm run dev
 
   db:
-    image: mysql:8.0
+    image: mongo:latest
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: educonnect
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: educonnect
     ports:
-      - "3306:3306"
+      - "27017:27017"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/data/db
 
-  adminer:
-    image: adminer
+  mongo-express:
+    image: mongo-express:latest
     restart: always
     ports:
-      - 8080:8080
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_URL=mongodb://root:password@db:27017/?authSource=admin
+      - ME_CONFIG_BASICAUTH_USERNAME=root
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
 
 volumes:
   db_data:

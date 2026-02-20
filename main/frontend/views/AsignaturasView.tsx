@@ -16,7 +16,7 @@ export const AsignaturasView: React.FC = () => {
           GESTIÓ ACADÈMICA
         </h1>
         <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg] transition-colors">
-          <span className="skew-x-[12deg] inline-block">{enrolledCoursesList.length} ASIGNATURAS ACTIVES</span>
+          <span className="skew-x-[12deg] inline-block">{enrolledCoursesList.length} ASSIGNATURES ACTIVES</span>
         </div>
       </div>
 
@@ -27,7 +27,7 @@ export const AsignaturasView: React.FC = () => {
             <BookOpen size={24} className="text-black dark:text-white" />
           </div>
           <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tight transition-colors">
-            LES MEVES ASIGNARUTES
+            LES MEVES ASSIGNATURES
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
