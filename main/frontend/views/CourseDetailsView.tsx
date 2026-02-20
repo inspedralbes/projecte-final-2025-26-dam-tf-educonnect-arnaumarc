@@ -46,9 +46,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sender: user?._id,
-                    senderModel: 'Professor',
-                    receiver: messageRecipient._id,
+                    sender: user?._id || user?.id,
+                    senderModel: userRole === 'TEACHER' ? 'Professor' : 'Alumno',
+                    receiver: messageRecipient._id || messageRecipient.id,
                     course: course.id || course._id,
                     title: messageTitle,
                     content: messageContent

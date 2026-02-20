@@ -206,7 +206,8 @@ app.post('/api/messages', async (req, res) => {
         const message = await Message.create({ sender, senderModel, receiver, course, title, content });
         res.json({ success: true, message });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error enviando mensaje' });
+        console.error('Error enviando mensaje:', error);
+        res.status(500).json({ success: false, message: 'Error enviando mensaje', error: error.message });
     }
 });
 
@@ -248,7 +249,12 @@ app.get('/api/user/:id', async (req, res) => {
     try {
         let user = await Alumno.findById(req.params.id).populate('enrolledCourses');
         if (!user) {
-            user = await Professor.findById(req.params.id);
+            const professor = await Professor.findById(req.params.id).lean();
+            if (professor) {
+                const courses = await Course.find();
+                professor.enrolledCourses = courses;
+                return res.json(professor);
+            }
         }
         res.json(user);
     } catch (error) {
