@@ -80,7 +80,8 @@ function App() {
     switch (currentView) {
       case AppView.TABLON:
         return <TablonView user={user} />;
-      case AppView.ASIGNATURAS:
+      case AppView.TEACHER_DASHBOARD:
+        return <TeacherDashboardView />;
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
@@ -94,7 +95,7 @@ function App() {
           </div>
         );
       default:
-        return userRole === 'TEACHER' ? <TeacherDashboardView /> : <TablonView />;
+        return user?.type === 'professor' ? <TeacherDashboardView /> : <TablonView user={user} />;
     }
   };
 

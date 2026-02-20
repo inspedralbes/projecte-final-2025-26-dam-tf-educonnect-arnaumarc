@@ -3,6 +3,7 @@ import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
 import { User } from '../types';
+import { CourseDetailsView } from './CourseDetailsView';
 
 interface AsignaturasViewProps {
   user: User | null;
@@ -10,6 +11,7 @@ interface AsignaturasViewProps {
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
+  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
   const realCourses = user?.enrolledCourses as any[] || [];
 
   const enrolledCoursesList = realCourses.length > 0
@@ -28,6 +30,16 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     }
     return MOCK_USER.enrolledCourses.includes(session.courseId);
   });
+
+  if (selectedCourse) {
+    return (
+      <CourseDetailsView
+        course={selectedCourse}
+        userRole={user?.type === 'professor' ? 'TEACHER' : 'STUDENT'}
+        onBack={() => setSelectedCourse(null)}
+      />
+    );
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
@@ -52,7 +64,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {courses.map((course) => (
+          {enrolledCoursesList.map((course) => (
             <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
           ))}
         </div>
@@ -68,7 +80,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
             HORARI DE CLASSES
           </h2>
         </div>
-        <WeeklyCalendar schedule={enrolledSchedule} courses={courses} onCourseClick={(course) => setSelectedCourse(course)} />
+        <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} onCourseClick={(course) => setSelectedCourse(course)} />
       </section>
     </div>
   );

@@ -22,12 +22,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
     <div className="w-full border-b-4 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300">
       <div className="flex overflow-x-auto no-scrollbar">
         <button
-          onClick={() => setView(userRole === 'TEACHER' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
-          className={getTabClass(userRole === 'TEACHER' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
+          onClick={() => setView(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
+          className={getTabClass(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
         >
-          {userRole === 'TEACHER' ? 'Panel Docente' : 'Tablón'}
+          {user?.type === 'professor' ? 'Panel Docente' : 'Tablón'}
         </button>
-        {userRole !== 'TEACHER' && (
+        {user?.type !== 'professor' && (
           <>
             <button
               onClick={() => setView(AppView.WORKSHOPS)}
