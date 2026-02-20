@@ -9,6 +9,7 @@ const Alumno = require('./models/Alumno');
 const Course = require('./models/Course');
 const Event = require('./models/Event');
 const Schedule = require('./models/Schedule');
+const Message = require('./models/Message');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -185,6 +186,39 @@ app.get('/api/courses', async (req, res) => {
         res.json(courses);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching courses' });
+    }
+});
+
+// Students by Course route
+app.get('/api/courses/:courseId/students', async (req, res) => {
+    try {
+        const students = await Alumno.find({ enrolledCourses: req.params.courseId });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching students for course' });
+    }
+});
+
+// Messages routes
+app.post('/api/messages', async (req, res) => {
+    const { sender, senderModel, receiver, course, title, content } = req.body;
+    try {
+        const message = await Message.create({ sender, senderModel, receiver, course, title, content });
+        res.json({ success: true, message });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error enviando mensaje' });
+    }
+});
+
+app.get('/api/users/:userId/messages', async (req, res) => {
+    try {
+        const messages = await Message.find({ receiver: req.params.userId })
+            .populate('sender')
+            .populate('course')
+            .sort({ date: -1 });
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching messages' });
     }
 });
 

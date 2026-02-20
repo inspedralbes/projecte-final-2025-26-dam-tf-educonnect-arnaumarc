@@ -11,6 +11,7 @@ interface TablonViewProps {
 export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>('personal');
   const [events, setEvents] = React.useState<any[]>([]);
+  const [messages, setMessages] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     fetch('http://localhost:3005/api/events')
@@ -29,6 +30,17 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       })
       .catch(err => console.error('Error fetching events:', err));
   }, []);
+
+  React.useEffect(() => {
+    if (user?._id) {
+      fetch(`http://localhost:3005/api/users/${user._id}/messages`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setMessages(data);
+        })
+        .catch(err => console.error('Error fetching messages:', err));
+    }
+  }, [user]);
 
   const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
     if (ev.type === 'activity' || ev.type === 'exam') {
@@ -84,20 +96,33 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                 Notificacions Personals
               </h2>
               <ul className="space-y-3">
-                <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                  <span className="font-bold text-green-700 dark:text-green-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Missatge del Tutor</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Recorda portar la documentació de les pràctiques demà.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                  <span className="font-bold text-green-700 dark:text-green-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Nova Correcció</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">S'ha publicat la nota del teu projecte de M06: Accés a Dades.</p>
-                  </div>
-                </li>
+                {messages.length > 0 ? messages.map((msg, idx) => (
+                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                    <span className="font-bold text-green-700 dark:text-green-400">•</span>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">De: {msg.sender?.nombre} {msg.sender?.apellidos} {msg.course ? `(${msg.course.title})` : ''}</p>
+                    </div>
+                  </li>
+                )) : (
+                  <>
+                    <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                      <span className="font-bold text-green-700 dark:text-green-400">•</span>
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-sm">Missatge del Tutor</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Recorda portar la documentació de les pràctiques demà.</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                      <span className="font-bold text-green-700 dark:text-green-400">•</span>
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-sm">Nova Correcció</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">S'ha publicat la nota del teu projecte de M06: Accés a Dades.</p>
+                      </div>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           )}
