@@ -2,16 +2,42 @@ import React from 'react';
 import { Bell, Clock } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS, MOCK_USER } from '../constants';
+import { User } from '../types';
 
-export const TablonView: React.FC = () => {
+interface TablonViewProps {
+  user: User | null;
+}
+
+export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>('personal');
+  const [events, setEvents] = React.useState<any[]>([]);
 
-  const filteredEvents = MOCK_EVENTS.filter(ev => {
+  React.useEffect(() => {
+    fetch('http://localhost:3005/api/events')
+      .then(res => res.json())
+      .then(data => {
+        const formattedEvents = data.map((ev: any) => ({
+          type: ev.type,
+          data: {
+            id: ev._id,
+            title: ev.title,
+            date: ev.date,
+            courseId: ev.courseId?._id
+          }
+        }));
+        setEvents(formattedEvents);
+      })
+      .catch(err => console.error('Error fetching events:', err));
+  }, []);
+
+  const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
     if (ev.type === 'activity' || ev.type === 'exam') {
-      return MOCK_USER.enrolledCourses.includes(ev.data.courseId);
-    }
-    if (ev.type === 'event' && ev.data.courseId) {
-      return MOCK_USER.enrolledCourses.includes(ev.data.courseId);
+      if (user?.enrolledCourses) {
+        // If user has real enrolled courses (as objects or strings)
+        const courses = user.enrolledCourses as any[];
+        return courses.some(c => (c._id || c) === ev.data.courseId);
+      }
+      return true;
     }
     return true;
   });

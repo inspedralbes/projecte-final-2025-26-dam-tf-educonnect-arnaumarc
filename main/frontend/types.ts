@@ -24,8 +24,16 @@ export interface ChatMessage {
 }
 
 export interface User {
+  _id: string;
+  nombre: string;
+  apellidos: string;
   email: string;
-  name: string;
+  clase?: string;
+  tipo_horario?: string;
+  especialidad?: string;
+  profileImage?: string | null;
+  theme?: 'light' | 'dark';
+  type: 'alumno' | 'professor';
 }
 
 export interface Activity {

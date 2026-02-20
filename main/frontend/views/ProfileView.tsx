@@ -1,28 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Bell, Settings, CreditCard, ChevronRight, Camera, Moon, Sun } from 'lucide-react';
 import { MOCK_USER } from '../constants';
+import { User as UserType } from '../types';
 
-export const ProfileView: React.FC = () => {
-    const [profileImage, setProfileImage] = useState<string | null>(null);
+interface ProfileViewProps {
+    user: UserType | null;
+    onUpdateUser: (user: UserType) => void;
+}
+
+export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) => {
+    const displayName = user ? `${user.nombre} ${user.apellidos}` : MOCK_USER.name;
+    const displayEmail = user ? user.email : MOCK_USER.email;
+    const displayRole = user ? (user.type === 'professor' ? 'Profesor' : 'Alumno') : MOCK_USER.role;
+    const displayClass = user?.clase || 'N/A';
+    const displaySpecialty = user?.especialidad || 'N/A';
+    const profileImage = user?.profileImage || null;
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const savedImage = localStorage.getItem('user_profile_image');
-        if (savedImage) {
-            setProfileImage(savedImage);
-        }
+        // No longer needed to load from localStorage as it's in the user prop
     }, []);
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
+        if (file && user) {
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
                 const base64String = reader.result as string;
-                setProfileImage(base64String);
-                localStorage.setItem('user_profile_image', base64String);
-                // Dispatch custom event to notify Navbar and other components
-                window.dispatchEvent(new Event('profile_image_updated'));
+
+                try {
+                    const response = await fetch(`http://localhost:3005/api/user/${user._id}/settings`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profileImage: base64String })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        onUpdateUser({ ...user, profileImage: base64String });
+                        window.dispatchEvent(new Event('profile_image_updated'));
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -53,23 +72,23 @@ export const ProfileView: React.FC = () => {
                         />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-3xl font-black text-black dark:text-white transition-colors">{MOCK_USER.name}</h1>
-                        <p className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider text-sm mt-1">{MOCK_USER.role}</p>
+                        <h1 className="text-3xl font-black text-black dark:text-white transition-colors">{displayName}</h1>
+                        <p className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider text-sm mt-1">{displayRole}</p>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] overflow-hidden divide-x-4 divide-black dark:divide-white transition-all">
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black dark:text-white">{MOCK_USER.stats.courses}</span>
+                        <span className="text-2xl font-black dark:text-white">{user?.enrolledCourses?.length || 0}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Cursos</span>
                     </div>
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black dark:text-white">{MOCK_USER.stats.average}</span>
+                        <span className="text-2xl font-black dark:text-white">{user?.type === 'alumno' ? '8.5' : '--'}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Promedio</span>
                     </div>
                     <div className="py-6 flex flex-col items-center">
-                        <span className="text-2xl font-black dark:text-white">{MOCK_USER.stats.certificates}</span>
+                        <span className="text-2xl font-black dark:text-white">{user?.type === 'alumno' ? '4' : '--'}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Certificados</span>
                     </div>
                 </div>
@@ -79,8 +98,13 @@ export const ProfileView: React.FC = () => {
                     <div className="space-y-4">
                         <h2 className="text-xl font-black text-black dark:text-white ml-2 uppercase italic transition-colors">Información Personal</h2>
                         <div className="bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] overflow-hidden transition-all">
-                            <ProfileItem icon={<User size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Nombre Completo" value={MOCK_USER.name} />
-                            <ProfileItem icon={<Mail size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Gmail" value={MOCK_USER.email} last />
+                            <ProfileItem icon={<User size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Nombre Completo" value={displayName} />
+                            <ProfileItem icon={<Mail size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Gmail" value={displayEmail} />
+                            {user?.type === 'alumno' ? (
+                                <ProfileItem icon={<Settings size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Clase" value={displayClass} last />
+                            ) : (
+                                <ProfileItem icon={<Settings size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Especialidad" value={displaySpecialty} last />
+                            )}
                         </div>
                     </div>
 
@@ -89,7 +113,7 @@ export const ProfileView: React.FC = () => {
                         <h2 className="text-xl font-black text-black dark:text-white ml-2 uppercase italic transition-colors">Ajustes</h2>
                         <div className="bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] overflow-hidden transition-all">
                             <NotificationsDropdown />
-                            <PreferencesDropdown />
+                            <PreferencesDropdown user={user} onUpdateUser={onUpdateUser} />
                         </div>
                     </div>
                 </div>
@@ -165,25 +189,29 @@ const NotificationsDropdown = () => {
     );
 };
 
-const PreferencesDropdown = () => {
+const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, onUpdateUser: (user: UserType) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('theme') === 'dark' ||
-                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-        return false;
-    });
+    const isDarkMode = user?.theme === 'dark';
 
-    useEffect(() => {
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
+    const toggleDarkMode = async () => {
+        if (!user) return;
+        const newTheme = isDarkMode ? 'light' : 'dark';
+
+        try {
+            const response = await fetch(`http://localhost:3005/api/user/${user._id}/settings`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ theme: newTheme })
+            });
+            const data = await response.json();
+            if (data.success) {
+                onUpdateUser({ ...user, theme: newTheme });
+            }
+        } catch (error) {
+            console.error('Error updating theme:', error);
         }
-    }, [isDarkMode]);
+    };
+
 
     return (
         <div>
@@ -208,7 +236,7 @@ const PreferencesDropdown = () => {
                             <span className="text-xs font-bold text-gray-900 dark:text-white uppercase">Modo Oscuro</span>
                         </div>
                         <button
-                            onClick={() => setIsDarkMode(!isDarkMode)}
+                            onClick={toggleDarkMode}
                             className={`w-12 h-6 rounded-full border-2 border-black dark:border-white flex items-center transition-all p-1 shadow-sm ${isDarkMode ? 'bg-black justify-end' : 'bg-gray-200 justify-start'}`}
                         >
                             <div className={`w-3.5 h-3.5 rounded-full border border-black dark:border-white ${isDarkMode ? 'bg-white' : 'bg-white'}`}></div>

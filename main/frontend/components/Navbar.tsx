@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { AppView } from '../types';
+import { AppView, User } from '../types';
 import { LogOut, UserCircle } from 'lucide-react';
 
 interface NavbarProps {
   currentView: AppView;
   setView: (view: AppView) => void;
   onLogout: () => void;
+  user: User | null;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }) => {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, user }) => {
+  const profileImage = user?.profileImage || null;
 
-  const loadProfileImage = () => {
-    const savedImage = localStorage.getItem('user_profile_image');
-    setProfileImage(savedImage);
-  };
-
-  useEffect(() => {
-    loadProfileImage();
-    window.addEventListener('profile_image_updated', loadProfileImage);
-    return () => window.removeEventListener('profile_image_updated', loadProfileImage);
-  }, []);
   const getTabClass = (view: AppView) => {
     const isActive = currentView === view;
     return `px-6 py-3 cursor-pointer border-r-2 border-black dark:border-white font-bold text-black dark:text-white transition-colors ${isActive ? 'bg-purple-200 dark:bg-purple-900/50' : 'bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700'

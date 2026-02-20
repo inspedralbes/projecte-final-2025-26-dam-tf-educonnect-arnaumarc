@@ -2,11 +2,32 @@ import React from 'react';
 import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
+import { User } from '../types';
+
+interface AsignaturasViewProps {
+  user: User | null;
+}
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
-export const AsignaturasView: React.FC = () => {
-  const enrolledCoursesList = MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
-  const enrolledSchedule = MOCK_SCHEDULE.filter(session => MOCK_USER.enrolledCourses.includes(session.courseId));
+export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
+  const realCourses = user?.enrolledCourses as any[] || [];
+
+  const enrolledCoursesList = realCourses.length > 0
+    ? realCourses.map(c => ({
+      id: c._id || c,
+      title: c.title || 'Asignatura',
+      description: c.description || '',
+      professor: c.professor || '',
+      image: c.image || 'https://picsum.photos/300/200'
+    }))
+    : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
+
+  const enrolledSchedule = MOCK_SCHEDULE.filter(session => {
+    if (realCourses.length > 0) {
+      return realCourses.some(c => (c._id || c) === session.courseId);
+    }
+    return MOCK_USER.enrolledCourses.includes(session.courseId);
+  });
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">

@@ -8,6 +8,7 @@ interface MonthlyCalendarProps {
 
 export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const today = new Date();
 
     const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -116,15 +117,19 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
             <div className="grid grid-cols-7 flex-1 min-h-[350px] bg-white dark:bg-zinc-800">
                 {calendarDays.map((day, index) => {
                     const dayEvents = day ? getEventsForDay(day) : [];
-                    const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+                    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
                     return (
                         <div
                             key={index}
                             className={`
                 min-h-[60px] p-1 border-r-2 border-b-2 border-black dark:border-zinc-600 last:border-r-0 transition-colors
-                ${!day ? 'bg-gray-100/50 dark:bg-zinc-900/50' : 'bg-white dark:bg-zinc-800'} 
-                ${isToday ? 'bg-yellow-50 dark:bg-yellow-900/30' : ''}
+                ${!day
+                                    ? 'bg-gray-100/50 dark:bg-zinc-900/50'
+                                    : isToday
+                                        ? 'bg-yellow-200 dark:bg-yellow-400/30'
+                                        : 'bg-white dark:bg-zinc-800'
+                                } 
               `}
                         >
                             {day && (

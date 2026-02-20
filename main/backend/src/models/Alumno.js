@@ -6,6 +6,10 @@ const alumnoSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     clase: { type: String, required: true },
     tipo_horario: { type: String, required: true },
+    password: { type: String, required: true },
+    enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+    profileImage: { type: String, default: null },
+    theme: { type: String, default: 'light' },
     tutor: { type: mongoose.Schema.Types.ObjectId, ref: 'Professor' }
 }, { timestamps: true });
 

@@ -2,17 +2,42 @@ import React, { useState } from 'react';
 import { User } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (userData: any) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      onLogin();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3005/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        onLogin({ ...data.user, type: data.type });
+      } else {
+        setError(data.message || 'Email o contraseña incorrectos');
+      }
+    } catch (err) {
+      setError('Error al conectar con el servidor');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,10 +58,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
           </div>
           <div className="flex space-x-1 mt-1">
-             <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
-             <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
+            <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+            <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mb-4 text-sm font-bold animate-pulse">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
