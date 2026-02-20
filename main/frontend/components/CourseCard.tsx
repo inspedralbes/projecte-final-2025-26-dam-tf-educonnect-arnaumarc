@@ -3,11 +3,15 @@ import { Course } from '../types';
 
 interface CourseCardProps {
   course: Course;
+  onClick?: () => void;
 }
 
-export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
+export const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
   return (
-    <div className="border-2 border-black dark:border-white bg-gray-200 dark:bg-zinc-800 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all duration-300">
+    <div
+      onClick={onClick}
+      className={`border-2 border-black dark:border-white bg-gray-200 dark:bg-zinc-800 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-y-1 hover:shadow-none transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}
+    >
       <div className="text-sm font-bold mb-2 border-b border-black dark:border-white pb-1 text-black dark:text-white transition-colors">
         [{course.title}]
       </div>

@@ -61,7 +61,7 @@ function App() {
       case AppView.TEACHER_DASHBOARD:
         return <TeacherDashboardView />;
       case AppView.ASIGNATURAS:
-        return <AsignaturasView />;
+        return <AsignaturasView userRole={userRole} />;
       case AppView.MEET:
         return <MeetView />;
       case AppView.PROFILE:

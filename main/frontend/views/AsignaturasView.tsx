@@ -4,11 +4,17 @@ import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_SCHEDULE, MOCK_USER } from '../constants';
 import { BookOpen, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { courseService } from '../services/courseService';
-import { Course } from '../types';
+import { Course, UserRole } from '../types';
+import { CourseDetailsView } from './CourseDetailsView';
 
-export const AsignaturasView: React.FC = () => {
+interface AsignaturasViewProps {
+  userRole: UserRole;
+}
+
+export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ userRole }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   // MOCK_SCHEDULE uses courseId matching mocks.
   // We assume user is enrolled in these courses.
@@ -31,6 +37,10 @@ export const AsignaturasView: React.FC = () => {
 
     fetchCourses();
   }, []);
+
+  if (selectedCourse) {
+    return <CourseDetailsView course={selectedCourse} userRole={userRole} onBack={() => setSelectedCourse(null)} />;
+  }
 
   if (loading) {
     return (
@@ -64,7 +74,7 @@ export const AsignaturasView: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
           ))}
         </div>
       </section>
@@ -79,7 +89,7 @@ export const AsignaturasView: React.FC = () => {
             HORARI DE CLASSES
           </h2>
         </div>
-        <WeeklyCalendar schedule={enrolledSchedule} courses={courses} />
+        <WeeklyCalendar schedule={enrolledSchedule} courses={courses} onCourseClick={(course) => setSelectedCourse(course)} />
       </section>
     </div>
   );

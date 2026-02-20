@@ -5,6 +5,7 @@ import { ClassSession, Course } from '../types';
 interface WeeklyCalendarProps {
     schedule: ClassSession[];
     courses: Course[];
+    onCourseClick?: (course: Course) => void;
 }
 
 const DAYS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
@@ -12,7 +13,7 @@ const START_HOUR = 8;
 const END_HOUR = 21;
 const HOURS = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
 
-export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ schedule, courses }) => {
+export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ schedule, courses, onCourseClick }) => {
     const getCourse = (id: string) => courses.find((c) => c.id === id);
 
     const getPosition = (session: ClassSession) => {
@@ -89,6 +90,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ schedule, course
                         <div
                             key={s.id}
                             style={getPosition(s)}
+                            onClick={() => onCourseClick?.(course)}
                             className={`m-0.5 p-1 flex flex-col justify-between border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] cursor-pointer transition-all hover:-translate-y-0.5 ${colors[parseInt(s.courseId) % colors.length]}`}
                             title={`${course.title} (${s.startTime} - ${s.endTime})`}
                         >
