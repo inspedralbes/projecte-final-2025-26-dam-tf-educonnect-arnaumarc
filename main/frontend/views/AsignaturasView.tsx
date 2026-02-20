@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
@@ -52,8 +52,8 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {enrolledCoursesList.map((course) => (
-            <CourseCard key={course.id} course={course} />
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
           ))}
         </div>
       </section>
@@ -68,7 +68,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
             HORARI DE CLASSES
           </h2>
         </div>
-        <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} />
+        <WeeklyCalendar schedule={enrolledSchedule} courses={courses} onCourseClick={(course) => setSelectedCourse(course)} />
       </section>
     </div>
   );

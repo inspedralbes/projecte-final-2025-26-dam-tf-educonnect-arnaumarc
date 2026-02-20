@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
 import { TablonView } from './views/TablonView';
+import { TeacherDashboardView } from './views/TeacherDashboardView';
 import { AsignaturasView } from './views/AsignaturasView';
 import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
@@ -84,7 +85,6 @@ function App() {
         return <AsignaturasView user={user} />;
       case AppView.MEET:
         return <MeetView />;
-
       case AppView.PROFILE:
         return <ProfileView user={user} onUpdateUser={updateUser} />;
       case AppView.WORKSHOPS:
@@ -94,7 +94,7 @@ function App() {
           </div>
         );
       default:
-        return <TablonView />;
+        return userRole === 'TEACHER' ? <TeacherDashboardView /> : <TablonView />;
     }
   };
 

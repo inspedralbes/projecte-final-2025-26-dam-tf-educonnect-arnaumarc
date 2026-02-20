@@ -140,14 +140,14 @@ export const MOCK_EVENTS: CalendarEvent[] = [
   },
   {
     type: 'event',
-    data: { id: '5', title: 'Xerrada Ciberseguretat', date: new Date(2026, 1, 12).toISOString() }
+    data: { id: 'e5', title: 'Hackathon IA', date: new Date(2026, 2, 5).toISOString(), courseId: 'c4' }
   },
   {
     type: 'holiday',
-    data: { id: '6', title: 'Lliure Disposició', date: new Date(2026, 1, 28).toISOString() }
+    data: { id: 'h1', title: 'Setmana Santa', date: new Date(2026, 3, 2).toISOString() }
   },
   {
     type: 'strike',
-    data: { id: '7', title: 'Vaga Estudiants', date: new Date(2026, 1, 19).toISOString() }
+    data: { id: 's1', title: 'Vaga Transport', date: new Date(2026, 1, 20).toISOString() }
   }
 ];

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import { UserRole } from '../types';
 
 interface LoginProps {
   onLogin: (userData: any) => void;
@@ -58,6 +58,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
           </div>
           <div className="flex space-x-1 mt-1">
+            <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+            <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
             <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
             <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
           </div>

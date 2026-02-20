@@ -1,11 +1,15 @@
 export enum AppView {
   LOGIN = 'LOGIN',
   TABLON = 'TABLON',
+  TEACHER_DASHBOARD = 'TEACHER_DASHBOARD',
   ASIGNATURAS = 'ASIGNATURAS',
+  COURSE_DETAILS = 'COURSE_DETAILS',
   WORKSHOPS = 'WORKSHOPS',
   MEET = 'MEET',
   PROFILE = 'PROFILE'
 }
+
+export type UserRole = 'STUDENT' | 'TEACHER';
 
 export interface Course {
   id: string;
