@@ -9,30 +9,18 @@ import { ProfileView } from './views/ProfileView';
 import { AppView, User } from './types';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-  const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  const [currentView, setCurrentView] = useState<AppView>(() => {
-    return (localStorage.getItem('currentView') as AppView) || AppView.TABLON;
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState<AppView>(AppView.TABLON);
 
   useEffect(() => {
-    localStorage.setItem('isLoggedIn', isLoggedIn.toString());
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-      // Apply user's theme
       if (user.theme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
     } else {
-      localStorage.removeItem('user');
-      // Default theme if no user
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -46,20 +34,19 @@ function App() {
     setUser(updatedUser);
   };
 
-
   const handleLogin = async (userData: User) => {
+    const type = userData.type;
     try {
       const response = await fetch(`http://localhost:3005/api/user/${userData._id}`);
       const fullUserData = await response.json();
-      setUser({ ...fullUserData, type: userData.type });
+      setUser({ ...fullUserData, type });
       setIsLoggedIn(true);
-      setCurrentView(AppView.TABLON);
+      setCurrentView(type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON);
     } catch (error) {
       console.error('Error fetching full user data:', error);
-      // Fallback to basic data if fetch fails
       setUser(userData);
       setIsLoggedIn(true);
-      setCurrentView(AppView.TABLON);
+      setCurrentView(type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON);
     }
   };
 
