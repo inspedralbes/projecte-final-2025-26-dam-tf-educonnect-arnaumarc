@@ -61,6 +61,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     return (
       <CourseDetailsView
         course={selectedCourse}
+        user={user}
         userRole={user?.type === 'professor' ? 'TEACHER' : 'STUDENT'}
         onBack={() => setSelectedCourse(null)}
       />
