@@ -230,6 +230,36 @@ app.get('/api/courses/:courseId/students', async (req, res) => {
     }
 });
 
+// Notify all students in a course
+app.post('/api/courses/:courseId/notify-all', async (req, res) => {
+    const { title, content, senderId } = req.body;
+    try {
+        // Find all students enrolled in this course
+        const students = await Alumno.find({ enrolledCourses: req.params.courseId });
+
+        if (students.length === 0) {
+            return res.status(404).json({ success: false, message: 'No se han encontrado estudiantes en esta asignatura' });
+        }
+
+        // Create a message for each student
+        const messagesToCreate = students.map(student => ({
+            sender: senderId,
+            senderModel: 'Professor',
+            receiver: student._id,
+            course: req.params.courseId,
+            title,
+            content
+        }));
+
+        await Message.insertMany(messagesToCreate);
+
+        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes` });
+    } catch (error) {
+        console.error('Error enviando notificación a toda la clase:', error);
+        res.status(500).json({ success: false, message: 'Error enviando notificación', error: error.message });
+    }
+});
+
 // Messages routes
 app.post('/api/messages', async (req, res) => {
     const { sender, senderModel, receiver, course, title, content } = req.body;

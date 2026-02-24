@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Course, UserRole, User } from '../types';
-import { Users, FileText, Calendar, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface CourseDetailsViewProps {
     course: Course | any;
@@ -19,6 +19,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const [messageContent, setMessageContent] = useState('');
 
     const [loadingStudents, setLoadingStudents] = useState(false);
+
+    // Nuevos estados para notificar a la clase
+    const [isNotifyClassModalOpen, setIsNotifyClassModalOpen] = useState(false);
+    const [notifyTitle, setNotifyTitle] = useState('');
+    const [notifyContent, setNotifyContent] = useState('');
+    const [notifyStatus, setNotifyStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [isSubmittingNotify, setIsSubmittingNotify] = useState(false);
 
     React.useEffect(() => {
         if (userRole === 'TEACHER') {
@@ -76,6 +83,44 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         } catch (err) {
             console.error('Error enviant missatge:', err);
             alert('Error enviant missatge');
+        }
+    };
+
+    const handleNotifyClass = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!notifyTitle || !notifyContent) return;
+
+        setIsSubmittingNotify(true);
+        setNotifyStatus(null);
+
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/notify-all`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: notifyTitle,
+                    content: notifyContent,
+                    senderId: user?._id || user?.id || ''
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+                setNotifyStatus({ type: 'success', message: data.message || 'Notificación enviada correctamente.' });
+                setTimeout(() => {
+                    setIsNotifyClassModalOpen(false);
+                    setNotifyTitle('');
+                    setNotifyContent('');
+                    setNotifyStatus(null);
+                }, 2000);
+            } else {
+                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificación.' });
+            }
+        } catch (error) {
+            setNotifyStatus({ type: 'error', message: 'Error de conexión del servidor.' });
+        } finally {
+            setIsSubmittingNotify(false);
         }
     };
 
@@ -160,9 +205,18 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
 
                 {activeTab === 'students' && userRole === 'TEACHER' && (
                     <div>
-                        <h2 className="text-2xl font-bold bg-black dark:bg-white text-white dark:text-black inline-block px-4 py-1 rotate-1 mb-8">
-                            LLISTA D'ALUMNES
-                        </h2>
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-2xl font-bold bg-black dark:bg-white text-white dark:text-black inline-block px-4 py-1 rotate-1">
+                                LLISTA D'ALUMNES
+                            </h2>
+                            <button
+                                onClick={() => setIsNotifyClassModalOpen(true)}
+                                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-4 py-2 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1 active:translate-y-0 active:shadow-none"
+                            >
+                                <Send size={18} />
+                                Notificar a Tota la Classe
+                            </button>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {loadingStudents ? (
                                 <div className="col-span-full py-12 text-center text-gray-500 font-bold animate-pulse">
@@ -255,6 +309,85 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                                     Enviar
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Notificación Masiva */}
+            {isNotifyClassModalOpen && (
+                <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] p-6 max-w-lg w-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-black text-black dark:text-white flex items-center gap-2">
+                                <Send size={24} className="text-indigo-600 dark:text-indigo-400" />
+                                NOVA NOTIFICACIÓ A LA CLASSE
+                            </h2>
+                            <button
+                                onClick={() => setIsNotifyClassModalOpen(false)}
+                                className="text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {notifyStatus && (
+                            <div className={`p-4 mb-6 border-2 flex items-center gap-3 font-bold ${notifyStatus.type === 'success'
+                                    ? 'bg-green-100 border-green-600 text-green-800 dark:bg-green-900/30 dark:border-green-400 dark:text-green-300'
+                                    : 'bg-red-100 border-red-600 text-red-800 dark:bg-red-900/30 dark:border-red-400 dark:text-red-300'
+                                }`}>
+                                {notifyStatus.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+                                {notifyStatus.message}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleNotifyClass} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Asignatura
+                                </label>
+                                <div className="w-full border-2 border-black dark:border-gray-600 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 p-3 font-medium cursor-not-allowed">
+                                    {course.title}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Título
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full border-2 border-black dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white p-3 font-medium outline-none focus:border-indigo-600 dark:focus:border-indigo-400 transition-colors"
+                                    placeholder="Ej: Recordatorio de Examen, Cambio de Aula..."
+                                    value={notifyTitle}
+                                    onChange={(e) => setNotifyTitle(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Mensaje
+                                </label>
+                                <textarea
+                                    className="w-full border-2 border-black dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white p-3 font-medium outline-none focus:border-indigo-600 dark:focus:border-indigo-400 transition-colors resize-none h-32"
+                                    placeholder="Escribe el mensaje para toda la clase aquí..."
+                                    value={notifyContent}
+                                    onChange={(e) => setNotifyContent(e.target.value)}
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmittingNotify}
+                                className={`w-full py-3 font-black text-white uppercase tracking-widest border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all ${isSubmittingNotify
+                                        ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                        : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 hover:-translate-y-1 active:translate-y-0 active:shadow-none'
+                                    }`}
+                            >
+                                {isSubmittingNotify ? 'ENVIANDO...' : 'ENVIAR A TODA LA CLASE'}
+                            </button>
                         </form>
                     </div>
                 </div>
