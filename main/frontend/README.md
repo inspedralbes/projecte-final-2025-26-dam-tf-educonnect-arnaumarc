@@ -1,21 +1,7 @@
-# EduConnect Frontend
-
-Aplicación web para la plataforma EduConnect.
-
-## Requisitos
-
-- Node.js (v18 o superior recomendado)
-
-## Instalación
-
-```bash
-npm install
-```
-
-## Ejecución
-
-```bash
-npm run dev
-```
-
-La aplicación estará disponible en `http://localhost:5173` (o el puerto que indique Vite).
+1. cd main/frontend
+2. npm run dev
+3. cd main/backend
+4. abrir docker desktop
+5. docker-compose up --build
+6. cd main/backend
+7. npm start
