@@ -8,6 +8,7 @@ import { AsignaturasView } from './views/AsignaturasView';
 import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
 import { AppView, User } from './types';
+import { ChatWidget } from './components/ChatWidget';
 
 function App() {
   const [showRegister, setShowRegister] = useState(false);
@@ -170,6 +171,7 @@ function App() {
       <div className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
         {renderContent()}
       </div>
+      <ChatWidget currentUser={user} />
     </div>
   );
 }
