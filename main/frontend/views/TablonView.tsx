@@ -9,7 +9,13 @@ interface TablonViewProps {
 }
 
 export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>('personal');
+  const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>(() => {
+    return (localStorage.getItem('tablonActiveTab') as 'personal' | 'clase' | 'general') || 'personal';
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('tablonActiveTab', activeTab);
+  }, [activeTab]);
   const [events, setEvents] = React.useState<any[]>([]);
   const [messages, setMessages] = React.useState<any[]>([]);
 

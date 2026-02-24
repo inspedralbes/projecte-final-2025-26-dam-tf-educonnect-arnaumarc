@@ -4,7 +4,13 @@ import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
 
 export const TeacherDashboardView: React.FC = () => {
-    const [activeTab, setActiveTab] = React.useState<'claustre' | 'departament' | 'general'>('claustre');
+    const [activeTab, setActiveTab] = React.useState<'claustre' | 'departament' | 'general'>(() => {
+        return (localStorage.getItem('teacherActiveTab') as 'claustre' | 'departament' | 'general') || 'claustre';
+    });
+
+    React.useEffect(() => {
+        localStorage.setItem('teacherActiveTab', activeTab);
+    }, [activeTab]);
     const [events, setEvents] = React.useState<any[]>([]);
 
     React.useEffect(() => {

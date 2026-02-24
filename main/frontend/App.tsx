@@ -11,9 +11,52 @@ import { AppView, User } from './types';
 
 function App() {
   const [showRegister, setShowRegister] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<AppView>(AppView.TABLON);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error('Error parsing user from localStorage', e);
+      return null;
+    }
+  });
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    const savedView = localStorage.getItem('currentView');
+    const savedUser = localStorage.getItem('user');
+    if (savedView) return savedView as AppView;
+
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        return parsedUser.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON;
+      } catch (e) {
+        return AppView.TABLON;
+      }
+    }
+    return AppView.TABLON;
+  });
+
+  // Re-sync with backend in background or handle cleanup if localStorage is corrupt
+  useEffect(() => {
+    const savedIsLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const savedUser = localStorage.getItem('user');
+
+    if (savedIsLoggedIn && savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        // Optional: verify with backend if token/session is still valid
+        // For now, we trust localStorage as per user requirements for simple persistence
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        handleLogout();
+      }
+    } else if (savedIsLoggedIn && !savedUser) {
+      handleLogout();
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -30,10 +73,17 @@ function App() {
         document.documentElement.classList.remove('dark');
       }
     }
-  }, [isLoggedIn, user]);
+  }, [user]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      localStorage.setItem('currentView', currentView);
+    }
+  }, [currentView, isLoggedIn]);
 
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const handleLogin = async (userData: User) => {
@@ -41,14 +91,25 @@ function App() {
     try {
       const response = await fetch(`http://localhost:3005/api/user/${userData._id}`);
       const fullUserData = await response.json();
-      setUser({ ...fullUserData, type });
+      const userWithRole = { ...fullUserData, type };
+      setUser(userWithRole);
       setIsLoggedIn(true);
-      setCurrentView(type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON);
+      const initialView = type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON;
+      setCurrentView(initialView);
+
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('user', JSON.stringify(userWithRole));
+      localStorage.setItem('currentView', initialView);
     } catch (error) {
       console.error('Error fetching full user data:', error);
       setUser(userData);
       setIsLoggedIn(true);
-      setCurrentView(type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON);
+      const initialView = type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON;
+      setCurrentView(initialView);
+
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('currentView', initialView);
     }
   };
 

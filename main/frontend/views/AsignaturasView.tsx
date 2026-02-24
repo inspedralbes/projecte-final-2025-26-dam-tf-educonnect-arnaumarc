@@ -4,30 +4,53 @@ import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
 import { User } from '../types';
 import { CourseDetailsView } from './CourseDetailsView';
+import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 interface AsignaturasViewProps {
   user: User | null;
 }
-import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
-  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-  const [schedule, setSchedule] = useState<any[]>([]);
-
   const realCourses = user?.enrolledCourses as any[] || [];
 
+  const enrolledCoursesList = React.useMemo(() => {
+    return realCourses.length > 0
+      ? realCourses.map(c => ({
+        id: c._id || c,
+        title: c.title || 'Asignatura',
+        description: c.description || '',
+        professor: c.professor || '',
+        image: c.image || 'https://picsum.photos/300/200'
+      }))
+      : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
+  }, [realCourses]);
 
+  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const hasRestored = React.useRef(false);
 
-  const enrolledCoursesList = realCourses.length > 0
-    ? realCourses.map(c => ({
-      id: c._id || c,
-      title: c.title || 'Asignatura',
-      description: c.description || '',
-      professor: c.professor || '',
-      image: c.image || 'https://picsum.photos/300/200'
-    }))
-    : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
+  // Restore selected course from localStorage ONLY ONCE on mount
+  useEffect(() => {
+    if (!hasRestored.current && enrolledCoursesList.length > 0) {
+      const savedCourseId = localStorage.getItem('selectedCourse');
+      if (savedCourseId) {
+        const course = enrolledCoursesList.find(c => c.id === savedCourseId);
+        if (course) {
+          setSelectedCourse(course);
+        }
+      }
+      hasRestored.current = true;
+    }
+  }, [enrolledCoursesList]);
 
+  // Save selected course to localStorage
+  useEffect(() => {
+    if (selectedCourse) {
+      localStorage.setItem('selectedCourse', selectedCourse.id);
+    } else {
+      localStorage.removeItem('selectedCourse');
+    }
+  }, [selectedCourse]);
 
   useEffect(() => {
     fetch('http://localhost:3005/api/schedule')
@@ -68,10 +91,8 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     );
   }
 
-
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter mb-4 transition-colors">
           GESTIÓ ACADÈMICA
@@ -81,7 +102,6 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
         </div>
       </div>
 
-      {/* Lista de Asignaturas */}
       <section>
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 bg-purple-400 dark:bg-purple-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
@@ -98,7 +118,6 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
         </div>
       </section>
 
-      {/* Horario Semanal */}
       <section>
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 bg-yellow-400 dark:bg-yellow-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
