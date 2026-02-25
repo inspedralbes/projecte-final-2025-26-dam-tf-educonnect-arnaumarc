@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Bell, BookOpen, Building, User as UserIcon } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
+import { User } from '../types';
 
-export const TeacherDashboardView: React.FC = () => {
+interface TeacherDashboardViewProps {
+    user?: User | null;
+}
+
+export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user }) => {
     const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'centro'>(() => {
         return (localStorage.getItem('teacherActiveTab') as 'personal' | 'clase' | 'centro') || 'personal';
     });
@@ -11,9 +17,11 @@ export const TeacherDashboardView: React.FC = () => {
     React.useEffect(() => {
         localStorage.setItem('teacherActiveTab', activeTab);
     }, [activeTab]);
-    const [events, setEvents] = React.useState<any[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
+    const [messages, setMessages] = useState<any[]>([]);
+    const socketRef = useRef<Socket | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetch('http://localhost:3005/api/events')
             .then(res => res.json())
             .then(data => {
@@ -31,8 +39,55 @@ export const TeacherDashboardView: React.FC = () => {
             .catch(err => console.error('Error fetching events:', err));
     }, []);
 
+    // Fetch initial messages and Setup Socket.io for Real-time Updates
+    useEffect(() => {
+        if (!user?._id && !(user as any)?.id) return;
+        const userId = user._id || (user as any).id;
+
+        // 1. Fetch initial messages sent BY this teacher or TO this teacher
+        fetch(`http://localhost:3005/api/users/${userId}/messages`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) setMessages(data);
+            })
+            .catch(err => console.error('Error fetching messages:', err));
+
+        // 2. Setup Socket.io connection for this view
+        socketRef.current = io('http://localhost:3005');
+        const socket = socketRef.current;
+
+        socket.on('connect', () => {
+            socket.emit('register_user', userId);
+        });
+
+        socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
+            const newMessage = {
+                _id: Date.now().toString(),
+                title: data.title,
+                content: data.content,
+                course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined,
+                sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
+                date: new Date().toISOString()
+            };
+
+            setMessages((prevMessages) => [newMessage, ...prevMessages]);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user]);
+
     // Teachers see all events for now
     const filteredEvents = events.length > 0 ? events : MOCK_EVENTS;
+
+    // Filter messages by category based on if they have a course associated
+    const personalMessages = messages.filter(msg => !msg.course && msg.receiver === (user?._id || (user as any)?.id));
+
+    // Class messages (Entregas): The professor will only see notifications when students submit a task
+    const classMessages = messages.filter(msg => !!msg.course && msg.type === 'task_submission');
+
+    const generalMessages: any[] = []; // Currently no general messages implemented in DB
 
 
     return (
@@ -80,15 +135,26 @@ export const TeacherDashboardView: React.FC = () => {
                                 Avisos Personales
                             </h2>
                             <ul className="space-y-4">
-                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-                                    <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
-                                        <Bell size={16} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Reunión de Evaluación</p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Martes 25 a las 16:30h - Sala de Profesores.</p>
-                                    </div>
-                                </li>
+                                {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
+                                    <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                        <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                                            <Bell size={16} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
+                                            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
+                                                <UserIcon size={12} />
+                                                De: {msg.sender?.nombre} {msg.sender?.apellidos}
+                                            </p>
+                                        </div>
+                                    </li>
+                                )) : (
+                                    <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                                        <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No tienes nuevas notificaciones personales.</p>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     )}
@@ -100,15 +166,26 @@ export const TeacherDashboardView: React.FC = () => {
                                 Avisos de Clase
                             </h2>
                             <ul className="space-y-4">
-                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-                                    <div className="flex-shrink-0 mt-1 p-2 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full group-hover:bg-pink-100 dark:group-hover:bg-pink-900/50 transition-colors">
-                                        <BookOpen size={16} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Pedidos de Material</p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Recordar enviar las solicitudes antes del viernes.</p>
-                                    </div>
-                                </li>
+                                {classMessages.length > 0 ? classMessages.map((msg, idx) => (
+                                    <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                        <div className="flex-shrink-0 mt-1 p-2 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full group-hover:bg-pink-100 dark:group-hover:bg-pink-900/50 transition-colors">
+                                            <BookOpen size={16} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
+                                            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
+                                                <UserIcon size={12} />
+                                                De: {msg.sender?.nombre || 'Alumno'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
+                                            </p>
+                                        </div>
+                                    </li>
+                                )) : (
+                                    <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                                        <BookOpen className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">Todavía no hay nuevas entregas de la clase.</p>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     )}
@@ -120,15 +197,22 @@ export const TeacherDashboardView: React.FC = () => {
                                 Avisos del Centro
                             </h2>
                             <ul className="space-y-4">
-                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-                                    <div className="flex-shrink-0 mt-1 p-2 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-full group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
-                                        <Building size={16} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Mantenimiento Programado</p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">La plataforma de notas estará inactiva este fin de semana.</p>
-                                    </div>
-                                </li>
+                                {generalMessages.length > 0 ? generalMessages.map((msg, idx) => (
+                                    <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                        <div className="flex-shrink-0 mt-1 p-2 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-full group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
+                                            <Building size={16} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
+                                        </div>
+                                    </li>
+                                )) : (
+                                    <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                                        <Building className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos generales de la escuela actualmente.</p>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     )}
