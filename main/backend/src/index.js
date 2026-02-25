@@ -90,14 +90,17 @@ async function seedData() {
         // 2. Ensure Courses exist
         let courseCount = await Course.countDocuments();
         let courses = [];
-        if (courseCount === 0) {
+        if (courseCount !== 4) {
+            console.log(`Seed: Course count is ${courseCount}, clearing to enforce 4 course limit`);
+            await Course.deleteMany({});
+            await Event.deleteMany({});
+            await Schedule.deleteMany({});
+
             courses = await Course.create([
                 { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: 'Carles Narváez', image: 'https://picsum.photos/300/200?random=1' },
                 { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: 'Equip Docent', image: 'https://picsum.photos/300/200?random=2' },
                 { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: 'Pol Prats', image: 'https://picsum.photos/300/200?random=3' },
-                { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: 'Toni Martí', image: 'https://picsum.photos/300/200?random=4' },
-                { title: 'Progr. Mòbils', description: 'Programació de dispositius mòbils.', professor: 'Pol Prats', image: 'https://picsum.photos/300/200?random=5' },
-                { title: 'Des. Interfície', description: 'Desenvolupament d\'interfícies.', professor: 'Álvaro Pérez', image: 'https://picsum.photos/300/200?random=6' }
+                { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: 'Toni Martí', image: 'https://picsum.photos/300/200?random=4' }
             ]);
             console.log('Seed: Courses created');
         } else {
@@ -128,12 +131,12 @@ async function seedData() {
             } else {
                 // Update existing alumnos to ensure they have the profile image from seed if it changed
                 alumno.profileImage = data.profileImage;
-                if (!alumno.password || !alumno.enrolledCourses || alumno.enrolledCourses.length === 0) {
+                if (!alumno.password || !alumno.enrolledCourses || alumno.enrolledCourses.length !== 4) {
                     alumno.password = alumno.password || alumno.email;
                     alumno.enrolledCourses = courseIds;
                 }
                 await alumno.save();
-                console.log(`Seed: Alumno updated (sync image): ${data.nombre}`);
+                console.log(`Seed: Alumno updated (sync image/courses): ${data.nombre}`);
             }
         }
 
@@ -156,10 +159,7 @@ async function seedData() {
                 { courseId: courseIds[0], day: 1, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
                 { courseId: courseIds[1], day: 1, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' },
                 { courseId: courseIds[1], day: 2, startTime: '08:00', endTime: '10:00', classroom: 'Aula 2' },
-                { courseId: courseIds[5], day: 2, startTime: '10:00', endTime: '12:30', classroom: 'Aula 3' },
                 { courseId: courseIds[2], day: 3, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
-                { courseId: courseIds[3], day: 4, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
-                { courseId: courseIds[4], day: 5, startTime: '08:00', endTime: '10:00', classroom: 'Aula 5' },
                 { courseId: courseIds[1], day: 5, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' }
             ]);
             console.log('Seed: Schedule created');
