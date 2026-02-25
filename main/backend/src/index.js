@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -12,7 +14,40 @@ const Schedule = require('./models/Schedule');
 const Message = require('./models/Message');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*', // Adjust to your frontend URL in production
+        methods: ['GET', 'POST']
+    }
+});
 const port = process.env.PORT || 3001;
+
+// Map to keep track of connected users (userId -> socketId)
+const connectedUsers = new Map();
+
+io.on('connection', (socket) => {
+    console.log(`Usuario conectado al socket: ${socket.id}`);
+
+    // Register user ID with their socket
+    socket.on('register_user', (userId) => {
+        if (userId) {
+            connectedUsers.set(String(userId), socket.id);
+            console.log(`Usuario registrado en socket: ${userId} -> ${socket.id}`);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Usuario desconectado: ${socket.id}`);
+        // Remove from connected users
+        for (const [userId, socketId] of connectedUsers.entries()) {
+            if (socketId === socket.id) {
+                connectedUsers.delete(userId);
+                break;
+            }
+        }
+    });
+});
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -253,7 +288,21 @@ app.post('/api/courses/:courseId/notify-all', async (req, res) => {
 
         await Message.insertMany(messagesToCreate);
 
-        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes` });
+        // Emit real-time notifications to connected students
+        let sentCount = 0;
+        for (const student of students) {
+            const socketId = connectedUsers.get(String(student._id));
+            if (socketId) {
+                io.to(socketId).emit('new_notification', {
+                    title: 'Aviso de Clase: ' + title,
+                    content: content,
+                    courseId: req.params.courseId
+                });
+                sentCount++;
+            }
+        }
+
+        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes (${sentCount} en línea)` });
     } catch (error) {
         console.error('Error enviando notificación a toda la clase:', error);
         res.status(500).json({ success: false, message: 'Error enviando notificación', error: error.message });
@@ -265,6 +314,18 @@ app.post('/api/messages', async (req, res) => {
     const { sender, senderModel, receiver, course, title, content } = req.body;
     try {
         const message = await Message.create({ sender, senderModel, receiver, course, title, content });
+
+        // Emit real-time notification to the receiver if connected
+        const receiverSocketId = connectedUsers.get(String(receiver));
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('new_notification', {
+                title: 'Nuevo Mensaje: ' + title,
+                content: content,
+                courseId: course,
+                isPrivate: true
+            });
+        }
+
         res.json({ success: true, message });
     } catch (error) {
         console.error('Error enviando mensaje:', error);
@@ -381,6 +442,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
