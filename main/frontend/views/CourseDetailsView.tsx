@@ -78,11 +78,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                 setMessageTitle('');
                 setMessageContent('');
             } else {
-                alert('Error al enviar missatge');
+                alert('Error al enviar mensaje');
             }
         } catch (err) {
-            console.error('Error enviant missatge:', err);
-            alert('Error enviant missatge');
+            console.error('Error enviando mensaje:', err);
+            alert('Error enviando mensaje');
         }
     };
 
@@ -130,125 +130,146 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         <div className="p-8 max-w-6xl mx-auto space-y-8 transition-colors duration-300">
             <button
                 onClick={onBack}
-                className="flex items-center text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors gap-2 font-bold focus:outline-none"
+                className="flex items-center text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors gap-2 font-medium bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-xl focus:outline-none w-fit"
             >
-                <ArrowLeft size={20} />
-                Tornar a Assignatures
+                <ArrowLeft size={18} />
+                Volver a Asignaturas
             </button>
 
             {/* Header */}
-            <div className="relative h-64 w-full overflow-hidden border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] group">
-                <img src={course.image} alt={course.title} className="w-full h-full object-cover filter brightness-50 group-hover:brightness-75 transition-all duration-500 scale-100 group-hover:scale-105" />
-                <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/90 to-transparent">
-                    <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-2 shadow-black drop-shadow-md">
+            <div className="relative h-64 w-full overflow-hidden rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none group mb-8 border border-gray-200 dark:border-zinc-800">
+                <img src={course.image} alt={course.title} className="w-full h-full object-cover filter brightness-50 group-hover:brightness-75 transition-all duration-700 scale-100 group-hover:scale-105" />
+                <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-2 drop-shadow-lg">
                         {course.title}
                     </h1>
-                    <p className="text-xl text-cyan-300 font-bold tracking-wide">
+                    <p className="text-xl text-blue-300 font-medium tracking-wide">
                         {course.professor}
                     </p>
                 </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex border-b-4 border-black dark:border-white bg-white dark:bg-zinc-800">
+            <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 rounded-t-3xl overflow-hidden">
                 <button
                     onClick={() => setActiveTab('info')}
-                    className={`flex-1 py-4 font-bold text-center transition-colors uppercase tracking-wider flex items-center justify-center gap-2
-            ${activeTab === 'info' ? 'bg-cyan-200 dark:bg-cyan-900/50 text-black dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700'}`}
+                    className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
+            ${activeTab === 'info' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
-                    <FileText size={20} /> Informació
+                    <FileText size={18} className={activeTab === 'info' ? 'text-blue-600 dark:text-blue-400' : ''} />
+                    Información
+                    {activeTab === 'info' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
                 {userRole === 'TEACHER' && (
                     <button
                         onClick={() => setActiveTab('students')}
-                        className={`flex-1 py-4 font-bold text-center transition-colors uppercase tracking-wider flex items-center justify-center gap-2
-              ${activeTab === 'students' ? 'bg-purple-200 dark:bg-purple-900/50 text-black dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700'}`}
+                        className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
+              ${activeTab === 'students' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                     >
-                        <Users size={20} /> Alumnes ({displayStudents.length})
+                        <Users size={18} className={activeTab === 'students' ? 'text-blue-600 dark:text-blue-400' : ''} />
+                        Alumnos ({displayStudents.length})
+                        {activeTab === 'students' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                     </button>
                 )}
                 <button
                     onClick={() => setActiveTab('resources')}
-                    className={`flex-1 py-4 font-bold text-center transition-colors uppercase tracking-wider flex items-center justify-center gap-2
-            ${activeTab === 'resources' ? 'bg-yellow-200 dark:bg-yellow-900/50 text-black dark:text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700'}`}
+                    className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
+            ${activeTab === 'resources' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
-                    <Calendar size={20} /> Recursos & Agenda
+                    <Calendar size={18} className={activeTab === 'resources' ? 'text-blue-600 dark:text-blue-400' : ''} />
+                    Recursos & Agenda
+                    {activeTab === 'resources' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white dark:bg-zinc-800 border-4 border-t-0 border-black dark:border-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] min-h-[400px]">
+            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 border-t-0 p-8 shadow-lg shadow-gray-200/50 dark:shadow-none rounded-b-3xl min-h-[400px]">
 
                 {activeTab === 'info' && (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold bg-black dark:bg-white text-white dark:text-black inline-block px-4 py-1 -rotate-1">
-                            DESCRIPCIÓ DEL CURS
-                        </h2>
-                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                            {course.description}
-                        </p>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <FileText className="text-blue-500" size={24} />
+                                Descripción del Curso
+                            </h2>
+                            <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-4xl">
+                                {course.description}
+                            </p>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                            <div className="p-6 bg-gray-50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                                <h3 className="font-bold text-lg mb-2 text-black dark:text-white">Horaris</h3>
-                                <p className="text-gray-600 dark:text-gray-400">Dilluns i Dimecres: 15:00 - 17:00</p>
-                                <p className="text-gray-600 dark:text-gray-400">Aula: Lab 3</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                            <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
+                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Calendar className="text-blue-500" size={18} />
+                                    Horarios
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">Lunes y Miércoles: 15:00 - 17:00</p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">Aula: Lab 3</p>
                             </div>
-                            <div className="p-6 bg-gray-50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                                <h3 className="font-bold text-lg mb-2 text-black dark:text-white">Avaluació</h3>
-                                <p className="text-gray-600 dark:text-gray-400">40% Pràctiques</p>
-                                <p className="text-gray-600 dark:text-gray-400">60% Examen Final</p>
+                            <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
+                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                    <FileText className="text-blue-500" size={18} />
+                                    Evaluación
+                                </h3>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400"><span className="font-medium">Prácticas</span><span>40%</span></div>
+                                    <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '40%' }}></div></div>
+                                </div>
+                                <div className="space-y-1 mt-2">
+                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400"><span className="font-medium">Examen Final</span><span>60%</span></div>
+                                    <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5"><div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: '60%' }}></div></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'students' && userRole === 'TEACHER' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-bold bg-black dark:bg-white text-white dark:text-black inline-block px-4 py-1 rotate-1">
-                                LLISTA D'ALUMNES
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <Users className="text-blue-500" size={24} />
+                                Lista de Alumnos
                             </h2>
                             <button
                                 onClick={() => setIsNotifyClassModalOpen(true)}
-                                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-4 py-2 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1 active:translate-y-0 active:shadow-none"
+                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                             >
                                 <Send size={18} />
-                                Notificar a Tota la Classe
+                                Notificar a Toda la Clase
                             </button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
                             {loadingStudents ? (
-                                <div className="col-span-full py-12 text-center text-gray-500 font-bold animate-pulse">
-                                    Carregant llista d'alumnes...
+                                <div className="col-span-full py-12 text-center text-gray-500 font-medium animate-pulse">
+                                    Cargando lista de alumnos...
                                 </div>
                             ) : displayStudents.length > 0 ? (
                                 displayStudents.map(student => (
-                                    <div key={student._id || student.id} className="flex items-center p-4 border-2 border-black dark:border-gray-600 bg-white dark:bg-zinc-700 hover:translate-x-1 hover:-translate-y-1 transition-transform group">
-                                        <img src={student.profileImage || `https://i.pravatar.cc/150?u=${student._id || student.email}`} alt={student.nombre} className="w-12 h-12 rounded-full border-2 border-black dark:border-gray-400 mr-4" />
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-black dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                    <div key={student._id || student.id} className="flex items-center p-4 border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/30 rounded-2xl hover:shadow-md transition-all duration-300 group">
+                                        <img src={student.profileImage || `https://i.pravatar.cc/150?u=${student._id || student.email}`} alt={student.nombre} className="w-12 h-12 rounded-full border-2 border-white dark:border-zinc-700 shadow-sm mr-4" />
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                                 {student.nombre} {student.apellidos}
                                             </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{student.email}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{student.email}</p>
                                         </div>
                                         <button
                                             onClick={() => {
                                                 setMessageRecipient(student);
                                                 setShowMessageModal(true);
                                             }}
-                                            className="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
-                                            title="Enviar missatge"
+                                            className="p-2.5 ml-2 text-gray-400 bg-white dark:bg-zinc-900 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-full shadow-sm border border-gray-100 dark:border-zinc-700 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                                            title="Enviar mensaje"
                                         >
-                                            <MessageCircle size={20} />
+                                            <MessageCircle size={18} />
                                         </button>
                                     </div>
                                 ))
                             ) : (
-                                <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl">
-                                    <Users size={48} className="mx-auto text-gray-300 mb-4" />
-                                    <p className="text-gray-500 font-bold uppercase tracking-wider">No hi ha alumnes inscrits en aquesta assignatura</p>
-                                    <p className="text-sm text-gray-400">Assegura't que els alumnes tinguin seleccionada aquesta assignatura al seu perfil.</p>
+                                <div className="col-span-full py-16 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/20">
+                                    <Users size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
+                                    <p className="text-gray-600 dark:text-gray-300 font-medium">No hay alumnos inscritos en esta asignatura.</p>
                                 </div>
                             )}
                         </div>
@@ -269,95 +290,103 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
 
             {/* Modal Mensaje */}
             {showMessageModal && messageRecipient && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-zinc-800 p-8 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] w-full max-w-md">
-                        <h2 className="text-2xl font-bold mb-6 text-black dark:text-white uppercase">
-                            Enviar Missatge a {messageRecipient.nombre || messageRecipient.name}
-                        </h2>
-                        <form onSubmit={handleSendMessage} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Títol</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={messageTitle}
-                                    onChange={(e) => setMessageTitle(e.target.value)}
-                                    className="w-full p-3 border-2 border-black dark:border-white bg-white dark:bg-zinc-700 text-black dark:text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Contingut</label>
-                                <textarea
-                                    required
-                                    value={messageContent}
-                                    onChange={(e) => setMessageContent(e.target.value)}
-                                    className="w-full p-3 border-2 border-black dark:border-white bg-white dark:bg-zinc-700 text-black dark:text-white h-32 resize-none"
-                                ></textarea>
-                            </div>
-                            <div className="flex gap-4 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowMessageModal(false)}
-                                    className="flex-1 py-3 font-bold uppercase tracking-wider border-2 border-black dark:border-white text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
-                                >
-                                    Cancel·lar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 py-3 font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                                >
-                                    Enviar
-                                </button>
-                            </div>
-                        </form>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 md:p-8">
+                            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+                                <MessageCircle className="text-blue-500" size={24} />
+                                Enviar Mensaje
+                            </h2>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 flex items-center gap-2 bg-gray-50 dark:bg-zinc-800 p-3 rounded-xl border border-gray-100 dark:border-zinc-700">
+                                Para: <span className="font-semibold text-gray-900 dark:text-white">{messageRecipient.nombre || messageRecipient.name}</span>
+                            </p>
+                            <form onSubmit={handleSendMessage} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Título</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={messageTitle}
+                                        onChange={(e) => setMessageTitle(e.target.value)}
+                                        className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                                        placeholder="Escribe un título..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Contenido</label>
+                                    <textarea
+                                        required
+                                        value={messageContent}
+                                        onChange={(e) => setMessageContent(e.target.value)}
+                                        className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                                        placeholder="Escribe tu mensaje aquí..."
+                                    ></textarea>
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMessageModal(false)}
+                                        className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
+                                    >
+                                        Enviar Mensaje
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Modal de Notificación Masiva */}
             {isNotifyClassModalOpen && (
-                <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] p-6 max-w-lg w-full">
+                <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-black dark:text-white flex items-center gap-2">
-                                <Send size={24} className="text-indigo-600 dark:text-indigo-400" />
-                                NOVA NOTIFICACIÓ A LA CLASSE
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <Send size={24} className="text-blue-600 dark:text-blue-400" />
+                                Nueva notificación a la clase
                             </h2>
                             <button
                                 onClick={() => setIsNotifyClassModalOpen(false)}
-                                className="text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full"
                             >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
 
                         {notifyStatus && (
-                            <div className={`p-4 mb-6 border-2 flex items-center gap-3 font-bold ${notifyStatus.type === 'success'
-                                    ? 'bg-green-100 border-green-600 text-green-800 dark:bg-green-900/30 dark:border-green-400 dark:text-green-300'
-                                    : 'bg-red-100 border-red-600 text-red-800 dark:bg-red-900/30 dark:border-red-400 dark:text-red-300'
+                            <div className={`p-4 mb-6 rounded-xl flex items-center gap-3 font-medium ${notifyStatus.type === 'success'
+                                ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                 }`}>
                                 {notifyStatus.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                                 {notifyStatus.message}
                             </div>
                         )}
 
-                        <form onSubmit={handleNotifyClass} className="space-y-4">
+                        <form onSubmit={handleNotifyClass} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     Asignatura
                                 </label>
-                                <div className="w-full border-2 border-black dark:border-gray-600 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 p-3 font-medium cursor-not-allowed">
+                                <div className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-gray-50 dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400 cursor-not-allowed">
                                     {course.title}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     Título
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full border-2 border-black dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white p-3 font-medium outline-none focus:border-indigo-600 dark:focus:border-indigo-400 transition-colors"
+                                    className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                                     placeholder="Ej: Recordatorio de Examen, Cambio de Aula..."
                                     value={notifyTitle}
                                     onChange={(e) => setNotifyTitle(e.target.value)}
@@ -366,11 +395,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     Mensaje
                                 </label>
                                 <textarea
-                                    className="w-full border-2 border-black dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white p-3 font-medium outline-none focus:border-indigo-600 dark:focus:border-indigo-400 transition-colors resize-none h-32"
+                                    className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                                     placeholder="Escribe el mensaje para toda la clase aquí..."
                                     value={notifyContent}
                                     onChange={(e) => setNotifyContent(e.target.value)}
@@ -378,16 +407,25 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                                 ></textarea>
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmittingNotify}
-                                className={`w-full py-3 font-black text-white uppercase tracking-widest border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all ${isSubmittingNotify
-                                        ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 hover:-translate-y-1 active:translate-y-0 active:shadow-none'
-                                    }`}
-                            >
-                                {isSubmittingNotify ? 'ENVIANDO...' : 'ENVIAR A TODA LA CLASE'}
-                            </button>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsNotifyClassModalOpen(false)}
+                                    className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingNotify}
+                                    className={`flex-1 py-3 px-4 rounded-xl font-medium text-white shadow-sm transition-all ${isSubmittingNotify
+                                        ? 'bg-blue-400 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5'
+                                        }`}
+                                >
+                                    {isSubmittingNotify ? 'Enviando...' : 'Enviar a toda la clase'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

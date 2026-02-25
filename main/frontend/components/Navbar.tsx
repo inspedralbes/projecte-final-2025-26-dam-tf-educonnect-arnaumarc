@@ -14,12 +14,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
 
   const getTabClass = (view: AppView) => {
     const isActive = currentView === view;
-    return `px-6 py-3 cursor-pointer border-r-2 border-black dark:border-white font-bold text-black dark:text-white transition-colors ${isActive ? 'bg-purple-200 dark:bg-purple-900/50' : 'bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700'
-      }`;
+    return `px-6 py-4 cursor-pointer font-semibold transition-all duration-300 border-r border-gray-200 dark:border-zinc-800 relative flex items-center justify-center ${isActive ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`;
   };
 
   return (
-    <div className="w-full border-b-4 border-black dark:border-zinc-700 bg-white dark:bg-zinc-800 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300">
+    <div className="w-full border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300 shadow-sm backdrop-blur-sm">
       <div className="flex overflow-x-auto no-scrollbar">
         <button
           onClick={() => setView(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
@@ -53,12 +52,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
       <div className="px-4 flex items-center space-x-3">
         <button
           onClick={() => setView(AppView.PROFILE)}
-          className="w-10 h-10 rounded-full bg-cyan-400 dark:bg-cyan-600 border-2 border-black dark:border-white flex items-center justify-center hover:bg-cyan-300 dark:hover:bg-cyan-500 transition-colors overflow-hidden bg-cover bg-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,225,0.5)]"
+          className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors overflow-hidden bg-cover bg-center shadow-sm hover:shadow-md"
           style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}
         >
           {!profileImage && <UserCircle size={24} className="text-white" />}
         </button>
-        <button onClick={onLogout} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors">
+        <button onClick={onLogout} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-2">
           <LogOut size={24} />
         </button>
       </div>

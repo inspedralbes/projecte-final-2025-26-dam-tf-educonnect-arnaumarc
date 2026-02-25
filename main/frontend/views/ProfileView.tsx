@@ -52,14 +52,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Header Section */}
                 <div className="flex flex-col items-center space-y-4">
-                    <div className="relative group">
-                        <div className="w-32 h-32 rounded-full bg-indigo-500 border-4 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] overflow-hidden bg-cover bg-center transition-all"
+                    <div className="relative group mt-4">
+                        <div className="w-32 h-32 rounded-full bg-indigo-50 border-4 border-white dark:border-zinc-800 flex items-center justify-center shadow-xl overflow-hidden bg-cover bg-center transition-all ring-4 ring-indigo-50 dark:ring-indigo-900/20"
                             style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}>
-                            {!profileImage && <User size={64} className="text-white" />}
+                            {!profileImage && <User size={64} className="text-indigo-300 dark:text-indigo-600" />}
                         </div>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-0 right-0 bg-black dark:bg-white text-white dark:text-black p-2 rounded-full border-2 border-white dark:border-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all transform hover:scale-110 shadow-lg"
+                            className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2.5 rounded-full hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-md border-2 border-white dark:border-zinc-900"
                         >
                             <Camera size={16} />
                         </button>
@@ -78,7 +78,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] overflow-hidden divide-x-4 divide-black dark:divide-white transition-all">
+                <div className="grid grid-cols-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-lg overflow-hidden divide-x divide-gray-200 dark:divide-zinc-700 transition-all">
                     <div className="py-6 flex flex-col items-center">
                         <span className="text-2xl font-black dark:text-white">{user?.enrolledCourses?.length || 0}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Cursos</span>
@@ -96,8 +96,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Information Section */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-black text-black dark:text-white ml-2 uppercase italic transition-colors">Información Personal</h2>
-                        <div className="bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] overflow-hidden transition-all">
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 ml-2 tracking-wide transition-colors">Información Personal</h2>
+                        <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all">
                             <ProfileItem icon={<User size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Nombre Completo" value={displayName} />
                             <ProfileItem icon={<Mail size={20} className="text-indigo-600 dark:text-indigo-400" />} label="Gmail" value={displayEmail} />
                             {user?.type === 'alumno' ? (
@@ -110,8 +110,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
 
                     {/* Settings Section */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-black text-black dark:text-white ml-2 uppercase italic transition-colors">Ajustes</h2>
-                        <div className="bg-white dark:bg-zinc-800 border-4 border-black dark:border-white rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] overflow-hidden transition-all">
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 ml-2 tracking-wide transition-colors">Ajustes</h2>
+                        <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all">
                             <NotificationsDropdown />
                             <PreferencesDropdown user={user} onUpdateUser={onUpdateUser} />
                         </div>
@@ -119,7 +119,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                 </div>
 
                 {/* Support Button */}
-                <button className="w-full bg-white dark:bg-zinc-800 border-4 border-black dark:border-white py-4 rounded-2xl font-black text-black dark:text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none uppercase italic">
+                <button className="w-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-300 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-zinc-600 transition-all uppercase tracking-wider text-sm">
                     Contactar Soporte
                 </button>
             </div>
@@ -141,7 +141,7 @@ const NotificationsDropdown = () => {
     };
 
     return (
-        <div className="border-b-2 border-gray-100 dark:border-zinc-700">
+        <div className="border-b-2 border-gray-200 dark:border-zinc-700">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
@@ -159,7 +159,7 @@ const NotificationsDropdown = () => {
             </button>
 
             {isOpen && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-t-2 border-gray-100 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200">
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-t-2 border-gray-200 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200">
                     <div className="flex justify-between items-center mb-3">
                         <p className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-widest">Recientes</p>
                         {activeCount > 0 && (
@@ -229,17 +229,17 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
             </button>
 
             {isOpen && (
-                <div className="p-4 bg-gray-50 dark:bg-zinc-900 border-t-2 border-gray-100 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200 space-y-4">
-                    <div className="flex items-center justify-between p-2 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white rounded-xl shadow-sm transition-colors">
-                        <div className="flex items-center gap-2">
-                            {isDarkMode ? <Moon size={16} className="text-indigo-400" /> : <Sun size={16} className="text-amber-500" />}
-                            <span className="text-xs font-bold text-gray-900 dark:text-white uppercase">Modo Oscuro</span>
+                <div className="p-4 bg-gray-50 dark:bg-zinc-900 border-t-2 border-gray-200 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200 space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm transition-colors">
+                        <div className="flex items-center gap-3">
+                            {isDarkMode ? <Moon size={18} className="text-indigo-400" /> : <Sun size={18} className="text-amber-500" />}
+                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Modo Oscuro</span>
                         </div>
                         <button
                             onClick={toggleDarkMode}
-                            className={`w-12 h-6 rounded-full border-2 border-black dark:border-white flex items-center transition-all p-1 shadow-sm ${isDarkMode ? 'bg-black justify-end' : 'bg-gray-200 justify-start'}`}
+                            className={`w-12 h-6 rounded-full flex items-center transition-all p-1 shadow-inner ${isDarkMode ? 'bg-indigo-600 justify-end' : 'bg-gray-300 dark:bg-zinc-600 justify-start'}`}
                         >
-                            <div className={`w-3.5 h-3.5 rounded-full border border-black dark:border-white ${isDarkMode ? 'bg-white' : 'bg-white'}`}></div>
+                            <div className="w-4 h-4 rounded-full bg-white shadow-sm"></div>
                         </button>
                     </div>
                 </div>
@@ -249,13 +249,13 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
 };
 
 const ProfileItem = ({ icon, label, value, last }: { icon: React.ReactNode, label: string, value: string, last?: boolean }) => (
-    <div className={`p-4 flex items-center space-x-4 ${!last ? 'border-b-2 border-gray-100 dark:border-zinc-700' : ''} transition-colors`}>
-        <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-zinc-700 flex items-center justify-center border-2 border-gray-200 dark:border-zinc-600 transition-colors">
+    <div className={`p-4 flex items-center space-x-4 ${!last ? 'border-b border-gray-50 dark:border-zinc-700/50' : ''} transition-colors hover:bg-gray-50/50 dark:hover:bg-zinc-700/30`}>
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
             {icon}
         </div>
         <div>
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest transition-colors">{label}</p>
-            <p className="text-sm font-bold text-black dark:text-white transition-colors">{value}</p>
+            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">{label}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white transition-colors">{value}</p>
         </div>
     </div>
 );

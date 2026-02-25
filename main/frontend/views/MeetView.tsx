@@ -77,32 +77,40 @@ export const MeetView: React.FC = () => {
     return (
         <div className="flex h-full w-full bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
             {/* Sidebar - User List */}
-            <div className="w-80 bg-white dark:bg-zinc-800 border-r-4 border-black dark:border-zinc-700 flex flex-col">
-                <div className="p-4 border-b-2 border-black dark:border-zinc-700">
-                    <h2 className="text-xl font-bold dark:text-white">Usuarios Conectados</h2>
+            <div className="w-80 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 flex flex-col shadow-sm z-10">
+                <div className="p-5 border-b border-gray-100 dark:border-zinc-800">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <UserIcon className="text-blue-500" size={20} />
+                        Usuarios Conectados
+                    </h2>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {MOCK_USERS.map((user) => (
                         <div
                             key={user.id}
-                            className="flex items-center justify-between p-3 bg-gray-100 dark:bg-zinc-700 rounded-lg border-2 border-transparent hover:border-black dark:hover:border-white transition-all"
+                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${user.isOnline ? 'bg-white dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-700 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5' : 'bg-gray-50 dark:bg-zinc-800/20 border-transparent opacity-70'}`}
                         >
                             <div className="flex items-center space-x-3">
-                                <div className={`w-3 h-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                <div className="relative">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold">
+                                        {user.name.charAt(0)}
+                                    </div>
+                                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                </div>
                                 <div>
-                                    <p className="font-bold text-sm dark:text-white">{user.name}</p>
+                                    <p className="font-semibold text-sm text-gray-900 dark:text-white">{user.name}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">{user.role}</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => startCall(user)}
                                 disabled={!user.isOnline}
-                                className={`p-2 rounded-full ${user.isOnline
-                                    ? 'bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300'
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-zinc-600 dark:text-zinc-500'
+                                className={`p-2.5 rounded-full transition-all ${user.isOnline
+                                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
                                     }`}
                             >
-                                <Video size={18} />
+                                <Video size={16} />
                             </button>
                         </div>
                     ))}
@@ -112,53 +120,63 @@ export const MeetView: React.FC = () => {
             {/* Main Area - Call Interface */}
             <div className="flex-1 flex flex-col items-center justify-center p-8">
                 {isInCall && selectedUser ? (
-                    <div className="w-full max-w-4xl bg-black rounded-xl overflow-hidden shadow-2xl border-4 border-gray-800 relative aspect-video flex flex-col">
+                    <div className="w-full max-w-4xl bg-black/95 rounded-3xl overflow-hidden shadow-2xl relative aspect-video flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
                         {/* Remote Video Placeholder */}
-                        <div className="flex-1 bg-zinc-800 flex items-center justify-center relative">
-                            <div className="text-center">
-                                <div className="w-32 h-32 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl font-bold text-white border-4 border-white">
+                        <div className="flex-1 flex items-center justify-center relative bg-gradient-to-b from-zinc-800 to-zinc-900">
+                            <div className="text-center animate-in fade-in duration-700">
+                                <div className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl font-bold text-white shadow-lg ring-4 ring-white/10">
                                     {selectedUser.name.charAt(0)}
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">{selectedUser.name}</h3>
-                                <p className="text-green-400 animate-pulse">Conectado...</p>
+                                <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">{selectedUser.name}</h3>
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    <p className="text-green-400 text-sm font-medium">Conectado</p>
+                                </div>
                             </div>
 
                             {/* Local Video Placeholder (Real Stream) */}
-                            <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-900 rounded-lg border-2 border-white/20 flex items-center justify-center overflow-hidden">
+                            <div className="absolute bottom-6 right-6 w-48 h-36 bg-zinc-900 rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl ring-2 ring-white/20 transition-all hover:scale-105 duration-300">
                                 <video
                                     ref={videoRef}
                                     autoPlay
                                     muted
                                     playsInline
-                                    className={`w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`}
+                                    className={`w-full h-full object-cover transition-opacity duration-300 ${isVideoOff ? 'opacity-0' : 'opacity-100'}`}
                                 />
-                                {isVideoOff && <p className="text-white text-xs">Cámara apagada</p>}
+                                {isVideoOff && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-800 text-zinc-400">
+                                        <VideoOff size={24} className="mb-2" />
+                                        <p className="text-xs font-medium">Cámara apagada</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Controls Bar */}
-                        <div className="h-20 bg-zinc-900 flex items-center justify-center space-x-6 border-t border-zinc-700">
-                            <button
-                                onClick={toggleMute}
-                                className={`p-4 rounded-full ${isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'} text-white transition-colors`}
-                            >
-                                {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
-                            </button>
+                        <div className="h-24 bg-zinc-900/90 backdrop-blur-md flex items-center justify-center space-x-4 px-8 border-t border-white/5">
+                            <div className="flex items-center space-x-4 bg-zinc-800/80 p-2 rounded-full">
+                                <button
+                                    onClick={toggleMute}
+                                    className={`p-3.5 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                >
+                                    {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
+                                </button>
 
-                            <button
-                                onClick={toggleVideo}
-                                className={`p-4 rounded-full ${isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'} text-white transition-colors`}
-                            >
-                                {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
-                            </button>
+                                <button
+                                    onClick={toggleVideo}
+                                    className={`p-3.5 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                >
+                                    {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
+                                </button>
 
-                            <button className="p-4 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-colors">
-                                <MonitorUp size={24} />
-                            </button>
+                                <button className="p-3.5 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors">
+                                    <MonitorUp size={22} />
+                                </button>
+                            </div>
 
                             <button
                                 onClick={endCall}
-                                className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors ml-8"
+                                className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-105 shadow-lg shadow-red-900/20 ml-4"
                             >
                                 <Phone size={24} className="transform rotate-135" />
                             </button>

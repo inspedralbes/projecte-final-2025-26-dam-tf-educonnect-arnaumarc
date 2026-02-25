@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, BookOpen, Building, User as UserIcon } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
 
@@ -37,51 +37,56 @@ export const TeacherDashboardView: React.FC = () => {
 
     return (
         <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
-            <h1 className="text-3xl font-bold text-center mb-4 uppercase tracking-wide text-black dark:text-white">
-                [INS PEDRALBES - DOCÈNCIA]
+            <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+                INS PEDRALBES - DOCENCIA
             </h1>
-            <p className="text-center text-gray-700 dark:text-gray-300 mb-12 font-medium">Portal del Professorat</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Portal del Profesorado</p>
 
-            <div className="mb-8 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
+            <div className="mb-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 transition-all">
                 {/* Tabs Header */}
-                <div className="flex border-b-2 border-black dark:border-white">
+                <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50">
                     <button
                         onClick={() => setActiveTab('personal')}
-                        className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'personal' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-                            } border-r-2 border-black dark:border-white`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'personal' ? 'text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
+                        <UserIcon size={18} className={activeTab === 'personal' ? 'text-indigo-600 dark:text-indigo-400' : ''} />
                         Personal
+                        {activeTab === 'personal' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('clase')}
-                        className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'clase' ? 'bg-pink-100 dark:bg-pink-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-                            } border-r-2 border-black dark:border-white`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'clase' ? 'text-pink-600 dark:text-pink-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
+                        <BookOpen size={18} className={activeTab === 'clase' ? 'text-pink-600 dark:text-pink-400' : ''} />
                         Clase
+                        {activeTab === 'clase' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pink-600 dark:bg-pink-400" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('centro')}
-                        className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'centro' ? 'bg-cyan-100 dark:bg-cyan-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-                            }`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'centro' ? 'text-cyan-600 dark:text-cyan-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
+                        <Building size={18} className={activeTab === 'centro' ? 'text-cyan-600 dark:text-cyan-400' : ''} />
                         Centro
+                        {activeTab === 'centro' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-600 dark:bg-cyan-400" />}
                     </button>
                 </div>
 
                 {/* Tab Content */}
                 <div className="p-6 min-h-[200px]">
                     {activeTab === 'personal' && (
-                        <div>
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                                <Bell size={20} />
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                                <Bell size={20} className="text-indigo-500" />
                                 Avisos Personales
                             </h2>
-                            <ul className="space-y-3">
-                                <li className="flex items-start gap-3 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded">
-                                    <span className="font-bold text-indigo-700 dark:text-indigo-400">•</span>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">Reunió d'Avaluació</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-300">Dimarts 25 a les 16:30h - Sala de Professors.</p>
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                    <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                                        <Bell size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Reunión de Evaluación</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Martes 25 a las 16:30h - Sala de Profesores.</p>
                                     </div>
                                 </li>
                             </ul>
@@ -89,17 +94,19 @@ export const TeacherDashboardView: React.FC = () => {
                     )}
 
                     {activeTab === 'clase' && (
-                        <div>
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                                <Bell size={20} />
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                                <BookOpen size={20} className="text-pink-500" />
                                 Avisos de Clase
                             </h2>
-                            <ul className="space-y-3">
-                                <li className="flex items-start gap-3 p-3 bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded">
-                                    <span className="font-bold text-pink-700 dark:text-pink-400">•</span>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">Comandes de Material</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-300">Recordeu enviar les sol·licituds abans de divendres.</p>
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                    <div className="flex-shrink-0 mt-1 p-2 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full group-hover:bg-pink-100 dark:group-hover:bg-pink-900/50 transition-colors">
+                                        <BookOpen size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Pedidos de Material</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Recordar enviar las solicitudes antes del viernes.</p>
                                     </div>
                                 </li>
                             </ul>
@@ -107,17 +114,19 @@ export const TeacherDashboardView: React.FC = () => {
                     )}
 
                     {activeTab === 'centro' && (
-                        <div>
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                                <Bell size={20} />
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                                <Building size={20} className="text-cyan-500" />
                                 Avisos del Centro
                             </h2>
-                            <ul className="space-y-3">
-                                <li className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
-                                    <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">Manteniment Programat</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-300">La plataforma de notes estarà inactiva aquest cap de setmana.</p>
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                                    <div className="flex-shrink-0 mt-1 p-2 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-full group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
+                                        <Building size={16} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">Mantenimiento Programado</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">La plataforma de notas estará inactiva este fin de semana.</p>
                                     </div>
                                 </li>
                             </ul>
@@ -127,10 +136,12 @@ export const TeacherDashboardView: React.FC = () => {
             </div>
 
             {/* Monthly Calendar Section */}
-            <div className="mb-8">
-                <h3 className="text-2xl font-black uppercase mb-6 flex items-center gap-3 text-black dark:text-white transition-colors">
-                    <span className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center -rotate-3 italic tracking-tighter shadow-sm">CAL</span>
-                    AGENDA DOCENT
+            <div className="mb-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 p-6 md:p-8 transition-all">
+                <h3 className="text-2xl font-black uppercase mb-8 flex items-center gap-3 text-gray-900 dark:text-white transition-colors tracking-wide">
+                    <span className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-600 text-white rounded-lg flex items-center justify-center -rotate-3 shadow-md">
+                        <BookOpen size={20} />
+                    </span>
+                    Agenda Docente
                 </h3>
                 <div className="h-[600px]">
                     <MonthlyCalendar events={filteredEvents} />

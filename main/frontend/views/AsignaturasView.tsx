@@ -92,42 +92,44 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-16 transition-colors duration-300">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter mb-4 transition-colors">
-          GESTIÓ ACADÈMICA
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-12 md:space-y-16 transition-colors duration-300">
+      <div className="text-center mb-10 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 uppercase tracking-tight mb-4 transition-colors">
+          Gestión Académica
         </h1>
-        <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-bold uppercase tracking-widest skew-x-[-12deg] transition-colors">
-          <span className="skew-x-[12deg] inline-block">{enrolledCoursesList.length} ASSIGNATURES ACTIVES</span>
+        <div className="inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors shadow-sm">
+          <span>{enrolledCoursesList.length} Asignaturas Activas</span>
         </div>
       </div>
 
-      <section>
+      <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-purple-400 dark:bg-purple-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
-            <BookOpen size={24} className="text-black dark:text-white" />
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 transition-all shadow-sm">
+            <BookOpen size={24} />
           </div>
-          <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tight transition-colors">
-            LES MEVES ASSIGNATURES
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
+            Mis Asignaturas
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {enrolledCoursesList.map((course) => (
             <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
           ))}
         </div>
       </section>
 
-      <section>
+      <section className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-yellow-400 dark:bg-yellow-600 border-2 border-black dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
-            <CalendarIcon size={24} className="text-black dark:text-white" />
+          <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-all shadow-sm">
+            <CalendarIcon size={24} />
           </div>
-          <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tight transition-colors">
-            HORARI DE CLASSES
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
+            Horario de Clases
           </h2>
         </div>
-        <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} onCourseClick={(course) => setSelectedCourse(course)} />
+        <div className="bg-white dark:bg-zinc-800/90 rounded-3xl p-6 shadow-lg shadow-gray-200/50 dark:shadow-none border border-gray-200 dark:border-zinc-700">
+          <WeeklyCalendar schedule={enrolledSchedule} courses={enrolledCoursesList} onCourseClick={(course) => setSelectedCourse(course)} />
+        </div>
       </section>
     </div>
   );

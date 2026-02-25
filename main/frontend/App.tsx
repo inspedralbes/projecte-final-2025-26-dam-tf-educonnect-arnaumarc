@@ -162,7 +162,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white dark:bg-zinc-900 border-8 border-black dark:border-zinc-800 box-border transition-colors duration-300">
+    <div className="flex flex-col h-screen w-full bg-white dark:bg-zinc-900 transition-colors duration-300">
       <Navbar
         currentView={currentView}
         setView={setCurrentView}

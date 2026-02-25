@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Bell, Clock } from 'lucide-react';
+import { Bell, User as UserIcon, BookOpen, Building } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS, MOCK_USER } from '../constants';
@@ -57,20 +57,17 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     const socket = socketRef.current;
 
     socket.on('connect', () => {
-      console.log('TablonView Socket connected:', socket.id);
       socket.emit('register_user', user._id || (user as any).id);
     });
 
     socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
-      console.log('TablonView received real-time notification:', data);
-
       // We create a new message format based on what is expected on the frontend
       const newMessage = {
         _id: Date.now().toString(), // fake id just for react keys until refresh
         title: data.title,
         content: data.content,
-        course: data.courseId ? { _id: data.courseId, title: "Curs" } : undefined, // simplified course to satisfy rendering condition
-        sender: { nombre: 'Nou', apellidos: 'Avís' },
+        course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined, // simplified course to satisfy rendering condition
+        sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
         date: new Date().toISOString()
       };
 
@@ -101,60 +98,67 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
-      <h1 className="text-3xl font-bold text-center mb-4 uppercase tracking-wide text-black dark:text-white">
-        [INS PEDRALBES]
+      <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+        INS PEDRALBES
       </h1>
-      <p className="text-center text-gray-700 dark:text-gray-300 mb-12 font-medium">Projecte Educatiu Conectat</p>
+      <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Proyecto Educativo Conectado</p>
 
-      <div className="mb-8 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all">
+      <div className="mb-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 transition-all">
         {/* Tabs Header */}
-        <div className="flex border-b-2 border-black dark:border-white">
+        <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50">
           <button
             onClick={() => setActiveTab('personal')}
-            className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'personal' ? 'bg-green-100 dark:bg-green-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-              } border-r-2 border-black dark:border-white`}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'personal' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
+            <UserIcon size={18} className={activeTab === 'personal' ? 'text-blue-600 dark:text-blue-400' : ''} />
             Personal
+            {activeTab === 'personal' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
           </button>
           <button
             onClick={() => setActiveTab('clase')}
-            className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'clase' ? 'bg-yellow-100 dark:bg-yellow-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-              } border-r-2 border-black dark:border-white`}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'clase' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
+            <BookOpen size={18} className={activeTab === 'clase' ? 'text-blue-600 dark:text-blue-400' : ''} />
             Clase
+            {activeTab === 'clase' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
           </button>
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex-1 py-3 px-4 font-bold text-center transition-colors ${activeTab === 'general' ? 'bg-cyan-100 dark:bg-cyan-900/50 text-black dark:text-white' : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-700'
-              }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'general' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
+            <Building size={18} className={activeTab === 'general' ? 'text-blue-600 dark:text-blue-400' : ''} />
             General
+            {activeTab === 'general' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
           </button>
         </div>
 
         {/* Tab Content */}
         <div className="p-6 min-h-[200px]">
           {activeTab === 'personal' && (
-            <div>
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                <Bell size={20} />
-                Notificacions Personals
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                <Bell size={20} className="text-blue-500" />
+                Notificaciones Personales
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                    <span className="font-bold text-green-700 dark:text-green-400">•</span>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                    <div className="flex-shrink-0 mt-1 p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                      <Bell size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
+                        <UserIcon size={12} />
                         De: {msg.sender?.nombre} {msg.sender?.apellidos}
                       </p>
                     </div>
                   </li>
                 )) : (
-                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
-                    <p className="text-gray-500 dark:text-gray-400 font-bold">No tens noves notificacions personals.</p>
+                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                    <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No tienes nuevas notificaciones personales.</p>
                   </li>
                 )}
               </ul>
@@ -162,26 +166,30 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
           )}
 
           {activeTab === 'clase' && (
-            <div>
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                <Bell size={20} />
-                Avisos de Classe
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                <BookOpen size={20} className="text-amber-500" />
+                Avisos de Clase
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {classMessages.length > 0 ? classMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                    <span className="font-bold text-yellow-700 dark:text-yellow-400">•</span>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        De: {msg.sender?.nombre || 'Professor'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
+                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                    <div className="flex-shrink-0 mt-1 p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
+                      <BookOpen size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
+                        <UserIcon size={12} />
+                        De: {msg.sender?.nombre || 'Profesor'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
                       </p>
                     </div>
                   </li>
                 )) : (
-                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
-                    <p className="text-gray-500 dark:text-gray-400 font-bold">No hi ha avisos de les teves classes.</p>
+                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                    <BookOpen className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos de tus clases.</p>
                   </li>
                 )}
               </ul>
@@ -189,23 +197,26 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
           )}
 
           {activeTab === 'general' && (
-            <div>
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
-                <Bell size={20} />
-                Avisos de l'Escola
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                <Building size={20} className="text-indigo-500" />
+                Avisos de la Escuela
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {generalMessages.length > 0 ? generalMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
-                    <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
+                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                    <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                      <Building size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
                     </div>
                   </li>
                 )) : (
-                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
-                    <p className="text-gray-500 dark:text-gray-400 font-bold">No hi ha avisos generals de l'escola actualment.</p>
+                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                    <Building className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos generales de la escuela actualmente.</p>
                   </li>
                 )}
               </ul>
@@ -215,10 +226,12 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       </div>
 
       {/* Monthly Calendar Section */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-black uppercase mb-6 flex items-center gap-3 text-black dark:text-white transition-colors">
-          <span className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center -rotate-3 italic tracking-tighter shadow-sm">CAL</span>
-          CALENDARI ACADÈMIC
+      <div className="mb-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 p-6 md:p-8 transition-all">
+        <h3 className="text-2xl font-black uppercase mb-8 flex items-center gap-3 text-gray-900 dark:text-white transition-colors tracking-wide">
+          <span className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-lg flex items-center justify-center -rotate-3 shadow-md">
+            <BookOpen size={20} />
+          </span>
+          Calendario Académico
         </h3>
         <div className="h-[600px]">
           <MonthlyCalendar events={filteredEvents} />
