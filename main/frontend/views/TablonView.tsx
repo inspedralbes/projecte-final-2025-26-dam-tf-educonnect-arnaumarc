@@ -1,25 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Bell, Clock } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS, MOCK_USER } from '../constants';
-import { User } from '../types';
+import { User, Course } from '../types';
 
 interface TablonViewProps {
   user: User | null;
 }
 
 export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'general'>(() => {
+  const [activeTab, setActiveTab] = useState<'personal' | 'clase' | 'general'>(() => {
     return (localStorage.getItem('tablonActiveTab') as 'personal' | 'clase' | 'general') || 'personal';
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem('tablonActiveTab', activeTab);
   }, [activeTab]);
-  const [events, setEvents] = React.useState<any[]>([]);
-  const [messages, setMessages] = React.useState<any[]>([]);
 
-  React.useEffect(() => {
+  const [events, setEvents] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
     fetch('http://localhost:3005/api/events')
       .then(res => res.json())
       .then(data => {
@@ -37,15 +40,46 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       .catch(err => console.error('Error fetching events:', err));
   }, []);
 
-  React.useEffect(() => {
-    if (user?._id) {
-      fetch(`http://localhost:3005/api/users/${user._id}/messages`)
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) setMessages(data);
-        })
-        .catch(err => console.error('Error fetching messages:', err));
-    }
+  // Fetch initial messages and Setup Socket.io for Real-time Updates
+  useEffect(() => {
+    if (!user?._id) return;
+
+    // 1. Fetch initial messages
+    fetch(`http://localhost:3005/api/users/${user._id}/messages`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setMessages(data);
+      })
+      .catch(err => console.error('Error fetching messages:', err));
+
+    // 2. Setup Socket.io connection for this view
+    socketRef.current = io('http://localhost:3005');
+    const socket = socketRef.current;
+
+    socket.on('connect', () => {
+      console.log('TablonView Socket connected:', socket.id);
+      socket.emit('register_user', user._id || (user as any).id);
+    });
+
+    socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
+      console.log('TablonView received real-time notification:', data);
+
+      // We create a new message format based on what is expected on the frontend
+      const newMessage = {
+        _id: Date.now().toString(), // fake id just for react keys until refresh
+        title: data.title,
+        content: data.content,
+        course: data.courseId ? { _id: data.courseId, title: "Curs" } : undefined, // simplified course to satisfy rendering condition
+        sender: { nombre: 'Nou', apellidos: 'Avís' },
+        date: new Date().toISOString()
+      };
+
+      setMessages((prevMessages) => [newMessage, ...prevMessages]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user]);
 
   const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
@@ -59,6 +93,11 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     }
     return true;
   });
+
+  // Filter messages by category based on if they have a course associated
+  const personalMessages = messages.filter(msg => !msg.course);
+  const classMessages = messages.filter(msg => !!msg.course);
+  const generalMessages: any[] = []; // Currently no general messages implemented in DB
 
   return (
     <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
@@ -102,32 +141,21 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                 Notificacions Personals
               </h2>
               <ul className="space-y-3">
-                {messages.length > 0 ? messages.map((msg, idx) => (
+                {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
                   <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
                     <span className="font-bold text-green-700 dark:text-green-400">•</span>
                     <div>
                       <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">De: {msg.sender?.nombre} {msg.sender?.apellidos} {msg.course ? `(${msg.course.title})` : ''}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        De: {msg.sender?.nombre} {msg.sender?.apellidos}
+                      </p>
                     </div>
                   </li>
                 )) : (
-                  <>
-                    <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                      <span className="font-bold text-green-700 dark:text-green-400">•</span>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white text-sm">Missatge del Tutor</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300">Recorda portar la documentació de les pràctiques demà.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                      <span className="font-bold text-green-700 dark:text-green-400">•</span>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white text-sm">Nova Correcció</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300">S'ha publicat la nota del teu projecte de M06: Accés a Dades.</p>
-                      </div>
-                    </li>
-                  </>
+                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
+                    <p className="text-gray-500 dark:text-gray-400 font-bold">No tens noves notificacions personals.</p>
+                  </li>
                 )}
               </ul>
             </div>
@@ -140,27 +168,22 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                 Avisos de Classe
               </h2>
               <ul className="space-y-3">
-                <li className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                  <span className="font-bold text-yellow-700 dark:text-yellow-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Canvi d'Aula - M07</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">La classe d'Interficies d'avui es farà al laboratori 2.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                  <span className="font-bold text-yellow-700 dark:text-yellow-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Recordatori d'Examen</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">L'examen final de Programació serà el proper dimarts a les 09:00.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                  <span className="font-bold text-yellow-700 dark:text-yellow-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Nou Material</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Noves diapositives disponibles al curs de Bases de Dades.</p>
-                  </div>
-                </li>
+                {classMessages.length > 0 ? classMessages.map((msg, idx) => (
+                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                    <span className="font-bold text-yellow-700 dark:text-yellow-400">•</span>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        De: {msg.sender?.nombre || 'Professor'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
+                      </p>
+                    </div>
+                  </li>
+                )) : (
+                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
+                    <p className="text-gray-500 dark:text-gray-400 font-bold">No hi ha avisos de les teves classes.</p>
+                  </li>
+                )}
               </ul>
             </div>
           )}
@@ -172,27 +195,19 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                 Avisos de l'Escola
               </h2>
               <ul className="space-y-3">
-                <li className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
-                  <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Manteniment Programat</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">La plataforma no estarà disponible aquest divendres a partir de les 22:00h per actualitzacions.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
-                  <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Activitats Extraescolars</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">S'han obert les inscripcions per al torneig de futbol i el taller de robòtica.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
-                  <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">Notes Publicades</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Ja es poden consultar les notes parcials del mòdul d'Accés a Dades.</p>
-                  </div>
-                </li>
+                {generalMessages.length > 0 ? generalMessages.map((msg, idx) => (
+                  <li key={msg._id || idx} className="flex items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded">
+                    <span className="font-bold text-cyan-700 dark:text-cyan-400">•</span>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white text-sm">{msg.title}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">{msg.content}</p>
+                    </div>
+                  </li>
+                )) : (
+                  <li className="flex items-center justify-center p-6 bg-gray-50 dark:bg-zinc-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded">
+                    <p className="text-gray-500 dark:text-gray-400 font-bold">No hi ha avisos generals de l'escola actualment.</p>
+                  </li>
+                )}
               </ul>
             </div>
           )}
