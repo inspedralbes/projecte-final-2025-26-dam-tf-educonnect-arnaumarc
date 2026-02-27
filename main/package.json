@@ -5,7 +5,8 @@
     "main": "dist/src/index.js",
     "scripts": {
         "build": "node build.js",
-        "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+        "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../expo-mobile && npm install",
+        "start-all": "npx concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"npm start --prefix expo-mobile\""
     },
     "keywords": [],
     "author": "",
