@@ -8,7 +8,8 @@ const messageSchema = new mongoose.Schema({
     title: String,
     content: String,
     date: { type: Date, default: Date.now },
-    read: { type: Boolean, default: false }
+    read: { type: Boolean, default: false },
+    isPrivate: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Message', messageSchema);

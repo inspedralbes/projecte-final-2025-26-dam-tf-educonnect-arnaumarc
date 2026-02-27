@@ -68,7 +68,8 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         content: data.content,
         course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined, // simplified course to satisfy rendering condition
         sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        isPrivate: data.isPrivate
       };
 
       setMessages((prevMessages) => [newMessage, ...prevMessages]);
@@ -91,9 +92,9 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     return true;
   });
 
-  // Filter messages by category based on if they have a course associated
-  const personalMessages = messages.filter(msg => !msg.course);
-  const classMessages = messages.filter(msg => !!msg.course);
+  // Filter messages by category based on if they have a course associated or if marked as private
+  const personalMessages = messages.filter(msg => msg.isPrivate || !msg.course);
+  const classMessages = messages.filter(msg => !!msg.course && !msg.isPrivate);
   const generalMessages: any[] = []; // Currently no general messages implemented in DB
 
   return (

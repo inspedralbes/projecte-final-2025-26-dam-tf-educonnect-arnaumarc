@@ -3,7 +3,7 @@ const Message = require('../models/Message');
 const sendMessage = async (req, res) => {
     const { sender, senderModel, receiver, course, title, content } = req.body;
     try {
-        const message = await Message.create({ sender, senderModel, receiver, course, title, content });
+        const message = await Message.create({ sender, senderModel, receiver, course, title, content, isPrivate: true });
 
         // Emit real-time notification to the receiver if connected
         const receiverSocketId = req.connectedUsers?.get(String(receiver));
