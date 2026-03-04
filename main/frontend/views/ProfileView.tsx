@@ -112,7 +112,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                     <div className="space-y-4">
                         <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 ml-2 tracking-wide transition-colors">Ajustes</h2>
                         <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all">
-                            <NotificationsDropdown />
+                            <NotificationsDropdown user={user} />
                             <PreferencesDropdown user={user} onUpdateUser={onUpdateUser} />
                         </div>
                     </div>
@@ -127,13 +127,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
     );
 };
 
-const NotificationsDropdown = () => {
+const NotificationsDropdown = ({ user }: { user: UserType | null }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState([
-        { id: 1, text: "Entrega Projecte Final mañana", type: "urgent" },
-        { id: 2, text: "Nueva nota publicada: M07", type: "info" }
-    ]);
-    const [activeCount, setActiveCount] = useState(2);
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [activeCount, setActiveCount] = useState(0);
+
+    useEffect(() => {
+        if (!user?._id) return;
+        fetch(`http://localhost:3005/api/users/${user._id}/messages`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const personalMessages = data.filter(msg => msg.isPrivate || !msg.course).slice(0, 5);
+                    setNotifications(personalMessages);
+                    setActiveCount(personalMessages.filter(m => !m.read).length || 0);
+                    // If read logic is not fully used, just show active if there's any msg
+                    if (personalMessages.length > 0 && personalMessages.filter(m => !m.read).length === 0) {
+                        setActiveCount(personalMessages.length);
+                    }
+                }
+            })
+            .catch(err => console.error('Error fetching messages:', err));
+    }, [user]);
 
     const markAsRead = () => {
         setActiveCount(0);
@@ -174,9 +189,12 @@ const NotificationsDropdown = () => {
                     {notifications.length > 0 ? (
                         <ul className="space-y-2">
                             {notifications.map((notif) => (
-                                <li key={notif.id} className={`text-xs font-bold text-black dark:text-white flex items-center gap-2 ${activeCount === 0 ? 'opacity-50' : ''}`}>
-                                    <span className={`w-2 h-2 rounded-full ${notif.type === 'urgent' ? 'bg-red-500' : 'bg-blue-500'}`}></span>
-                                    {notif.text}
+                                <li key={notif._id} className={`text-xs font-bold text-black dark:text-white flex items-start gap-2 ${activeCount === 0 ? 'opacity-60' : ''}`}>
+                                    <span className={`w-2 h-2 rounded-full mt-1 shrink-0 bg-blue-500`}></span>
+                                    <div className="flex flex-col">
+                                        <span className="line-clamp-2" title={notif.title}>{notif.title}</span>
+                                        <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400 mt-0.5">{new Date(notif.date).toLocaleDateString()}</span>
+                                    </div>
                                 </li>
                             ))}
                         </ul>

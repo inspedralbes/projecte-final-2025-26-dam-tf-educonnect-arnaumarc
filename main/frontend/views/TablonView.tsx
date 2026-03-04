@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Bell, User as UserIcon, BookOpen, Building } from 'lucide-react';
+import { Bell, User as UserIcon, BookOpen, Building, Trash2 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS, MOCK_USER } from '../constants';
@@ -97,6 +97,22 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   const classMessages = messages.filter(msg => !!msg.course && !msg.isPrivate);
   const generalMessages: any[] = []; // Currently no general messages implemented in DB
 
+  const handleDeleteMessage = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`http://localhost:3005/api/messages/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setMessages(prev => prev.filter(msg => msg._id !== id));
+      } else {
+        console.error('Failed to delete message');
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  };
+
   return (
     <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
       <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
@@ -143,11 +159,11 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
               </h2>
               <ul className="space-y-4">
                 {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group relative">
                     <div className="flex-shrink-0 mt-1 p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
                       <Bell size={16} />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 pr-8">
                       <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
                       <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
@@ -155,6 +171,13 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                         De: {msg.sender?.nombre} {msg.sender?.apellidos}
                       </p>
                     </div>
+                    <button
+                      onClick={(e) => handleDeleteMessage(msg._id, e)}
+                      className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+                      title="Eliminar notificación"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </li>
                 )) : (
                   <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
