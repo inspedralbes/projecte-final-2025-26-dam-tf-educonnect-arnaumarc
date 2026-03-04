@@ -1,36 +1,26 @@
-import React, { useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import React, { useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import { User } from '../types';
+import { User, AppView } from '../types';
 import { Bell } from 'lucide-react';
 
 interface NotificationBotProps {
     user: User | null;
+    setView: (view: AppView) => void;
+    globalSocket: Socket | null;
 }
 
-export const NotificationBot: React.FC<NotificationBotProps> = ({ user }) => {
-    const socketRef = useRef<Socket | null>(null);
+export const NotificationBot: React.FC<NotificationBotProps> = ({ user, setView, globalSocket }) => {
 
     useEffect(() => {
-        if (!user || user.type !== 'alumno') return;
+        if (!user || user.type !== 'alumno' || !globalSocket) return;
 
-        // Initialize connection
-        socketRef.current = io('http://localhost:3005');
-
-        const socket = socketRef.current;
-
-        socket.on('connect', () => {
-            console.log('Notification Bot connected:', socket.id);
-            socket.emit('register_user', user._id || (user as any).id);
-        });
-
-        socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean }) => {
+        const handleNewNotification = (data: { title: string, content: string, courseId?: string, isPrivate?: boolean }) => {
             console.log('Received real-time notification:', data);
 
             toast.custom((t) => (
                 <div
-                    className={`${t.visible ? 'animate-enter' : 'animate-leave'
-                        } max-w-md w-full bg-white dark:bg-zinc-800 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-4 border-black dark:border-white pointer-events-auto flex ring-1 ring-black ring-opacity-5 relative`}
+                    className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white dark:bg-zinc-800 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-4 border-black dark:border-white pointer-events-auto flex ring-1 ring-black ring-opacity-5 relative`}
                 >
                     <div className="flex-1 w-0 p-4">
                         <div className="flex items-start">
@@ -57,16 +47,14 @@ export const NotificationBot: React.FC<NotificationBotProps> = ({ user }) => {
                     </div>
                 </div>
             ), { duration: 6000 });
-        });
+        };
 
-        socket.on('disconnect', () => {
-            console.log('Notification Bot disconnected');
-        });
+        globalSocket.on('new_notification', handleNewNotification);
 
         return () => {
-            socket.disconnect();
+            globalSocket.off('new_notification', handleNewNotification);
         };
-    }, [user]);
+    }, [user, globalSocket]);
 
-    return null; // This component handles side-effects (sockets & toasts) only
+    return null;
 };

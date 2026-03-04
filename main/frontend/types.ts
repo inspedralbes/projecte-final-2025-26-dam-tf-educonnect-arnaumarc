@@ -88,3 +88,10 @@ export interface ClassSession {
   endTime: string; // 'HH:MM'
   classroom: string;
 }
+
+export interface IncomingCallData {
+  offer: any;
+  socket: string;
+  caller: string;
+  callerName?: string;
+}

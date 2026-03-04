@@ -31,11 +31,16 @@ const connectedUsers = new Map();
 io.on('connection', (socket) => {
     console.log(`Usuario conectado al socket: ${socket.id}`);
 
+    const emitOnlineUsers = () => {
+        io.emit('online_users', Array.from(connectedUsers.keys()));
+    };
+
     // Register user ID with their socket
     socket.on('register_user', (userId) => {
         if (userId) {
             connectedUsers.set(String(userId), socket.id);
             console.log(`Usuario registrado en socket: ${userId} -> ${socket.id}`);
+            emitOnlineUsers();
         }
     });
 
@@ -45,7 +50,50 @@ io.on('connection', (socket) => {
         for (const [userId, socketId] of connectedUsers.entries()) {
             if (socketId === socket.id) {
                 connectedUsers.delete(userId);
+                emitOnlineUsers();
                 break;
+            }
+        }
+    });
+
+    // WebRTC Signaling
+    socket.on('call-user', (data) => {
+        const targetSocketId = connectedUsers.get(String(data.to));
+        if (targetSocketId) {
+            socket.to(targetSocketId).emit('call-made', {
+                offer: data.offer,
+                socket: socket.id,
+                caller: data.caller
+            });
+        }
+    });
+
+    socket.on('make-answer', (data) => {
+        socket.to(data.to).emit('answer-made', {
+            socket: socket.id,
+            answer: data.answer
+        });
+    });
+
+    socket.on('call-rejected', (data) => {
+        socket.to(data.to).emit('call-rejected', {
+            socket: socket.id
+        });
+    });
+
+    socket.on('ice-candidate', (data) => {
+        if (data.toSocketId) {
+            socket.to(data.toSocketId).emit('ice-candidate', {
+                candidate: data.candidate,
+                socket: socket.id
+            });
+        } else if (data.toUserId) {
+            const targetSocketId = connectedUsers.get(String(data.toUserId));
+            if (targetSocketId) {
+                socket.to(targetSocketId).emit('ice-candidate', {
+                    candidate: data.candidate,
+                    socket: socket.id
+                });
             }
         }
     });

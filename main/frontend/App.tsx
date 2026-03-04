@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
+import toast, { Toaster } from 'react-hot-toast';
+import { Phone } from 'lucide-react';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
@@ -7,8 +10,7 @@ import { TeacherDashboardView } from './views/TeacherDashboardView';
 import { AsignaturasView } from './views/AsignaturasView';
 import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
-import { AppView, User } from './types';
-import { Toaster } from 'react-hot-toast';
+import { AppView, User, IncomingCallData } from './types';
 import { NotificationBot } from './components/NotificationBot';
 
 function App() {
@@ -41,7 +43,86 @@ function App() {
     return AppView.TABLON;
   });
 
+  const socketRef = useRef<Socket | null>(null);
+  const [acceptedCall, setAcceptedCall] = useState<IncomingCallData | null>(null);
+  const toastIdRef = useRef<string | null>(null);
+
+  // Global Socket.io configuration
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      // Connect to global socket
+      const socket = io('http://localhost:3005');
+      socketRef.current = socket;
+
+      socket.on('connect', () => {
+        socket.emit('register_user', user._id || (user as any).id);
+      });
+
+      socket.on('call-made', (data: IncomingCallData) => {
+        // Play ringtone or simply show toast
+        const acceptCallHandler = () => {
+          setAcceptedCall(data);
+          setCurrentView(AppView.MEET);
+          if (toastIdRef.current) toast.dismiss(toastIdRef.current);
+        };
+
+        const rejectCallHandler = () => {
+          socket.emit('call-rejected', { to: data.socket });
+          if (toastIdRef.current) toast.dismiss(toastIdRef.current);
+        };
+
+        const callerName = data.callerName || 'un compañero';
+
+        toastIdRef.current = toast.custom(
+          (t) => (
+            <div
+              className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white dark:bg-zinc-800 shadow-xl rounded-2xl pointer-events-auto flex flex-col ring-1 ring-black/5 dark:ring-white/10 overflow-hidden`}
+            >
+              <div className="p-4 flex items-center gap-4 bg-blue-50/80 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800/30">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-300 flex items-center justify-center font-bold shadow-inner">
+                  {callerName.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">Videollamada Entrante</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-0.5">{callerName} te está llamando...</p>
+                </div>
+              </div>
+              <div className="flex bg-gray-50 dark:bg-zinc-800/80">
+                <button
+                  onClick={rejectCallHandler}
+                  className="w-full py-3 flex items-center justify-center gap-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors border-r border-gray-200 dark:border-zinc-700"
+                >
+                  <Phone size={16} className="transform rotate-135" />
+                  Rechazar
+                </button>
+                <button
+                  onClick={acceptCallHandler}
+                  className="w-full py-3 flex items-center justify-center gap-2 text-sm font-bold text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
+                >
+                  <Phone size={16} />
+                  Aceptar
+                </button>
+              </div>
+            </div>
+          ),
+          { duration: 30000, id: `call-${data.socket}` }
+        );
+      });
+
+      return () => {
+        socket.disconnect();
+        socketRef.current = null;
+      };
+    } else {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
+  }, [isLoggedIn, user]);
+
   // Re-sync with backend in background or handle cleanup if localStorage is corrupt
+
   useEffect(() => {
     const savedIsLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const savedUser = localStorage.getItem('user');
@@ -147,7 +228,12 @@ function App() {
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
-        return <MeetView />;
+        return <MeetView
+          currentUser={user}
+          globalSocket={socketRef.current}
+          acceptedCall={acceptedCall}
+          clearAcceptedCall={() => setAcceptedCall(null)}
+        />;
       case AppView.PROFILE:
         return <ProfileView user={user} onUpdateUser={updateUser} />;
       case AppView.WORKSHOPS:
@@ -173,7 +259,7 @@ function App() {
         {renderContent()}
       </div>
       <Toaster position="top-right" />
-      <NotificationBot user={user} />
+      <NotificationBot user={user} setView={setCurrentView} globalSocket={socketRef.current} />
     </div>
   );
 }

@@ -18,6 +18,20 @@ const getAllStudents = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        const students = await Alumno.find().lean();
+        const professors = await Professor.find().lean();
+
+        const formattedStudents = students.map(s => ({ ...s, type: 'alumno' }));
+        const formattedProfessors = professors.map(p => ({ ...p, type: 'professor' }));
+
+        res.json([...formattedStudents, ...formattedProfessors]);
+    } catch (e) {
+        res.status(500).json([]);
+    }
+};
+
 const getUser = async (req, res) => {
     try {
         let user = await Alumno.findById(req.params.id).populate('enrolledCourses');
@@ -58,4 +72,4 @@ const updateUserSettings = async (req, res) => {
     }
 };
 
-module.exports = { getAllStudents, getUser, updateUserSettings };
+module.exports = { getAllStudents, getAllUsers, getUser, updateUserSettings };
