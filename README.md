@@ -36,22 +36,18 @@ npm install
 npm start
 ```
 
-### Opción 2: Con un solo comando (Concurrent)
+### Opción 2: Comando unificado (Frontend + Backend con Docker)
 
-Si prefieres ejecutar todo en una sola terminal (Backend, Frontend y Móvil), puedes hacerlo con un único comando. 
+Para iniciar el proyecto completo (Frontend web y Backend con Docker) desde la raíz del proyecto, puedes usar un solo comando. Asegúrate de tener **Docker Desktop abierto** antes de ejecutarlo.
 
-Primero asegúrate de instalar todas las dependencias (solo la primera vez o si se añaden paquetes):
 ```powershell
-cd main
-npm run install-all
+npm start
 ```
+*(También puedes ejecutar este comando desde la carpeta `main`)*
 
-Luego, para iniciar los tres servidores a la vez:
-```powershell
-cd main
-npm run start-all
-```
-Esto levantará el **Backend** (puerto 3005), el **Frontend** (puerto 5173) y el proyecto **Móvil (Expo)** usando `concurrently` en la misma ventana de comandos.
+Esto se encargará de:
+1. Levantar el **Frontend** en el puerto 5173.
+2. Levantar el **Backend y la base de datos** usando `docker-compose up --build`.
 
 ## Usuarios de Prueba
 
