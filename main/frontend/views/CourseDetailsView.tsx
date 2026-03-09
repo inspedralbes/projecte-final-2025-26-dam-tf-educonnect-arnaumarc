@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { Course, UserRole, User } from '../types';
-import { Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Course, UserRole, User, Topic, Resource } from '../types';
+import {
+    Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
+    CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
+    Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen
+} from 'lucide-react';
 
 interface CourseDetailsViewProps {
     course: Course | any;
@@ -27,13 +31,67 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const [notifyStatus, setNotifyStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [isSubmittingNotify, setIsSubmittingNotify] = useState(false);
 
-    React.useEffect(() => {
+    // Estados para Temarios (Moodle-like)
+    const [topics, setTopics] = useState<Topic[]>([]);
+    const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
+    const [showAddTopicModal, setShowAddTopicModal] = useState(false);
+    const [newTopicTitle, setNewTopicTitle] = useState('');
+    const [newTopicDesc, setNewTopicDesc] = useState('');
+
+    const [showAddResourceModal, setShowAddResourceModal] = useState(false);
+    const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+    const [newResource, setNewResource] = useState({
+        type: 'note' as Resource['type'],
+        title: '',
+        url: '',
+        content: ''
+    });
+
+    const [showAddEventModal, setShowAddEventModal] = useState(false);
+    const [newEvent, setNewEvent] = useState({
+        type: 'activity' as 'activity' | 'exam' | 'event' | 'holiday' | 'strike',
+        title: '',
+        date: new Date().toISOString().split('T')[0]
+    });
+    const [courseEvents, setCourseEvents] = useState<any[]>([]);
+
+    const fetchTopics = async () => {
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/topics`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setTopics(data);
+                if (Object.keys(expandedTopics).length === 0 && data.length > 0) {
+                    setExpandedTopics({ [data[0]._id]: true });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching topics:', error);
+        }
+    };
+
+    const fetchEvents = async () => {
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`http://localhost:3005/api/events`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setCourseEvents(data.filter(e => (e.courseId?._id || e.courseId) === courseId));
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTopics();
+        fetchEvents();
         if (userRole === 'TEACHER') {
             const courseId = course._id || course.id;
             if (!courseId) return;
 
             setLoadingStudents(true);
-            // Use the direct all-students route for better reliability across all subjects
             fetch(`http://localhost:3005/api/all-students`)
                 .then(res => res.json())
                 .then(data => {
@@ -46,16 +104,127 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                 })
                 .catch(err => {
                     console.error('Error fetching students:', err);
-                    // Fallback on error too
-                    setStudents([
-                        { _id: '65cf1234567890abcdef0001', nombre: 'Arnau', apellidos: 'Perera Ganuza', email: 'a24arnpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24arnpergan' },
-                        { _id: '65cf1234567890abcdef0002', nombre: 'Marc', apellidos: 'Cara Montes', email: 'a24marcarmon@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24marcarmon' },
-                        { _id: '65cf1234567890abcdef0003', nombre: 'Nil', apellidos: 'Perera Ganuza', email: 'a24nilpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24nilpergan' }
-                    ]);
+                    setStudents([]);
                 })
                 .finally(() => setLoadingStudents(false));
         }
     }, [course, userRole]);
+
+    const handleCreateTopic = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/topics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: newTopicTitle,
+                    description: newTopicDesc,
+                    senderId: user?._id || user?.id
+                })
+            });
+            if (response.ok) {
+                setShowAddTopicModal(false);
+                setNewTopicTitle('');
+                setNewTopicDesc('');
+                fetchTopics();
+            }
+        } catch (error) {
+            console.error('Error creating topic:', error);
+        }
+    };
+
+    const handleAddResource = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedTopicId) return;
+        try {
+            const response = await fetch(`http://localhost:3005/api/topics/${selectedTopicId}/resources`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...newResource,
+                    senderId: user?._id || user?.id
+                })
+            });
+            if (response.ok) {
+                setShowAddResourceModal(false);
+                setNewResource({ type: 'note', title: '', url: '', content: '' });
+                fetchTopics();
+            }
+        } catch (error) {
+            console.error('Error adding resource:', error);
+        }
+    };
+
+    const handleCreateEvent = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`http://localhost:3005/api/events`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...newEvent,
+                    courseId,
+                    senderId: user?._id || user?.id
+                })
+            });
+            if (response.ok) {
+                setShowAddEventModal(false);
+                setNewEvent({ type: 'activity', title: '', date: new Date().toISOString().split('T')[0] });
+                fetchEvents();
+            }
+        } catch (error) {
+            console.error('Error creating event:', error);
+        }
+    };
+
+    const getResourceIcon = (type: Resource['type']) => {
+        switch (type) {
+            case 'file': return <File size={18} />;
+            case 'link': return <Link size={18} />;
+            case 'task': return <ClipboardList size={18} />;
+            default: return <FileText size={18} />;
+        }
+    };
+
+    const getResourceColor = (type: Resource['type']) => {
+        switch (type) {
+            case 'file': return 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+            case 'link': return 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'task': return 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400';
+            default: return 'bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+        }
+    };
+
+    const handleDeleteTopic = async (topicId: string) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
+        try {
+            const response = await fetch(`http://localhost:3005/api/topics/${topicId}`, { method: 'DELETE' });
+            if (response.ok) fetchTopics();
+        } catch (error) {
+            console.error('Error deleting topic:', error);
+        }
+    };
+
+    const handleDeleteResource = async (topicId: string, resourceId: string) => {
+        if (!resourceId || !window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) return;
+        try {
+            const response = await fetch(`http://localhost:3005/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
+            if (response.ok) fetchTopics();
+        } catch (error) {
+            console.error('Error deleting resource:', error);
+        }
+    };
+
+    const handleToggleVisibility = async (topicId: string, resourceId: string) => {
+        try {
+            const response = await fetch(`http://localhost:3005/api/topics/${topicId}/resources/${resourceId}/toggle-visibility`, { method: 'PATCH' });
+            if (response.ok) fetchTopics();
+        } catch (error) {
+            console.error('Error toggling visibility:', error);
+        }
+    };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -277,16 +446,335 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                 )}
 
                 {activeTab === 'resources' && (
-                    <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold text-gray-400 mb-4">Material de Curs</h2>
-                        <p className="text-gray-500">Aquí apareixeran els PDFs i recursos del curs.</p>
-                        <button className="mt-6 px-6 py-2 bg-black dark:bg-white text-white dark:text-black font-bold uppercase tracking-wider hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
-                            Pujar Nou Recurs
-                        </button>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <BookOpen className="text-blue-500" size={24} />
+                                Planificación y Recursos
+                            </h2>
+                            {userRole === 'TEACHER' && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowAddEventModal(true)}
+                                        className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                                    >
+                                        <Calendar size={18} />
+                                        Añadir Evento
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAddTopicModal(true)}
+                                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                                    >
+                                        <Plus size={18} />
+                                        Añadir Tema
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Sección de Agenda Próxima */}
+                        {courseEvents.length > 0 && (
+                            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                                <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Calendar size={14} />
+                                    Agenda Próxima
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {courseEvents
+                                        .filter(e => new Date(e.date) >= new Date())
+                                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                                        .slice(0, 4)
+                                        .map(event => (
+                                            <div key={event._id} className="flex items-center gap-4 p-4 rounded-2xl border border-pink-100 dark:border-pink-900/20 bg-pink-50/30 dark:bg-pink-900/10 group hover:bg-pink-50/50 transition-all">
+                                                <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-800 rounded-xl p-2 min-w-[50px] shadow-sm border border-pink-100 dark:border-zinc-700">
+                                                    <span className="text-[10px] font-black text-pink-500 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                                    <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${event.type === 'exam' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
+                                                            }`}>
+                                                            {event.type === 'exam' ? 'Examen' : 'Actividad'}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="font-bold text-gray-900 dark:text-white truncate">{event.title}</h4>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            {topics.length > 0 ? (
+                                topics.map((topic) => (
+                                    <div key={topic._id} className="border border-gray-200 dark:border-zinc-800 rounded-3xl overflow-hidden bg-white dark:bg-zinc-900/40 shadow-sm transition-all border-l-4 border-l-blue-500">
+                                        <div className="p-6 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{topic.title}</h3>
+                                                {topic.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{topic.description}</p>}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {userRole === 'TEACHER' && (
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => { setSelectedTopicId(topic._id); setShowAddResourceModal(true); }}
+                                                            className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all"
+                                                            title="Añadir recurso"
+                                                        >
+                                                            <Plus size={20} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteTopic(topic._id)}
+                                                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                            title="Eliminar tema"
+                                                        >
+                                                            <Trash2 size={20} />
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                <button
+                                                    onClick={() => setExpandedTopics(prev => ({ ...prev, [topic._id]: !prev[topic._id] }))}
+                                                    className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700"
+                                                >
+                                                    {expandedTopics[topic._id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {expandedTopics[topic._id] && (
+                                            <div className="p-6 space-y-4 bg-white dark:bg-zinc-900/20 border-t border-gray-100 dark:border-zinc-800">
+                                                {topic.resources && topic.resources.length > 0 ? (
+                                                    topic.resources
+                                                        .filter(r => userRole === 'TEACHER' || r.visible)
+                                                        .map((resource, idx) => (
+                                                            <div key={resource._id || idx} className={`flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all group ${!resource.visible ? 'opacity-50 grayscale' : ''}`}>
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className={`p-3 rounded-2xl ${getResourceColor(resource.type)} shadow-sm`}>
+                                                                        {getResourceIcon(resource.type)}
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="font-bold text-gray-900 dark:text-white text-base">{resource.title}</h4>
+                                                                        {resource.type === 'link' && resource.url && (
+                                                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 mt-1 transition-colors">
+                                                                                {resource.url} <ExternalLink size={12} />
+                                                                            </a>
+                                                                        )}
+                                                                        {resource.content && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{resource.content}</p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {userRole === 'TEACHER' && (
+                                                                        <>
+                                                                            <button
+                                                                                onClick={() => handleToggleVisibility(topic._id, resource._id!)}
+                                                                                className="p-2 text-gray-400 hover:text-blue-500 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                                                            >
+                                                                                {resource.visible ? <Eye size={18} /> : <EyeOff size={18} />}
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDeleteResource(topic._id, resource._id!)}
+                                                                                className="p-2 text-gray-400 hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                                                            >
+                                                                                <Trash2 size={18} />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+                                                                    {resource.type === 'file' && (
+                                                                        <button className="p-2 text-gray-400 hover:text-green-600 transition-all hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg">
+                                                                            <FileDown size={18} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <p className="text-gray-400 font-medium italic">No hay recursos en este tema todavía.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-20 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-[2.5rem] bg-gray-50/50 dark:bg-zinc-900/30">
+                                    <BookOpen size={64} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4" />
+                                    <p className="text-gray-600 dark:text-gray-400 text-lg font-bold">No hay temas definidos para esta asignatura.</p>
+                                    <p className="text-gray-500 text-sm mt-1">Planifica los bloques de ejercicios, apuntes y actividades.</p>
+                                    {userRole === 'TEACHER' && (
+                                        <button
+                                            onClick={() => setShowAddTopicModal(true)}
+                                            className="mt-6 text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest hover:scale-105 transition-transform"
+                                        >
+                                            + Crear el primer bloque
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
             </div>
+
+            {/* Modals */}
+
+            {/* Modal Añadir Tema */}
+            {showAddTopicModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                                <BookOpen className="text-indigo-500" size={28} />
+                                Nuevo Tema / Bloque
+                            </h2>
+                            <form onSubmit={handleCreateTopic} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título del Tema</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newTopicTitle}
+                                        onChange={(e) => setNewTopicTitle(e.target.value)}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                        placeholder="Ej: Tema 1: Introducción a la algoritmia"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción (Opcional)</label>
+                                    <textarea
+                                        value={newTopicDesc}
+                                        onChange={(e) => setNewTopicDesc(e.target.value)}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        placeholder="Breve resumen de lo que se verá en este bloque..."
+                                    ></textarea>
+                                </div>
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddTopicModal(false)}
+                                        className="flex-1 py-4 font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-2xl transition-colors"
+                                    >
+                                        CANCELAR
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-4 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-1"
+                                    >
+                                        CREAR TEMA
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Añadir Recurso */}
+            {showAddResourceModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                                <Plus className="text-blue-500" size={28} />
+                                Añadir Recurso
+                            </h2>
+                            <form onSubmit={handleAddResource} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewResource({ ...newResource, type: 'note' })}
+                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'note' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
+                                    >
+                                        <FileText className={newResource.type === 'note' ? 'text-blue-500' : 'text-gray-400'} />
+                                        <span className="text-xs font-bold uppercase">Nota / Apunte</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewResource({ ...newResource, type: 'link' })}
+                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'link' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
+                                    >
+                                        <Link className={newResource.type === 'link' ? 'text-blue-500' : 'text-gray-400'} />
+                                        <span className="text-xs font-bold uppercase">Enlace Web</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewResource({ ...newResource, type: 'file' })}
+                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'file' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
+                                    >
+                                        <File className={newResource.type === 'file' ? 'text-blue-500' : 'text-gray-400'} />
+                                        <span className="text-xs font-bold uppercase">Archivo</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewResource({ ...newResource, type: 'task' })}
+                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'task' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
+                                    >
+                                        <ClipboardList className={newResource.type === 'task' ? 'text-blue-500' : 'text-gray-400'} />
+                                        <span className="text-xs font-bold uppercase">Tarea / Ejercicio</span>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Nombre del Recurso</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newResource.title}
+                                        onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        placeholder="Ej: Enunciado de la práctica 1"
+                                    />
+                                </div>
+
+                                {newResource.type === 'link' || newResource.type === 'file' ? (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">URL / Enlace</label>
+                                        <input
+                                            type="url"
+                                            required
+                                            value={newResource.url}
+                                            onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="https://google.com/apuntes.pdf"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Contenido / Detalles</label>
+                                        <textarea
+                                            value={newResource.content}
+                                            onChange={(e) => setNewResource({ ...newResource, content: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="Detalles adicionales sobre este recurso..."
+                                        ></textarea>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddResourceModal(false)}
+                                        className="flex-1 py-4 font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-2xl transition-colors"
+                                    >
+                                        CANCELAR
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-4 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1"
+                                    >
+                                        GUARDAR RECURSO
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal Mensaje */}
             {showMessageModal && messageRecipient && (
@@ -427,6 +915,70 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Añadir Evento de Agenda */}
+            {showAddEventModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                                <Calendar className="text-pink-500" size={28} />
+                                Nuevo Evento / Examen
+                            </h2>
+                            <form onSubmit={handleCreateEvent} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tipo de Evento</label>
+                                    <select
+                                        value={newEvent.type}
+                                        onChange={(e: any) => setNewEvent({ ...newEvent, type: e.target.value })}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
+                                    >
+                                        <option value="activity">Actividad / Tarea</option>
+                                        <option value="exam">Examen / Prueba</option>
+                                        <option value="event">Evento / Salida</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newEvent.title}
+                                        onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                                        placeholder="Ej: Examen Final de la Unidad 1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Fecha</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={newEvent.date}
+                                        onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddEventModal(false)}
+                                        className="flex-1 py-4 font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-2xl transition-colors"
+                                    >
+                                        CANCELAR
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-4 font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-2xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-1"
+                                    >
+                                        CREAR EVENTO
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

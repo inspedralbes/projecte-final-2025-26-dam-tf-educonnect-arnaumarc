@@ -88,3 +88,22 @@ export interface ClassSession {
   endTime: string; // 'HH:MM'
   classroom: string;
 }
+
+export interface Resource {
+  _id?: string;
+  type: 'file' | 'link' | 'task' | 'note';
+  title: string;
+  url?: string;
+  content?: string;
+  visible: boolean;
+}
+
+export interface Topic {
+  _id: string;
+  courseId: string;
+  title: string;
+  description?: string;
+  resources: Resource[];
+  order: number;
+}
+
