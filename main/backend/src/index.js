@@ -14,6 +14,7 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
+const topicRoutes = require('./routes/topicRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -75,6 +76,7 @@ app.use('/api', courseRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', eventRoutes);
 app.use('/api', scheduleRoutes);
+app.use('/api', topicRoutes);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
