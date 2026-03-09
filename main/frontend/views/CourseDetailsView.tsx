@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
+import { API_BASE_URL } from '../config';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
@@ -58,7 +59,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const fetchTopics = async () => {
         try {
             const courseId = course._id || course.id;
-            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/topics`);
+            const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/topics`);
             const data = await response.json();
             if (Array.isArray(data)) {
                 setTopics(data);
@@ -74,7 +75,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const fetchEvents = async () => {
         try {
             const courseId = course._id || course.id;
-            const response = await fetch(`http://localhost:3005/api/events`);
+            const response = await fetch(`${API_BASE_URL}/api/events`);
             const data = await response.json();
             if (Array.isArray(data)) {
                 setCourseEvents(data.filter(e => (e.courseId?._id || e.courseId) === courseId));
@@ -92,7 +93,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
             if (!courseId) return;
 
             setLoadingStudents(true);
-            fetch(`http://localhost:3005/api/all-students`)
+            fetch(`${API_BASE_URL}/api/all-students`)
                 .then(res => res.json())
                 .then(data => {
                     const studentList = Array.isArray(data) && data.length > 0 ? data : [
@@ -114,7 +115,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         e.preventDefault();
         try {
             const courseId = course._id || course.id;
-            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/topics`, {
+            const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/topics`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -138,7 +139,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         e.preventDefault();
         if (!selectedTopicId) return;
         try {
-            const response = await fetch(`http://localhost:3005/api/topics/${selectedTopicId}/resources`, {
+            const response = await fetch(`${API_BASE_URL}/api/topics/${selectedTopicId}/resources`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -160,7 +161,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         e.preventDefault();
         try {
             const courseId = course._id || course.id;
-            const response = await fetch(`http://localhost:3005/api/events`, {
+            const response = await fetch(`${API_BASE_URL}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -200,7 +201,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const handleDeleteTopic = async (topicId: string) => {
         if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
         try {
-            const response = await fetch(`http://localhost:3005/api/topics/${topicId}`, { method: 'DELETE' });
+            const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
         } catch (error) {
             console.error('Error deleting topic:', error);
@@ -210,7 +211,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const handleDeleteResource = async (topicId: string, resourceId: string) => {
         if (!resourceId || !window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) return;
         try {
-            const response = await fetch(`http://localhost:3005/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
+            const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
         } catch (error) {
             console.error('Error deleting resource:', error);
@@ -219,7 +220,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
 
     const handleToggleVisibility = async (topicId: string, resourceId: string) => {
         try {
-            const response = await fetch(`http://localhost:3005/api/topics/${topicId}/resources/${resourceId}/toggle-visibility`, { method: 'PATCH' });
+            const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}/resources/${resourceId}/toggle-visibility`, { method: 'PATCH' });
             if (response.ok) fetchTopics();
         } catch (error) {
             console.error('Error toggling visibility:', error);
@@ -229,7 +230,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3005/api/messages', {
+            const response = await fetch(`${API_BASE_URL}/api/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -264,7 +265,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
 
         try {
             const courseId = course._id || course.id;
-            const response = await fetch(`http://localhost:3005/api/courses/${courseId}/notify-all`, {
+            const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/notify-all`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

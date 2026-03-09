@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Bell, Settings, CreditCard, ChevronRight, Camera, Moon, Sun } from 'lucide-react';
 import { MOCK_USER } from '../constants';
 import { User as UserType } from '../types';
+import { API_BASE_URL } from '../config';
 
 interface ProfileViewProps {
     user: UserType | null;
@@ -29,7 +30,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                 const base64String = reader.result as string;
 
                 try {
-                    const response = await fetch(`http://localhost:3005/api/user/${user._id}/settings`, {
+                    const response = await fetch(`${API_BASE_URL}/api/user/${user._id}/settings`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ profileImage: base64String })
@@ -134,7 +135,7 @@ const NotificationsDropdown = ({ user }: { user: UserType | null }) => {
 
     useEffect(() => {
         if (!user?._id) return;
-        fetch(`http://localhost:3005/api/users/${user._id}/messages`)
+        fetch(`${API_BASE_URL}/api/users/${user._id}/messages`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
@@ -216,7 +217,7 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
         const newTheme = isDarkMode ? 'light' : 'dark';
 
         try {
-            const response = await fetch(`http://localhost:3005/api/user/${user._id}/settings`, {
+            const response = await fetch(`${API_BASE_URL}/api/user/${user._id}/settings`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ theme: newTheme })

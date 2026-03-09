@@ -5,6 +5,7 @@ import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
 import { User } from '../types';
 import { CourseDetailsView } from './CourseDetailsView';
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface AsignaturasViewProps {
   user: User | null;
@@ -53,7 +54,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    fetch('http://localhost:3005/api/schedule')
+    fetch(`${API_BASE_URL}/api/schedule`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

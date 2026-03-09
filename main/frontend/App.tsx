@@ -11,6 +11,8 @@ import { AppView, User } from './types';
 import { Toaster } from 'react-hot-toast';
 import { NotificationBot } from './components/NotificationBot';
 
+import { API_BASE_URL } from './config';
+
 function App() {
   const [showRegister, setShowRegister] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
@@ -91,7 +93,7 @@ function App() {
   const handleLogin = async (userData: User) => {
     const type = userData.type;
     try {
-      const response = await fetch(`http://localhost:3005/api/user/${userData._id}`);
+      const response = await fetch(`${API_BASE_URL}/api/user/${userData._id}`);
       const fullUserData = await response.json();
       const userWithRole = { ...fullUserData, type };
       setUser(userWithRole);

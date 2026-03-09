@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 interface RegisterProps {
     onRegisterSuccess: () => void;
@@ -32,7 +33,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3005/api/register', {
+            const response = await fetch(`${API_BASE_URL}/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

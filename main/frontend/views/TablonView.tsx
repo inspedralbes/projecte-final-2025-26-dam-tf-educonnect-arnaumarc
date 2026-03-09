@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS, MOCK_USER } from '../constants';
 import { User, Course } from '../types';
+import { API_BASE_URL } from '../config';
 
 interface TablonViewProps {
   user: User | null;
@@ -23,7 +24,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3005/api/events')
+    fetch(`${API_BASE_URL}/api/events`)
       .then(res => res.json())
       .then(data => {
         const formattedEvents = data.map((ev: any) => ({
@@ -45,7 +46,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     if (!user?._id) return;
 
     // 1. Fetch initial messages
-    fetch(`http://localhost:3005/api/users/${user._id}/messages`)
+    fetch(`${API_BASE_URL}/api/users/${user._id}/messages`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setMessages(data);
@@ -53,7 +54,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       .catch(err => console.error('Error fetching messages:', err));
 
     // 2. Setup Socket.io connection for this view
-    socketRef.current = io('http://localhost:3005');
+    socketRef.current = io(API_BASE_URL || window.location.origin);
     const socket = socketRef.current;
 
     socket.on('connect', () => {
@@ -100,7 +101,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   const handleDeleteMessage = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const response = await fetch(`http://localhost:3005/api/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/messages/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {

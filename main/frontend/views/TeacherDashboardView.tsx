@@ -5,6 +5,8 @@ import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
 import { User } from '../types';
 
+import { API_BASE_URL } from '../config';
+
 interface TeacherDashboardViewProps {
     user?: User | null;
 }
@@ -22,7 +24,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        fetch('http://localhost:3005/api/events')
+        fetch(`${API_BASE_URL}/api/events`)
             .then(res => res.json())
             .then(data => {
                 const formattedEvents = data.map((ev: any) => ({
@@ -45,7 +47,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
         const userId = user._id || (user as any).id;
 
         // 1. Fetch initial messages sent BY this teacher or TO this teacher
-        fetch(`http://localhost:3005/api/users/${userId}/messages`)
+        fetch(`${API_BASE_URL}/api/users/${userId}/messages`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) setMessages(data);
@@ -53,7 +55,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             .catch(err => console.error('Error fetching messages:', err));
 
         // 2. Setup Socket.io connection for this view
-        socketRef.current = io('http://localhost:3005');
+        socketRef.current = io(API_BASE_URL || window.location.origin);
         const socket = socketRef.current;
 
         socket.on('connect', () => {
