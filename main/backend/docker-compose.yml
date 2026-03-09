@@ -13,6 +13,8 @@ services:
       - /app/node_modules
     command: npm run dev
 
+    restart: always
+
   db:
     image: mongo:latest
     environment:
