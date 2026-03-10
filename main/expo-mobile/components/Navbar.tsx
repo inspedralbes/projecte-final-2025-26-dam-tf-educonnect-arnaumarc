@@ -1,15 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { AppView } from '../types';
+import { AppView, User } from '../types';
 import { LogOut, UserCircle } from 'lucide-react-native';
 
 interface NavbarProps {
     currentView: AppView;
     setView: (view: AppView) => void;
     onLogout: () => void;
+    user: User | null;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, user }) => {
     const getTabStyle = (view: AppView) => {
         const isActive = currentView === view;
         return [

@@ -1,19 +1,63 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    SafeAreaView,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    ActivityIndicator
+} from 'react-native';
+import { API_BASE_URL } from '../config';
+import { User } from '../types';
 
 interface LoginProps {
-    onLogin: () => void;
+    onLogin: (userData: User) => void;
+    onNavigateToRegister: () => void;
 }
 
 const { width } = Dimensions.get('window');
 
-export const Login: React.FC<LoginProps> = ({ onLogin }) => {
+export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = () => {
-        if (email && password) {
-            onLogin();
+    const handleSubmit = async () => {
+        if (!email || !password) {
+            setError('Por favor, rellena todos los campos');
+            return;
+        }
+
+        setError('');
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                onLogin({ ...data.user, type: data.type });
+            } else {
+                setError(data.message || 'Email o contraseña incorrectos');
+            }
+        } catch (err) {
+            setError('Error al conectar con el servidor');
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -41,7 +85,15 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         <View style={styles.dotsContainer}>
                             <View style={[styles.dot, { backgroundColor: '#22d3ee' }]} />
                             <View style={[styles.dot, { backgroundColor: '#06b6d4' }]} />
+                            <View style={[styles.dot, { backgroundColor: '#22d3ee' }]} />
+                            <View style={[styles.dot, { backgroundColor: '#06b6d4' }]} />
                         </View>
+
+                        {error ? (
+                            <View style={styles.errorContainer}>
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>
+                        ) : null}
 
                         <View style={styles.form}>
                             <TextInput
@@ -52,6 +104,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
+                                editable={!loading}
                             />
                             <TextInput
                                 style={styles.input}
@@ -60,9 +113,25 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry
+                                editable={!loading}
                             />
-                            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                                <Text style={styles.buttonText}>ENTRAR</Text>
+                            <TouchableOpacity
+                                style={[styles.button, loading && styles.buttonDisabled]}
+                                onPress={handleSubmit}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <Text style={styles.buttonText}>ENTRAR</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>¿No tienes cuenta?</Text>
+                            <TouchableOpacity onPress={onNavigateToRegister}>
+                                <Text style={styles.registerLink}>Regístrate aquí</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -105,7 +174,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 32,
+        marginBottom: 8,
         gap: 8,
     },
     logoBars: {
@@ -136,6 +205,18 @@ const styles = StyleSheet.create({
         height: 12,
         borderRadius: 6,
     },
+    errorContainer: {
+        backgroundColor: '#fee2e2',
+        borderLeftWidth: 4,
+        borderLeftColor: '#ef4444',
+        padding: 8,
+        marginBottom: 16,
+    },
+    errorText: {
+        color: '#b91c1c',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
     form: {
         gap: 24,
     },
@@ -153,9 +234,30 @@ const styles = StyleSheet.create({
         padding: 16,
         alignItems: 'center',
     },
+    buttonDisabled: {
+        backgroundColor: '#374151',
+    },
     buttonText: {
         color: 'white',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    footer: {
+        marginTop: 24,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#e5e7eb',
+        alignItems: 'center',
+    },
+    footerText: {
+        color: '#4b5563',
+        fontWeight: '500',
+        marginBottom: 8,
+    },
+    registerLink: {
+        color: '#06b6d4',
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
 });

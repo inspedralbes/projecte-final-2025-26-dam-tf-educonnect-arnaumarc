@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Text, StatusBar } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Text, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Login } from './components/Login';
+import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './views/Dashboard';
+import { TeacherDashboardView } from './views/TeacherDashboardView';
 import { CoursesView } from './views/CoursesView';
 import { ChatView } from './views/ChatView';
 import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
-import { AppView } from './types';
+import { AppView, User } from './types';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
+  const [user, setUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState<AppView>(AppView.LOGIN);
 
-  const handleLogin = () => {
+  const handleLogin = (userData: User) => {
+    setUser(userData);
     setIsLoggedIn(true);
-    setCurrentView(AppView.DASHBOARD);
+    setCurrentView(userData.type === 'professor' ? AppView.DASHBOARD : AppView.DASHBOARD); // For now both go to Dashboard
   };
 
   const handleLogout = () => {
@@ -25,10 +29,25 @@ export default function App() {
   };
 
   if (!isLoggedIn) {
+    if (currentView === AppView.REGISTER) {
+      return (
+        <SafeAreaProvider>
+          <StatusBar barStyle="dark-content" />
+          <Register
+            onRegisterSuccess={() => setCurrentView(AppView.LOGIN)}
+            onNavigateToLogin={() => setCurrentView(AppView.LOGIN)}
+          />
+        </SafeAreaProvider>
+      );
+    }
+
     return (
       <SafeAreaProvider>
         <StatusBar barStyle="dark-content" />
-        <Login onLogin={handleLogin} />
+        <Login
+          onLogin={handleLogin}
+          onNavigateToRegister={() => setCurrentView(AppView.REGISTER)}
+        />
       </SafeAreaProvider>
     );
   }
@@ -36,7 +55,7 @@ export default function App() {
   const renderContent = () => {
     switch (currentView) {
       case AppView.DASHBOARD:
-        return <Dashboard />;
+        return user?.type === 'professor' ? <TeacherDashboardView user={user} /> : <Dashboard user={user} />;
       case AppView.COURSES:
         return <CoursesView />;
       case AppView.CHAT:
@@ -52,7 +71,7 @@ export default function App() {
           </View>
         );
       default:
-        return <Dashboard />;
+        return <Dashboard user={user} />;
     }
   };
 
@@ -65,6 +84,7 @@ export default function App() {
             currentView={currentView}
             setView={setCurrentView}
             onLogout={handleLogout}
+            user={user}
           />
           <View style={styles.content}>
             {renderContent()}
