@@ -79,16 +79,14 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.outerBorder}>
-          <Navbar
-            currentView={currentView}
-            setView={setCurrentView}
-            onLogout={handleLogout}
-            user={user}
-          />
-          <View style={styles.content}>
-            {renderContent()}
-          </View>
+        <Navbar
+          currentView={currentView}
+          setView={setCurrentView}
+          onLogout={handleLogout}
+          user={user}
+        />
+        <View style={styles.content}>
+          {renderContent()}
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -99,11 +97,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-  },
-  outerBorder: {
-    flex: 1,
-    borderWidth: 8,
-    borderColor: 'black',
   },
   content: {
     flex: 1,
