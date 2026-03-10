@@ -9,10 +9,6 @@ import { Platform } from 'react-native';
  *    Asegúrate de que el móvil y el PC estén en la misma red Wi-Fi.
  */
 
-const LOCAL_IP = '10.0.2.2'; // Cambia esto por tu IP local si usas un móvil real
+const SERVER_IP = '46.224.0.230';
 
-export const API_BASE_URL = Platform.select({
-    ios: `http://localhost:3005`,
-    android: `http://${LOCAL_IP}:3005`,
-    default: `http://localhost:3005`,
-});
+export const API_BASE_URL = `http://${SERVER_IP}:3005`;
