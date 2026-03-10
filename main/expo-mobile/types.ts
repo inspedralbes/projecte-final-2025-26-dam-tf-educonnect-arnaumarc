@@ -1,5 +1,6 @@
 export enum AppView {
   LOGIN = 'LOGIN',
+  REGISTER = 'REGISTER',
   DASHBOARD = 'DASHBOARD',
   COURSES = 'COURSES',
   CHAT = 'CHAT',
@@ -25,6 +26,12 @@ export interface ChatMessage {
 }
 
 export interface User {
+  _id: string;
+  nombre: string;
+  apellidos: string;
   email: string;
-  name: string;
+  type: 'alumno' | 'professor';
+  clase?: string;
+  profileImage?: string | null;
+  theme?: 'light' | 'dark';
 }

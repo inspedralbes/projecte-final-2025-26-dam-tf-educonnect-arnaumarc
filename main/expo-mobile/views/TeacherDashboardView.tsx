@@ -8,17 +8,17 @@ import {
     ActivityIndicator,
     Dimensions
 } from 'react-native';
-import { Bell, BookOpen, Building, Trash2, User as UserIcon } from 'lucide-react-native';
+import { Bell, BookOpen, Building, User as UserIcon } from 'lucide-react-native';
 import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '../config';
 import { User } from '../types';
 
-interface DashboardProps {
+interface TeacherDashboardViewProps {
     user: User | null;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
-    const [activeTab, setActiveTab] = useState<'personal' | 'clase' | 'general'>('personal');
+export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user }) => {
+    const [activeTab, setActiveTab] = useState<'personal' | 'clase' | 'centro'>('personal');
     const [messages, setMessages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const socketRef = useRef<Socket | null>(null);
@@ -54,8 +54,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 content: data.content,
                 course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined,
                 sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
-                date: new Date().toISOString(),
-                isPrivate: data.isPrivate
+                date: new Date().toISOString()
             };
             setMessages((prevMessages) => [newMessage, ...prevMessages]);
         });
@@ -65,34 +64,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         };
     }, [user]);
 
-    const handleDeleteMessage = async (id: string) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/messages/${id}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
-                setMessages(prev => prev.filter(msg => msg._id !== id));
-            }
-        } catch (error) {
-            console.error('Error deleting message:', error);
-        }
-    };
-
-    const personalMessages = messages.filter(msg => msg.isPrivate || !msg.course);
-    const classMessages = messages.filter(msg => !!msg.course && !msg.isPrivate);
+    const personalMessages = messages.filter(msg => !msg.course && msg.receiver === user?._id);
+    const classMessages = messages.filter(msg => !!msg.course && msg.type === 'task_submission');
     const generalMessages: any[] = [];
 
-    const renderMessageList = (msgList: any[], type: 'personal' | 'clase' | 'general') => {
-        if (loading) return <ActivityIndicator size="large" color="#06b6d4" style={{ marginTop: 20 }} />;
+    const renderMessageList = (msgList: any[], type: 'personal' | 'clase' | 'centro') => {
+        if (loading) return <ActivityIndicator size="large" color="#4f46e5" style={{ marginTop: 20 }} />;
 
         if (msgList.length === 0) {
             return (
                 <View style={styles.emptyContainer}>
                     <Bell size={40} color="#9ca3af" />
                     <Text style={styles.emptyText}>
-                        {type === 'personal' ? 'No tienes notificaciones personales.' :
-                            type === 'clase' ? 'No hay avisos de tus clases.' :
-                                'No hay avisos generales actualmente.'}
+                        {type === 'personal' ? 'No tienes nuevas notificaciones personales.' :
+                            type === 'clase' ? 'Todavía no hay nuevas entregas de la clase.' :
+                                'No hay avisos generales de la escuela actualmente.'}
                     </Text>
                 </View>
             );
@@ -104,25 +90,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                     <View key={msg._id || idx} style={styles.messageCard}>
                         <View style={styles.messageHeader}>
                             <View style={[styles.iconContainer,
-                            type === 'personal' ? styles.blueIcon :
-                                type === 'clase' ? styles.amberIcon : styles.indigoIcon]}>
-                                {type === 'personal' ? <Bell size={16} color="#2563eb" /> :
-                                    type === 'clase' ? <BookOpen size={16} color="#d97706" /> :
-                                        <Building size={16} color="#4f46e5" />}
+                            type === 'personal' ? styles.indigoIcon :
+                                type === 'clase' ? styles.pinkIcon : styles.cyanIcon]}>
+                                {type === 'personal' ? <Bell size={16} color="#4f46e5" /> :
+                                    type === 'clase' ? <BookOpen size={16} color="#db2777" /> :
+                                        <Building size={16} color="#0891b2" />}
                             </View>
                             <View style={{ flex: 1 }}>
                                 <Text style={styles.messageTitle}>{msg.title}</Text>
                                 <Text style={styles.messageContent}>{msg.content}</Text>
                                 <Text style={styles.messageSender}>
-                                    De: {msg.sender?.nombre} {msg.sender?.apellidos}
+                                    De: {msg.sender?.nombre || 'Estudiante'} {msg.sender?.apellidos || ''}
                                     {msg.course?.title ? ` (${msg.course.title})` : ''}
                                 </Text>
                             </View>
-                            {type === 'personal' && (
-                                <TouchableOpacity onPress={() => handleDeleteMessage(msg._id)} style={styles.deleteButton}>
-                                    <Trash2 size={18} color="#ef4444" />
-                                </TouchableOpacity>
-                            )}
                         </View>
                     </View>
                 ))}
@@ -132,52 +113,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <Text style={styles.title}>INS PEDRALBES</Text>
-            <Text style={styles.subtitle}>Proyecto Educativo Conectado</Text>
+            <Text style={styles.title}>INS PEDRALBES - DOCENCIA</Text>
+            <Text style={styles.subtitle}>Portal del Profesorado</Text>
 
             <View style={styles.tabsCard}>
                 <View style={styles.tabsHeader}>
                     <TouchableOpacity
                         onPress={() => setActiveTab('personal')}
-                        style={[styles.tab, activeTab === 'personal' && styles.tabActive]}
+                        style={[styles.tab, activeTab === 'personal' && styles.tabActivePersonal]}
                     >
-                        <UserIcon size={18} color={activeTab === 'personal' ? '#2563eb' : '#6b7280'} />
-                        <Text style={[styles.tabText, activeTab === 'personal' && styles.tabTextActive]}>Personal</Text>
+                        <UserIcon size={18} color={activeTab === 'personal' ? '#4f46e5' : '#6b7280'} />
+                        <Text style={[styles.tabText, activeTab === 'personal' && styles.tabTextActivePersonal]}>Personal</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setActiveTab('clase')}
-                        style={[styles.tab, activeTab === 'clase' && styles.tabActive]}
+                        style={[styles.tab, activeTab === 'clase' && styles.tabActiveClase]}
                     >
-                        <BookOpen size={18} color={activeTab === 'clase' ? '#2563eb' : '#6b7280'} />
-                        <Text style={[styles.tabText, activeTab === 'clase' && styles.tabTextActive]}>Clase</Text>
+                        <BookOpen size={18} color={activeTab === 'clase' ? '#db2777' : '#6b7280'} />
+                        <Text style={[styles.tabText, activeTab === 'clase' && styles.tabTextActiveClase]}>Clase</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => setActiveTab('general')}
-                        style={[styles.tab, activeTab === 'general' && styles.tabActive]}
+                        onPress={() => setActiveTab('centro')}
+                        style={[styles.tab, activeTab === 'centro' && styles.tabActiveCentro]}
                     >
-                        <Building size={18} color={activeTab === 'general' ? '#2563eb' : '#6b7280'} />
-                        <Text style={[styles.tabText, activeTab === 'general' && styles.tabTextActive]}>General</Text>
+                        <Building size={18} color={activeTab === 'centro' ? '#0891b2' : '#6b7280'} />
+                        <Text style={[styles.tabText, activeTab === 'centro' && styles.tabTextActiveCentro]}>Centro</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.tabContent}>
                     {activeTab === 'personal' && renderMessageList(personalMessages, 'personal')}
                     {activeTab === 'clase' && renderMessageList(classMessages, 'clase')}
-                    {activeTab === 'general' && renderMessageList(generalMessages, 'general')}
+                    {activeTab === 'centro' && renderMessageList(generalMessages, 'centro')}
                 </View>
             </View>
 
-            {/* Calendario simplificado para móvil */}
             <View style={styles.calendarCard}>
                 <View style={styles.calendarHeader}>
                     <View style={styles.calendarIcon}>
                         <BookOpen size={20} color="white" />
                     </View>
-                    <Text style={styles.calendarTitle}>CALENDARIO ACADÉMICO</Text>
+                    <Text style={styles.calendarTitle}>AGENDA DOCENTE</Text>
                 </View>
                 <View style={styles.calendarPlaceholder}>
                     <Text style={styles.placeholderText}>
-                        El calendario completo está disponible en la versión web.
+                        La agenda completa está disponible en la versión web.
                     </Text>
                     <TouchableOpacity style={styles.viewCalendarButton}>
                         <Text style={styles.viewCalendarText}>VER PRÓXIMOS EVENTOS</Text>
@@ -198,11 +178,11 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     title: {
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: '900',
         textAlign: 'center',
         marginTop: 10,
-        color: '#2563eb', // blue-600
+        color: '#4f46e5',
         textTransform: 'uppercase',
     },
     subtitle: {
@@ -210,7 +190,7 @@ const styles = StyleSheet.create({
         color: '#6b7280',
         fontWeight: '600',
         textTransform: 'uppercase',
-        fontSize: 12,
+        fontSize: 10,
         letterSpacing: 1,
         marginBottom: 30,
     },
@@ -239,19 +219,29 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         gap: 6,
     },
-    tabActive: {
+    tabActivePersonal: {
         backgroundColor: 'white',
         borderBottomWidth: 2,
-        borderColor: '#2563eb',
+        borderColor: '#4f46e5',
+    },
+    tabActiveClase: {
+        backgroundColor: 'white',
+        borderBottomWidth: 2,
+        borderColor: '#db2777',
+    },
+    tabActiveCentro: {
+        backgroundColor: 'white',
+        borderBottomWidth: 2,
+        borderColor: '#0891b2',
     },
     tabText: {
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 11,
         color: '#6b7280',
     },
-    tabTextActive: {
-        color: '#2563eb',
-    },
+    tabTextActivePersonal: { color: '#4f46e5' },
+    tabTextActiveClase: { color: '#db2777' },
+    tabTextActiveCentro: { color: '#0891b2' },
     tabContent: {
         padding: 16,
         minHeight: 200,
@@ -277,28 +267,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    blueIcon: { backgroundColor: '#dbeafe' },
-    amberIcon: { backgroundColor: '#fef3c7' },
     indigoIcon: { backgroundColor: '#e0e7ff' },
+    pinkIcon: { backgroundColor: '#fce7f3' },
+    cyanIcon: { backgroundColor: '#cffafe' },
     messageTitle: {
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 15,
         color: '#111827',
         marginBottom: 2,
     },
     messageContent: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#4b5563',
-        lineHeight: 20,
+        lineHeight: 18,
     },
     messageSender: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '600',
         color: '#9ca3af',
         marginTop: 8,
-    },
-    deleteButton: {
-        padding: 4,
     },
     emptyContainer: {
         alignItems: 'center',
@@ -310,7 +297,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#6b7280',
         fontWeight: '500',
-        fontSize: 14,
+        fontSize: 13,
         paddingHorizontal: 20,
     },
     calendarCard: {
@@ -340,7 +327,7 @@ const styles = StyleSheet.create({
         transform: [{ rotate: '-3deg' }],
     },
     calendarTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '900',
         color: 'black',
         letterSpacing: 1,
@@ -357,7 +344,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#6b7280',
         marginBottom: 15,
-        fontSize: 14,
+        fontSize: 13,
     },
     viewCalendarButton: {
         backgroundColor: 'black',
@@ -368,6 +355,6 @@ const styles = StyleSheet.create({
     viewCalendarText: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 11,
     },
 });
