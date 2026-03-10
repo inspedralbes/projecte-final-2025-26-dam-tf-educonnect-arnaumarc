@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
+import { API_BASE_URL } from '../config';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,

@@ -2,31 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { CourseCard } from '../components/CourseCard';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
-import { User } from '../types';
+import { User, Course, ClassSession } from '../types';
 import { CourseDetailsView } from './CourseDetailsView';
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface AsignaturasViewProps {
   user: User | null;
 }
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
-  const realCourses = user?.enrolledCourses as any[] || [];
+  const realCourses = user?.enrolledCourses as (Course | string)[] || [];
 
   const enrolledCoursesList = React.useMemo(() => {
     return realCourses.length > 0
       ? realCourses.map(c => ({
-        id: c._id || c,
-        title: c.title || 'Asignatura',
-        description: c.description || '',
-        professor: c.professor || '',
-        image: c.image || 'https://picsum.photos/300/200'
+        id: (c as any)._id || c,
+        title: (c as any).title || 'Asignatura',
+        description: (c as any).description || '',
+        professor: (c as any).professor || '',
+        image: (c as any).image || 'https://picsum.photos/300/200'
       }))
       : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
   }, [realCourses]);
 
-  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [schedule, setSchedule] = useState<ClassSession[]>([]);
   const hasRestored = React.useRef(false);
 
   // Restore selected course from localStorage ONLY ONCE on mount
@@ -53,7 +54,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    fetch('http://localhost:3005/api/schedule')
+    fetch(`${API_BASE_URL}/api/schedule`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -73,9 +74,9 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       .catch(err => console.error('Error fetching schedule:', err));
   }, []);
 
-  const enrolledSchedule = (schedule.length > 0 ? schedule : MOCK_SCHEDULE).filter(session => {
+  const enrolledSchedule = (schedule.length > 0 ? schedule : MOCK_SCHEDULE as ClassSession[]).filter(session => {
     if (realCourses.length > 0) {
-      return realCourses.some(c => (c._id || c) === session.courseId);
+      return realCourses.some(c => ((c as any)._id || c) === session.courseId);
     }
     return MOCK_USER.enrolledCourses.includes(session.courseId);
   });
