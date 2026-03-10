@@ -12,6 +12,8 @@ import { Toaster } from 'react-hot-toast';
 import { NotificationBot } from './components/NotificationBot';
 import { API_BASE_URL } from './config';
 
+import { API_BASE_URL } from './config';
+
 function App() {
   const [showRegister, setShowRegister] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {

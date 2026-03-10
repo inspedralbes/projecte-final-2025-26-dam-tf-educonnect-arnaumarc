@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import { User } from '../types';
 import { Bell } from 'lucide-react';
 
+import { API_BASE_URL } from '../config';
+
 interface NotificationBotProps {
     user: User | null;
 }
@@ -15,7 +17,7 @@ export const NotificationBot: React.FC<NotificationBotProps> = ({ user }) => {
         if (!user || user.type !== 'alumno') return;
 
         // Initialize connection
-        socketRef.current = io('http://localhost:3005');
+        socketRef.current = io(API_BASE_URL || window.location.origin);
 
         const socket = socketRef.current;
 

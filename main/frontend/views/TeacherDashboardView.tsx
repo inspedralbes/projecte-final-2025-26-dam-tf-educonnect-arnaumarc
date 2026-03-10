@@ -6,6 +6,8 @@ import { MOCK_EVENTS } from '../constants';
 import { User, CalendarEvent } from '../types';
 import { API_BASE_URL } from '../config';
 
+
+
 interface TeacherDashboardViewProps {
     user?: User | null;
 }
@@ -54,7 +56,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             .catch(err => console.error('Error fetching messages:', err));
 
         // 2. Setup Socket.io connection for this view
-        socketRef.current = io(API_BASE_URL);
+        socketRef.current = io(API_BASE_URL || window.location.origin);
         const socket = socketRef.current;
 
         socket.on('connect', () => {
