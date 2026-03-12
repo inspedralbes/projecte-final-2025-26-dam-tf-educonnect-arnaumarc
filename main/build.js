@@ -46,10 +46,16 @@ const distSrcDir = path.join(distDir, 'src');
 
 copyDir(backendSrcDir, distSrcDir);
 
-// Copy backend package.json and .env
+// Copy backend package.json, .env, Dockerfile, and docker-compose.yml
 fs.copyFileSync(path.join(backendDir, 'package.json'), path.join(distDir, 'package.json'));
 if (fs.existsSync(path.join(backendDir, '.env'))) {
     fs.copyFileSync(path.join(backendDir, '.env'), path.join(distDir, '.env'));
+}
+if (fs.existsSync(path.join(backendDir, 'Dockerfile'))) {
+    fs.copyFileSync(path.join(backendDir, 'Dockerfile'), path.join(distDir, 'Dockerfile'));
+}
+if (fs.existsSync(path.join(backendDir, 'docker-compose.yml'))) {
+    fs.copyFileSync(path.join(backendDir, 'docker-compose.yml'), path.join(distDir, 'docker-compose.yml'));
 }
 
 console.log('\nBuild complete! Your unified app is in the "dist" folder.');
