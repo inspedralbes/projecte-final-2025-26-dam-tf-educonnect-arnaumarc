@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, PhoneOff, PhoneIncoming } from 'lucide-react';
 import { API_BASE_URL } from '../config';
-import { io, Socket } from 'socket.io-client';
 import { User } from '../types';
 import toast from 'react-hot-toast';
+import { useSocket } from '../src/context/SocketContext';
 
 interface MockUser {
     id: string;
@@ -18,22 +18,33 @@ interface MeetViewProps {
 }
 
 export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
+    const { 
+        socket, 
+        incomingCall, 
+        isInCall, 
+        isCalling, 
+        activeCallUser,
+        startCall: signalStartCall,
+        acceptCall: signalAcceptCall,
+        rejectCall: signalRejectCall,
+        endCall: signalEndCall,
+        setInCall,
+        setCalling,
+        setActiveCallUser,
+        setIncomingCall
+    } = useSocket();
+
     const [users, setUsers] = useState<MockUser[]>([]);
-    const [selectedUser, setSelectedUser] = useState<MockUser | null>(null);
-    const [isInCall, setIsInCall] = useState(false);
-    const [isIncomingCall, setIsIncomingCall] = useState(false);
-    const [isCalling, setIsCalling] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<MockUser | null>(activeCallUser as MockUser | null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [incomingCallData, setIncomingCallData] = useState<any>(null);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
-    const socketRef = useRef<Socket | null>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
 
     const cleanupCall = () => {
@@ -42,7 +53,6 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             peerConnection.current = null;
         }
 
-        // Use ref for local stream to avoid stale closure in useEffect cleanup
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
@@ -50,11 +60,11 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
 
         setLocalStream(null);
         setRemoteStream(null);
-        setIsInCall(false);
-        setIsCalling(false);
-        setIsIncomingCall(false);
-        setIncomingCallData(null);
+        setInCall(false);
+        setCalling(false);
+        setIncomingCall(null);
         setSelectedUser(null);
+        setActiveCallUser(null);
     };
 
     const iceServers = {
@@ -65,28 +75,17 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     };
 
     useEffect(() => {
-        // Initialize socket
-        socketRef.current = io(API_BASE_URL || window.location.origin);
-        const socket = socketRef.current;
+        if (!socket) return;
 
-        if (user) {
-            socket.emit('register_user', user._id);
-        }
-
-        socket.on('incoming_call', (data) => {
-            setIncomingCallData(data);
-            setIsIncomingCall(true);
-        });
-
-        socket.on('call_answered', async (data) => {
+        const handleCallAnswered = async (data: any) => {
             if (peerConnection.current) {
                 await peerConnection.current.setRemoteDescription(new RTCSessionDescription(data.answer));
-                setIsCalling(false);
-                setIsInCall(true);
+                setCalling(false);
+                setInCall(true);
             }
-        });
+        };
 
-        socket.on('ice_candidate', async (data) => {
+        const handleIceCandidate = async (data: any) => {
             if (peerConnection.current) {
                 try {
                     await peerConnection.current.addIceCandidate(new RTCIceCandidate(data.candidate));
@@ -94,17 +93,22 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                     console.error("Error adding ice candidate:", e);
                 }
             }
-        });
+        };
 
-        socket.on('call_rejected', () => {
+        const handleCallRejected = () => {
             toast.error("Llamada rechazada");
             cleanupCall();
-        });
+        };
 
-        socket.on('call_ended', () => {
+        const handleCallEnded = () => {
             toast("Llamada finalizada");
             cleanupCall();
-        });
+        };
+
+        socket.on('call_answered', handleCallAnswered);
+        socket.on('ice_candidate', handleIceCandidate);
+        socket.on('call_rejected', handleCallRejected);
+        socket.on('call_ended', handleCallEnded);
 
         const fetchUsers = async () => {
             try {
@@ -113,12 +117,12 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 
                 if (Array.isArray(data)) {
                     const formattedUsers = data
-                        .filter(u => u._id !== user?._id) // Don't show myself
+                        .filter(u => u._id !== user?._id)
                         .map((user: any) => ({
                             id: user._id,
                             name: `${user.nombre} ${user.apellidos}`,
                             role: user.role === 'Student' ? 'Student' : 'Teacher',
-                            isOnline: true, // Simplified
+                            isOnline: true,
                             avatar: user.profileImage
                         }));
                     setUsers(formattedUsers);
@@ -133,10 +137,13 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         fetchUsers();
 
         return () => {
-            socket.disconnect();
+            socket.off('call_answered', handleCallAnswered);
+            socket.off('ice_candidate', handleIceCandidate);
+            socket.off('call_rejected', handleCallRejected);
+            socket.off('call_ended', handleCallEnded);
             cleanupCall();
         };
-    }, [user]);
+    }, [socket, user?._id]);
 
     useEffect(() => {
         if (isInCall && videoRef.current && localStream) {
@@ -147,12 +154,29 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         }
     }, [isInCall, localStream, remoteStream]);
 
+    // Sync selectedUser with activeCallUser from context
+    useEffect(() => {
+        if (activeCallUser && !selectedUser) {
+            const foundUser = users.find(u => u.id === activeCallUser.id);
+            if (foundUser) {
+                setSelectedUser(foundUser);
+            } else {
+                setSelectedUser({
+                    id: activeCallUser.id,
+                    name: activeCallUser.name,
+                    role: 'Student',
+                    isOnline: true
+                });
+            }
+        }
+    }, [activeCallUser, users]);
+
     const createPeerConnection = (targetUserId: string) => {
         const pc = new RTCPeerConnection(iceServers);
 
         pc.onicecandidate = (event) => {
             if (event.candidate) {
-                socketRef.current?.emit('ice_candidate', {
+                socket?.emit('ice_candidate', {
                     to: targetUserId,
                     candidate: event.candidate,
                     from: user?._id
@@ -164,9 +188,9 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             setRemoteStream(event.streams[0]);
         };
 
-        if (localStream) {
-            localStream.getTracks().forEach(track => {
-                pc.addTrack(track, localStream);
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => {
+                pc.addTrack(track, localStreamRef.current!);
             });
         }
 
@@ -180,18 +204,12 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             setLocalStream(stream);
             localStreamRef.current = stream;
             setSelectedUser(targetUser);
-            setIsCalling(true);
 
             const pc = createPeerConnection(targetUser.id);
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            socketRef.current?.emit('call_user', {
-                to: targetUser.id,
-                offer: offer,
-                from: user?._id,
-                fromName: `${user?.nombre} ${user?.apellidos}`
-            });
+            signalStartCall(targetUser.id, targetUser.name, offer);
         } catch (error) {
             console.error("Error starting call:", error);
             toast.error("No se pudo acceder a la cámara o micrófono");
@@ -199,33 +217,35 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     };
 
     const acceptCall = async () => {
+        if (!incomingCall) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setLocalStream(stream);
             localStreamRef.current = stream;
-            setIsIncomingCall(false);
-            setIsInCall(true);
             
             // Set selected user to the caller
-            const caller = users.find(u => u.id === incomingCallData.from) || {
-                id: incomingCallData.from,
-                name: incomingCallData.fromName,
+            const caller = users.find(u => u.id === incomingCall.from) || {
+                id: incomingCall.from,
+                name: incomingCall.fromName,
                 role: 'Student' as const,
                 isOnline: true
             };
             setSelectedUser(caller);
+            setActiveCallUser({ id: caller.id, name: caller.name });
 
-            const pc = createPeerConnection(incomingCallData.from);
-            await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+            const pc = createPeerConnection(incomingCall.from);
+            await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
             
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
-            socketRef.current?.emit('answer_call', {
-                to: incomingCallData.from,
+            socket?.emit('answer_call', {
+                to: incomingCall.from,
                 answer: answer,
                 from: user?._id
             });
+            
+            signalAcceptCall(incomingCall.from);
         } catch (error) {
             console.error("Error accepting call:", error);
             cleanupCall();
@@ -233,18 +253,14 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     };
 
     const rejectCall = () => {
-        socketRef.current?.emit('reject_call', {
-            to: incomingCallData.from,
-            from: user?._id
-        });
-        setIsIncomingCall(false);
-        setIncomingCallData(null);
+        if (!incomingCall) return;
+        signalRejectCall(incomingCall.from);
     };
 
     const endCall = () => {
-        const targetId = selectedUser?.id || incomingCallData?.from;
+        const targetId = selectedUser?.id || incomingCall?.from || activeCallUser?.id;
         if (targetId) {
-            socketRef.current?.emit('end_call', { to: targetId, from: user?._id });
+            signalEndCall(targetId);
         }
         cleanupCall();
     };
@@ -270,14 +286,14 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     return (
         <div className="flex h-full w-full bg-gray-50 dark:bg-zinc-900 transition-colors duration-300 relative overflow-hidden">
             {/* Incoming Call Overlay */}
-            {isIncomingCall && incomingCallData && (
+            {incomingCall && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 flex flex-col items-center max-w-sm w-full animate-in zoom-in-95 duration-500">
                         <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6 relative">
                             <UserIcon className="text-blue-600 dark:text-blue-400" size={40} />
                             <div className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{incomingCallData.fromName}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{incomingCall.fromName}</h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-8 flex items-center gap-2">
                             <PhoneIncoming size={16} className="animate-bounce" />
                             Llamada entrante...
@@ -355,8 +371,8 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 </div>
                                 <button
                                     onClick={() => startCall(u)}
-                                    disabled={isInCall || isCalling || isIncomingCall}
-                                    className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !isIncomingCall
+                                    disabled={isInCall || isCalling || !!incomingCall}
+                                    className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !incomingCall
                                         ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
                                         : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
                                         }`}
