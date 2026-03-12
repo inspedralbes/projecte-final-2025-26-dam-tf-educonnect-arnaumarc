@@ -149,7 +149,7 @@ function App() {
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
-        return <MeetView />;
+        return <MeetView user={user} />;
       case AppView.PROFILE:
         return <ProfileView user={user} onUpdateUser={updateUser} />;
       case AppView.WORKSHOPS:
@@ -175,7 +175,11 @@ function App() {
         {renderContent()}
       </div>
       <Toaster position="top-right" />
-      <NotificationBot user={user} />
+      <NotificationBot 
+        user={user} 
+        currentView={currentView}
+        setView={setCurrentView}
+      />
     </div>
   );
 }

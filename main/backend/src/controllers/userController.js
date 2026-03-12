@@ -18,6 +18,26 @@ const getAllStudents = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        let students = await Alumno.find().lean();
+        let professors = await Professor.find().lean();
+        
+        console.log(`[Backend] Found ${students.length} students and ${professors.length} professors`);
+
+        let allUsers = [
+            ...students.map(s => ({ ...s, role: 'Student' })),
+            ...professors.map(p => ({ ...p, role: 'Teacher' }))
+        ];
+        
+        console.log(`[Backend] Returning total of ${allUsers.length} users`);
+        res.json(allUsers);
+    } catch (e) {
+        console.error('Error fetching all users:', e);
+        res.status(500).json([]);
+    }
+};
+
 const getUser = async (req, res) => {
     try {
         let user = await Alumno.findById(req.params.id).populate('enrolledCourses');
@@ -58,4 +78,4 @@ const updateUserSettings = async (req, res) => {
     }
 };
 
-module.exports = { getAllStudents, getUser, updateUserSettings };
+module.exports = { getAllStudents, getAllUsers, getUser, updateUserSettings };
