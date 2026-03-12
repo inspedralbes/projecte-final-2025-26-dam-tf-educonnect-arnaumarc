@@ -65,3 +65,7 @@ pids
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Bot Discord
+main/discord-bot/node_modules
+main/discord-bot/.env
