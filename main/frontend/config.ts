@@ -4,8 +4,8 @@ export const getApiUrl = () => {
     if (import.meta.env.PROD) {
         return 'http://46.224.0.230:3005';
     }
-    // In development, we use the server IP to allow cross-device testing
-    return 'http://46.224.0.230:3005';
+    // In development, we use the current hostname to allow local and cross-device testing
+    return `http://${window.location.hostname}:3005`;
 };
 
 export const API_BASE_URL = getApiUrl();

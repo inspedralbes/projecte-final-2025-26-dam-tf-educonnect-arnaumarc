@@ -10,6 +10,7 @@ import { ProfileView } from './views/ProfileView';
 import { AppView, User } from './types';
 import { Toaster } from 'react-hot-toast';
 import { NotificationBot } from './components/NotificationBot';
+import { SocketProvider } from './src/context/SocketContext';
 
 import { API_BASE_URL } from './config';
 
@@ -149,7 +150,7 @@ function App() {
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
       case AppView.MEET:
-        return <MeetView />;
+        return <MeetView user={user} />;
       case AppView.PROFILE:
         return <ProfileView user={user} onUpdateUser={updateUser} />;
       case AppView.WORKSHOPS:
@@ -164,19 +165,25 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white dark:bg-zinc-900 transition-colors duration-300">
-      <Navbar
-        currentView={currentView}
-        setView={setCurrentView}
-        onLogout={handleLogout}
-        user={user}
-      />
-      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
-        {renderContent()}
+    <SocketProvider user={user}>
+      <div className="flex flex-col h-screen w-full bg-white dark:bg-zinc-900 transition-colors duration-300">
+        <Navbar
+          currentView={currentView}
+          setView={setCurrentView}
+          onLogout={handleLogout}
+          user={user}
+        />
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
+          {renderContent()}
+        </div>
+        <Toaster position="top-right" />
+        <NotificationBot 
+          user={user} 
+          currentView={currentView}
+          setView={setCurrentView}
+        />
       </div>
-      <Toaster position="top-right" />
-      <NotificationBot user={user} />
-    </div>
+    </SocketProvider>
   );
 }
 

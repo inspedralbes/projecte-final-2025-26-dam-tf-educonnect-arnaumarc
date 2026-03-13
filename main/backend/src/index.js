@@ -51,6 +51,68 @@ io.on('connection', (socket) => {
             }
         }
     });
+
+    // --- WebRTC Signaling Events ---
+
+    // When a user initiates a call
+    socket.on('call_user', (data) => {
+        const { to, offer, from, fromName } = data;
+        const targetSocket = connectedUsers.get(String(to));
+        if (targetSocket) {
+            console.log(`Forwarding offer from ${from} to ${to}`);
+            io.to(targetSocket).emit('incoming_call', {
+                from,
+                fromName,
+                offer
+            });
+        } else {
+            console.log(`Call target ${to} not connected`);
+            socket.emit('call_failed', { reason: 'User not online' });
+        }
+    });
+
+    // When a user answers a call
+    socket.on('answer_call', (data) => {
+        const { to, answer } = data;
+        const targetSocket = connectedUsers.get(String(to));
+        if (targetSocket) {
+            console.log(`Forwarding answer to ${to}`);
+            io.to(targetSocket).emit('call_answered', {
+                answer,
+                from: data.from
+            });
+        }
+    });
+
+    // Exchange ICE candidates
+    socket.on('ice_candidate', (data) => {
+        const { to, candidate } = data;
+        const targetSocket = connectedUsers.get(String(to));
+        if (targetSocket) {
+            io.to(targetSocket).emit('ice_candidate', {
+                candidate,
+                from: data.from
+            });
+        }
+    });
+
+    // Reject a call
+    socket.on('reject_call', (data) => {
+        const { to } = data;
+        const targetSocket = connectedUsers.get(String(to));
+        if (targetSocket) {
+            io.to(targetSocket).emit('call_rejected', { from: data.from });
+        }
+    });
+
+    // Hang up or cancel a call
+    socket.on('end_call', (data) => {
+        const { to } = data;
+        const targetSocket = connectedUsers.get(String(to));
+        if (targetSocket) {
+            io.to(targetSocket).emit('call_ended', { from: data.from });
+        }
+    });
 });
 
 app.use(cors());

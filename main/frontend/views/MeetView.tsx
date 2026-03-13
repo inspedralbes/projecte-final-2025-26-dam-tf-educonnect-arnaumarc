@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, PhoneOff, PhoneIncoming } from 'lucide-react';
+import { API_BASE_URL } from '../config';
+import { User } from '../types';
+import toast from 'react-hot-toast';
+import { useSocket } from '../src/context/SocketContext';
 
 interface MockUser {
     id: string;
@@ -9,51 +13,256 @@ interface MockUser {
     avatar?: string;
 }
 
-const MOCK_USERS: MockUser[] = [
-    { id: '1', name: 'Dr. Roberto Martínez', role: 'Teacher', isOnline: true },
-    { id: '2', name: 'Ana Gómez', role: 'Student', isOnline: true },
-    { id: '3', name: 'Carlos Ruiz', role: 'Student', isOnline: false },
-    { id: '4', name: 'Elena Foix', role: 'Teacher', isOnline: true },
-];
+interface MeetViewProps {
+    user: User | null;
+}
 
-export const MeetView: React.FC = () => {
-    const [selectedUser, setSelectedUser] = useState<MockUser | null>(null);
-    const [isInCall, setIsInCall] = useState(false);
+export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
+    const { 
+        socket, 
+        incomingCall, 
+        isInCall, 
+        isCalling, 
+        activeCallUser,
+        startCall: signalStartCall,
+        acceptCall: signalAcceptCall,
+        rejectCall: signalRejectCall,
+        endCall: signalEndCall,
+        setInCall,
+        setCalling,
+        setActiveCallUser,
+        setIncomingCall
+    } = useSocket();
+
+    const [users, setUsers] = useState<MockUser[]>([]);
+    const [selectedUser, setSelectedUser] = useState<MockUser | null>(activeCallUser as MockUser | null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
-    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    React.useEffect(() => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const remoteVideoRef = useRef<HTMLVideoElement>(null);
+    const peerConnection = useRef<RTCPeerConnection | null>(null);
+    const localStreamRef = useRef<MediaStream | null>(null);
+
+    const cleanupCall = () => {
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null;
+        }
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+        }
+
+        setLocalStream(null);
+        setRemoteStream(null);
+        setInCall(false);
+        setCalling(false);
+        setIncomingCall(null);
+        setSelectedUser(null);
+        setActiveCallUser(null);
+    };
+
+    const iceServers = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+    };
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleCallAnswered = async (data: any) => {
+            if (peerConnection.current) {
+                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(data.answer));
+                setCalling(false);
+                setInCall(true);
+            }
+        };
+
+        const handleIceCandidate = async (data: any) => {
+            if (peerConnection.current) {
+                try {
+                    await peerConnection.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } catch (e) {
+                    console.error("Error adding ice candidate:", e);
+                }
+            }
+        };
+
+        const handleCallRejected = () => {
+            toast.error("Llamada rechazada");
+            cleanupCall();
+        };
+
+        const handleCallEnded = () => {
+            toast("Llamada finalizada");
+            cleanupCall();
+        };
+
+        socket.on('call_answered', handleCallAnswered);
+        socket.on('ice_candidate', handleIceCandidate);
+        socket.on('call_rejected', handleCallRejected);
+        socket.on('call_ended', handleCallEnded);
+
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/all-users`);
+                const data = await response.json();
+                
+                if (Array.isArray(data)) {
+                    const formattedUsers = data
+                        .filter(u => u._id !== user?._id)
+                        .map((user: any) => ({
+                            id: user._id,
+                            name: `${user.nombre} ${user.apellidos}`,
+                            role: user.role === 'Student' ? 'Student' : 'Teacher',
+                            isOnline: true,
+                            avatar: user.profileImage
+                        }));
+                    setUsers(formattedUsers);
+                }
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUsers();
+
+        return () => {
+            socket.off('call_answered', handleCallAnswered);
+            socket.off('ice_candidate', handleIceCandidate);
+            socket.off('call_rejected', handleCallRejected);
+            socket.off('call_ended', handleCallEnded);
+            cleanupCall();
+        };
+    }, [socket, user?._id]);
+
+    useEffect(() => {
         if (isInCall && videoRef.current && localStream) {
             videoRef.current.srcObject = localStream;
         }
-    }, [isInCall, localStream]);
+        if (isInCall && remoteVideoRef.current && remoteStream) {
+            remoteVideoRef.current.srcObject = remoteStream;
+        }
+    }, [isInCall, localStream, remoteStream]);
 
-    const startCall = async (user: MockUser) => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
+    // Sync selectedUser with activeCallUser from context
+    useEffect(() => {
+        if (activeCallUser && !selectedUser) {
+            const foundUser = users.find(u => u.id === activeCallUser.id);
+            if (foundUser) {
+                setSelectedUser(foundUser);
+            } else {
+                setSelectedUser({
+                    id: activeCallUser.id,
+                    name: activeCallUser.name,
+                    role: 'Student',
+                    isOnline: true
+                });
+            }
+        }
+    }, [activeCallUser, users]);
+
+    const createPeerConnection = (targetUserId: string) => {
+        const pc = new RTCPeerConnection(iceServers);
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket?.emit('ice_candidate', {
+                    to: targetUserId,
+                    candidate: event.candidate,
+                    from: user?._id
+                });
+            }
+        };
+
+        pc.ontrack = (event) => {
+            setRemoteStream(event.streams[0]);
+        };
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => {
+                pc.addTrack(track, localStreamRef.current!);
             });
+        }
+
+        peerConnection.current = pc;
+        return pc;
+    };
+
+    const startCall = async (targetUser: MockUser) => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setLocalStream(stream);
-            setSelectedUser(user);
-            setIsInCall(true);
-            setIsMuted(false);
-            setIsVideoOff(false);
+            localStreamRef.current = stream;
+            setSelectedUser(targetUser);
+
+            const pc = createPeerConnection(targetUser.id);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            signalStartCall(targetUser.id, targetUser.name, offer);
         } catch (error) {
-            console.error("Error accessing media devices:", error);
-            alert("No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.");
+            console.error("Error starting call:", error);
+            toast.error("No se pudo acceder a la cámara o micrófono");
         }
     };
 
-    const endCall = () => {
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            setLocalStream(null);
+    const acceptCall = async () => {
+        if (!incomingCall) return;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            setLocalStream(stream);
+            localStreamRef.current = stream;
+            
+            // Set selected user to the caller
+            const caller = users.find(u => u.id === incomingCall.from) || {
+                id: incomingCall.from,
+                name: incomingCall.fromName,
+                role: 'Student' as const,
+                isOnline: true
+            };
+            setSelectedUser(caller);
+            setActiveCallUser({ id: caller.id, name: caller.name });
+
+            const pc = createPeerConnection(incomingCall.from);
+            await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+            
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            socket?.emit('answer_call', {
+                to: incomingCall.from,
+                answer: answer,
+                from: user?._id
+            });
+            
+            signalAcceptCall(incomingCall.from);
+        } catch (error) {
+            console.error("Error accepting call:", error);
+            cleanupCall();
         }
-        setIsInCall(false);
-        setSelectedUser(null);
+    };
+
+    const rejectCall = () => {
+        if (!incomingCall) return;
+        signalRejectCall(incomingCall.from);
+    };
+
+    const endCall = () => {
+        const targetId = selectedUser?.id || incomingCall?.from || activeCallUser?.id;
+        if (targetId) {
+            signalEndCall(targetId);
+        }
+        cleanupCall();
     };
 
     const toggleMute = () => {
@@ -75,7 +284,56 @@ export const MeetView: React.FC = () => {
     };
 
     return (
-        <div className="flex h-full w-full bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
+        <div className="flex h-full w-full bg-gray-50 dark:bg-zinc-900 transition-colors duration-300 relative overflow-hidden">
+            {/* Incoming Call Overlay */}
+            {incomingCall && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 flex flex-col items-center max-w-sm w-full animate-in zoom-in-95 duration-500">
+                        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6 relative">
+                            <UserIcon className="text-blue-600 dark:text-blue-400" size={40} />
+                            <div className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{incomingCall.fromName}</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8 flex items-center gap-2">
+                            <PhoneIncoming size={16} className="animate-bounce" />
+                            Llamada entrante...
+                        </p>
+                        <div className="flex gap-4 w-full">
+                            <button 
+                                onClick={rejectCall}
+                                className="flex-1 bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+                            >
+                                <X size={20} /> Rechazar
+                            </button>
+                            <button 
+                                onClick={acceptCall}
+                                className="flex-1 bg-green-500 text-white hover:bg-green-600 py-3 rounded-2xl font-bold shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Video size={20} /> Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Calling State Overlay */}
+            {isCalling && (
+                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 backdrop-blur-[2px] animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl flex flex-col items-center animate-in zoom-in-95 duration-500">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                            <Phone className="text-blue-500 animate-pulse" size={32} />
+                        </div>
+                        <p className="text-gray-900 dark:text-white font-bold mb-4">Llamando a {selectedUser?.name}...</p>
+                        <button 
+                            onClick={endCall}
+                            className="bg-red-500 text-white p-4 rounded-full hover:bg-red-600 transition-all"
+                        >
+                            <PhoneOff size={24} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Sidebar - User List */}
             <div className="w-80 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 flex flex-col shadow-sm z-10">
                 <div className="p-5 border-b border-gray-100 dark:border-zinc-800">
@@ -85,57 +343,81 @@ export const MeetView: React.FC = () => {
                     </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                    {MOCK_USERS.map((user) => (
-                        <div
-                            key={user.id}
-                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${user.isOnline ? 'bg-white dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-700 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5' : 'bg-gray-50 dark:bg-zinc-800/20 border-transparent opacity-70'}`}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div className="relative">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold">
-                                        {user.name.charAt(0)}
-                                    </div>
-                                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-sm text-gray-900 dark:text-white">{user.name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.role}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => startCall(user)}
-                                disabled={!user.isOnline}
-                                className={`p-2.5 rounded-full transition-all ${user.isOnline
-                                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
-                                    }`}
+                    {isLoading ? (
+                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">Cargando usuarios...</div>
+                    ) : users.length === 0 ? (
+                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">No hay otros usuarios disponibles.</div>
+                    ) : (
+                        users.map((u) => (
+                            <div
+                                key={u.id}
+                                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${u.id === selectedUser?.id ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-700 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5'}`}
                             >
-                                <Video size={16} />
-                            </button>
-                        </div>
-                    ))}
+                                <div className="flex items-center space-x-3">
+                                    <div className="relative">
+                                        {u.avatar ? (
+                                            <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover bg-gray-200 dark:bg-zinc-700" />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold">
+                                                {u.name.charAt(0)}
+                                            </div>
+                                        )}
+                                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${u.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{u.name}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{u.role}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => startCall(u)}
+                                    disabled={isInCall || isCalling || !!incomingCall}
+                                    className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !incomingCall
+                                        ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
+                                        }`}
+                                >
+                                    <Video size={16} />
+                                </button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
             {/* Main Area - Call Interface */}
             <div className="flex-1 flex flex-col items-center justify-center p-8">
                 {isInCall && selectedUser ? (
-                    <div className="w-full max-w-4xl bg-black/95 rounded-3xl overflow-hidden shadow-2xl relative aspect-video flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
-                        {/* Remote Video Placeholder */}
-                        <div className="flex-1 flex items-center justify-center relative bg-gradient-to-b from-zinc-800 to-zinc-900">
-                            <div className="text-center animate-in fade-in duration-700">
-                                <div className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl font-bold text-white shadow-lg ring-4 ring-white/10">
-                                    {selectedUser.name.charAt(0)}
+                    <div className="w-full h-full max-w-6xl bg-black rounded-3xl overflow-hidden shadow-2xl relative flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
+                        {/* Remote Video */}
+                        <div className="flex-1 relative bg-zinc-900 flex items-center justify-center">
+                            {remoteStream ? (
+                                <video
+                                    ref={remoteVideoRef}
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="text-center flex flex-col items-center animate-in fade-in duration-700">
+                                    <div className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center mb-6 text-5xl font-bold text-white shadow-lg ring-4 ring-white/10">
+                                        {selectedUser.name.charAt(0)}
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">{selectedUser.name}</h3>
+                                    <p className="text-blue-400 text-sm font-medium flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                        Conectando medios...
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">{selectedUser.name}</h3>
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                    <p className="text-green-400 text-sm font-medium">Conectado</p>
-                                </div>
+                            )}
+
+                            {/* Remote User Label */}
+                            <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                                <p className="text-white text-sm font-semibold">{selectedUser.name}</p>
                             </div>
 
-                            {/* Local Video Placeholder (Real Stream) */}
-                            <div className="absolute bottom-6 right-6 w-48 h-36 bg-zinc-900 rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl ring-2 ring-white/20 transition-all hover:scale-105 duration-300">
+                            {/* Local Video Picture-in-Picture */}
+                            <div className="absolute bottom-6 right-6 w-48 aspect-video bg-zinc-800 rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl ring-2 ring-white/20 transition-all hover:scale-105 duration-300 z-10">
                                 <video
                                     ref={videoRef}
                                     autoPlay
@@ -145,52 +427,55 @@ export const MeetView: React.FC = () => {
                                 />
                                 {isVideoOff && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-800 text-zinc-400">
-                                        <VideoOff size={24} className="mb-2" />
-                                        <p className="text-xs font-medium">Cámara apagada</p>
+                                        <div className="w-12 h-12 bg-zinc-700 rounded-full flex items-center justify-center mb-2">
+                                            <VideoOff size={20} />
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Controls Bar */}
-                        <div className="h-24 bg-zinc-900/90 backdrop-blur-md flex items-center justify-center space-x-4 px-8 border-t border-white/5">
-                            <div className="flex items-center space-x-4 bg-zinc-800/80 p-2 rounded-full">
+                        <div className="h-28 bg-zinc-900/90 backdrop-blur-md flex items-center justify-center space-x-6 px-8 border-t border-white/5">
+                            <div className="flex items-center space-x-4 bg-zinc-800/80 p-2.5 rounded-full border border-white/5">
                                 <button
                                     onClick={toggleMute}
-                                    className={`p-3.5 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    className={`p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                 >
-                                    {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
+                                    {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
                                 </button>
 
                                 <button
                                     onClick={toggleVideo}
-                                    className={`p-3.5 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    className={`p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                 >
-                                    {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
+                                    {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
                                 </button>
 
-                                <button className="p-3.5 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors">
-                                    <MonitorUp size={22} />
+                                <button className="p-4 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors">
+                                    <MonitorUp size={24} />
                                 </button>
                             </div>
 
                             <button
                                 onClick={endCall}
-                                className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-105 shadow-lg shadow-red-900/20 ml-4"
+                                className="p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/20 active:scale-95"
                             >
-                                <Phone size={24} className="transform rotate-135" />
+                                <PhoneOff size={28} />
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center space-y-6 opacity-75">
-                        <div className="w-32 h-32 bg-gray-200 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-gray-400 dark:text-zinc-600">
+                    <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <div className="w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-500 shadow-inner">
                             <Video size={64} />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">EduConnect Meet</h2>
-                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                            Selecciona un usuario de la lista lateral para iniciar una videollamada de alta calidad.
-                        </p>
+                        <div>
+                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3">EduConnect Meet</h2>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-lg">
+                                Colabora en tiempo real con alumnos y profesores. Selecciona un contacto para iniciar una videollamada.
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>
