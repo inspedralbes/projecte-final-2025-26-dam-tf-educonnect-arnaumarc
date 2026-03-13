@@ -112,9 +112,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                     {/* Settings Section */}
                     <div className="space-y-4">
                         <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 ml-2 tracking-wide transition-colors">Ajustes</h2>
-                        <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all">
+                        <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all divide-y divide-gray-200 dark:divide-zinc-700">
                             <NotificationsDropdown user={user} />
                             <PreferencesDropdown user={user} onUpdateUser={onUpdateUser} />
+                            <ServerDropdown />
                         </div>
                     </div>
                 </div>
@@ -157,7 +158,7 @@ const NotificationsDropdown = ({ user }: { user: UserType | null }) => {
     };
 
     return (
-        <div className="border-b-2 border-gray-200 dark:border-zinc-700">
+        <div>
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
@@ -278,3 +279,54 @@ const ProfileItem = ({ icon, label, value, last }: { icon: React.ReactNode, labe
         </div>
     </div>
 );
+
+const DiscordIcon = ({ size = 20, className = "" }) => (
+    <svg width={size} height={size} className={className} viewBox="0 0 127.14 96.36" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M107.7 8.07A105.15 105.15 0 0081.47 0a72.06 72.06 0 00-3.36 6.83 97.68 97.68 0 00-29.08 0 72.37 72.37 0 00-3.36-6.83 105.15 105.15 0 00-26.23 8.09C2.04 33.84-2.4 58.98.92 83.46a105.73 105.73 0 0032.14 16.15 77.7 77.7 0 006.89-11.11 68.42 68.42 0 01-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0064.32 0c.87.66 1.75 1.34 2.66 2a68.42 68.42 0 01-10.87 5.19 77.7 77.7 0 006.89 11.1 105.25 105.25 0 0032.19-16.14c3.92-29.84-4.82-53.79-19.16-75.4zM42.64 68.12c-5.14 0-9.35-4.63-9.35-10.32s4.12-10.31 9.35-10.31c5.28 0 9.4 4.68 9.35 10.31 0 5.69-4.12 10.32-9.35 10.32zm41.86 0c-5.14 0-9.35-4.63-9.35-10.32s4.12-10.31 9.35-10.31c5.28 0 9.4 4.68 9.35 10.31 0 5.69-4.12 10.32-9.35 10.32z" />
+    </svg>
+);
+
+const ServerDropdown = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+            >
+                <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center border-2 border-indigo-100 dark:border-indigo-800/50 transition-colors">
+                        <DiscordIcon size={20} className="text-[#5865F2]" />
+                    </div>
+                    <span className="text-sm font-black text-black dark:text-white uppercase transition-colors">Server</span>
+                </div>
+                <ChevronRight size={20} className={`text-gray-300 dark:text-zinc-500 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div className="p-4 bg-gray-50 dark:bg-zinc-900 border-t-2 border-gray-200 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200 space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#5865F2]/10 flex items-center justify-center">
+                                <DiscordIcon size={16} className="text-[#5865F2]" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Comunidad Discord</span>
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400">Únete a nuestro servidor</span>
+                            </div>
+                        </div>
+                        <a
+                            href="https://discord.gg/FqxXzrAu"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] px-4 py-2 rounded-lg transition-all shadow-sm flex items-center gap-2"
+                        >
+                            <span>Unirse</span>
+                        </a>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
