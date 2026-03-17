@@ -1,0 +1,8 @@
+http://projecteeduconnect.dam.inspedralbes.cat
+
+root * /srv
+
+@api path /api/*
+reverse_proxy @api api:3005
+
+file_server
