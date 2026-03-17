@@ -2,7 +2,7 @@ services:
   api:
     build: .
     ports:
-      - "3005:3005"
+      - "3006:3005"
     environment:
       - MONGO_URI=mongodb://root:password@db:27017/educonnect?authSource=admin
       - PORT=3005
@@ -14,6 +14,18 @@ services:
     command: npm run dev
 
     restart: always
+
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../dist/public:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
   db:
     image: mongo:latest
@@ -40,3 +52,5 @@ services:
 
 volumes:
   db_data:
+  caddy_data:
+  caddy_config:
