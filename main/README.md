@@ -4,9 +4,7 @@ Aquest document detalla un repàs complet a les funcionalitats del projecte EduC
 
 ---
 
-## Funcionalitats Principals del Projecte
-
-EduConnect està dissenyat com a una solució integral 360º de connectivitat educativa. Les principals característiques que defineixen l'aplicació són:
+## Funcionalitats Principals del Projissenyat com a una solució integral 360º de connectivitat educativa. Les principals característiques que defineixen l'aplicació són:
 
 1. **Gestió Autenticada i Rols**: Diferenciació clara entre les funcionalitats a les quals tenen accés els professors respecte als alumnes. Permet gestionar perfils de forma segura i eficient.
 2. **Sistema Multiplataforma Integrat**: Un mateix nucli que dóna servei a una plataforma Web, una aplicació per a mòbils Android i iOS, i un Bot per a Discord, assegurant que la comunitat educativa sempre estigui connectada per la via que li sigui més còmoda.
