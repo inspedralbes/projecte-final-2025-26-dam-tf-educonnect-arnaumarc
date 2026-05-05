@@ -16,6 +16,8 @@ const messageRoutes = require('./routes/messageRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const topicRoutes = require('./routes/topicRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const Notification = require('./models/Notification');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,10 +36,24 @@ io.on('connection', (socket) => {
     console.log(`Usuario conectado al socket: ${socket.id}`);
 
     // Register user ID with their socket
-    socket.on('register_user', (userId) => {
+    socket.on('register_user', async (userId) => {
         if (userId) {
             connectedUsers.set(String(userId), socket.id);
             console.log(`Usuario registrado en socket: ${userId} -> ${socket.id}`);
+
+            // Sincronizar notificaciones no leídas al conectar
+            try {
+                const pendingNotifications = await Notification.find({ 
+                    recipient: userId, 
+                    read: false 
+                }).sort({ createdAt: -1 });
+                
+                if (pendingNotifications.length > 0) {
+                    socket.emit('sync_notifications', pendingNotifications);
+                }
+            } catch (error) {
+                console.error('Error sincronizando notificaciones:', error);
+            }
         }
     });
 
@@ -142,6 +158,7 @@ app.use('/api', messageRoutes);
 app.use('/api', eventRoutes);
 app.use('/api', scheduleRoutes);
 app.use('/api', topicRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.

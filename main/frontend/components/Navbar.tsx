@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AppView, User } from '../types';
-import { LogOut, UserCircle } from 'lucide-react';
+import { LogOut, UserCircle, Bell } from 'lucide-react';
+import { useSocket } from '../src/context/SocketContext';
+import { NotificationPanel } from './NotificationPanel';
 
 interface NavbarProps {
   currentView: AppView;
@@ -11,6 +13,8 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, user }) => {
   const profileImage = user?.profileImage || null;
+  const { unreadCount } = useSocket();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const getTabClass = (view: AppView) => {
     const isActive = currentView === view;
@@ -50,6 +54,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
         </button>
       </div>
       <div className="px-4 flex items-center space-x-3">
+        {/* Notification Bell */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className={`p-2 rounded-xl transition-all relative ${showNotifications ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+          >
+            <Bell size={24} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 animate-in zoom-in duration-300">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+          {showNotifications && (
+            <NotificationPanel onClose={() => setShowNotifications(false)} />
+          )}
+        </div>
+
         <button
           onClick={() => setView(AppView.PROFILE)}
           className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors overflow-hidden bg-cover bg-center shadow-sm hover:shadow-md"

@@ -1,6 +1,7 @@
 const Course = require('../models/Course');
 const Alumno = require('../models/Alumno');
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 const getCourses = async (req, res) => {
     try {
@@ -69,21 +70,31 @@ const notifyAllStudents = async (req, res) => {
 
         await Message.insertMany(messagesToCreate);
 
+        // Crear notificaciones persistentes
+        const notificationsToCreate = students.map(student => ({
+            recipient: student._id,
+            recipientModel: 'Alumno',
+            sender: senderId,
+            senderModel: 'Professor',
+            type: 'ANNOUNCEMENT',
+            title: 'Aviso de Clase: ' + title,
+            content: content,
+            link: '/asignaturas' // O la ruta del curso
+        }));
+
+        const savedNotifications = await Notification.insertMany(notificationsToCreate);
+
         // Emit real-time notifications to connected students
         let sentCount = 0;
-        for (const student of students) {
+        students.forEach((student, index) => {
             const socketId = req.connectedUsers?.get(String(student._id));
             if (socketId && req.io) {
-                req.io.to(socketId).emit('new_notification', {
-                    title: 'Aviso de Clase: ' + title,
-                    content: content,
-                    courseId: req.params.courseId
-                });
+                req.io.to(socketId).emit('new_notification', savedNotifications[index]);
                 sentCount++;
             }
-        }
+        });
 
-        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes (${sentCount} en línea)` });
+        res.json({ success: true, message: `NotificaciÃ³n enviada a ${students.length} estudiantes (${sentCount} en lÃ­nea)` });
     } catch (error) {
         console.error('Error enviando notificación a toda la clase:', error);
         res.status(500).json({ success: false, message: 'Error enviando notificación', error: error.message });

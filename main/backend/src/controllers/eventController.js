@@ -17,7 +17,13 @@ const createEvent = async (req, res) => {
         await newEvent.save();
 
         if (courseId) {
-            notifyCourseStudents(req, courseId, 'Nou Esdeveniment/Examen: ' + title, 'S\'ha afegit una nova fita a l\'agenda: ' + title);
+            notifyCourseStudents(
+                req, 
+                courseId, 
+                'Nou Esdeveniment/Examen: ' + title, 
+                'S\'ha afegit una nova fita a l\'agenda: ' + title,
+                type === 'exam' ? 'EXAM' : 'ANNOUNCEMENT'
+            );
         }
 
         res.status(201).json(newEvent);

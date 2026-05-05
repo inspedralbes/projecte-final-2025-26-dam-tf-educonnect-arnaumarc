@@ -1,19 +1,27 @@
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 const sendMessage = async (req, res) => {
     const { sender, senderModel, receiver, course, title, content } = req.body;
     try {
         const message = await Message.create({ sender, senderModel, receiver, course, title, content, isPrivate: true });
 
+        // Crear notificación persistente
+        const notification = await Notification.create({
+            recipient: receiver,
+            recipientModel: 'Alumno', // Simplificado para este flujo
+            sender,
+            senderModel,
+            type: 'MESSAGE',
+            title: 'Nuevo Mensaje: ' + title,
+            content: content,
+            link: '/perfil' // O la ruta del chat
+        });
+
         // Emit real-time notification to the receiver if connected
         const receiverSocketId = req.connectedUsers?.get(String(receiver));
         if (receiverSocketId && req.io) {
-            req.io.to(receiverSocketId).emit('new_notification', {
-                title: 'Nuevo Mensaje: ' + title,
-                content: content,
-                courseId: course,
-                isPrivate: true
-            });
+            req.io.to(receiverSocketId).emit('new_notification', notification);
         }
 
         res.json({ success: true, message });

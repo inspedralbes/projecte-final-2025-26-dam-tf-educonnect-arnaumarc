@@ -31,7 +31,13 @@ exports.createTopic = async (req, res) => {
         await newTopic.save();
 
         // Notify students
-        notifyCourseStudents(req, courseId, 'Nou Temari: ' + title, 'El professor ha afegit un nou tema al curs: ' + title);
+        notifyCourseStudents(
+            req, 
+            courseId, 
+            'Nou Temari: ' + title, 
+            'El professor ha afegit un nou tema al curs: ' + title,
+            'MATERIAL'
+        );
 
         res.status(201).json(newTopic);
     } catch (error) {
@@ -73,7 +79,13 @@ exports.addResource = async (req, res) => {
         // Notify students
         const typeLabels = { note: 'Apunte', file: 'Archivo', link: 'Enlace', task: 'Tarea' };
         const label = typeLabels[type] || 'recurso';
-        notifyCourseStudents(req, topic.courseId, `Nou ${label}: ` + title, `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${title}`);
+        notifyCourseStudents(
+            req, 
+            topic.courseId, 
+            `Nou ${label}: ` + title, 
+            `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${title}`,
+            'MATERIAL'
+        );
 
         res.status(201).json(topic);
     } catch (error) {

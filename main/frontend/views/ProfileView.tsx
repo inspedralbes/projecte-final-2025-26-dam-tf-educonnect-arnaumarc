@@ -113,7 +113,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                     <div className="space-y-4">
                         <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 ml-2 tracking-wide transition-colors">Ajustes</h2>
                         <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-3xl shadow-md overflow-hidden transition-all divide-y divide-gray-200 dark:divide-zinc-700">
-                            <NotificationsDropdown user={user} />
                             <PreferencesDropdown user={user} onUpdateUser={onUpdateUser} />
                             <ServerDropdown />
                         </div>
@@ -125,86 +124,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                     Contactar Soporte
                 </button>
             </div>
-        </div>
-    );
-};
-
-const NotificationsDropdown = ({ user }: { user: UserType | null }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [activeCount, setActiveCount] = useState(0);
-
-    useEffect(() => {
-        if (!user?._id) return;
-        fetch(`${API_BASE_URL}/api/users/${user._id}/messages`)
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    const personalMessages = data.filter(msg => msg.isPrivate || !msg.course).slice(0, 5);
-                    setNotifications(personalMessages);
-                    setActiveCount(personalMessages.filter(m => !m.read).length || 0);
-                    // If read logic is not fully used, just show active if there's any msg
-                    if (personalMessages.length > 0 && personalMessages.filter(m => !m.read).length === 0) {
-                        setActiveCount(personalMessages.length);
-                    }
-                }
-            })
-            .catch(err => console.error('Error fetching messages:', err));
-    }, [user]);
-
-    const markAsRead = () => {
-        setActiveCount(0);
-        // In a real app, this would update the backend
-    };
-
-    return (
-        <div>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-            >
-                <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-zinc-700 flex items-center justify-center border-2 border-gray-200 dark:border-zinc-600 relative transition-colors">
-                        <Bell size={20} className="text-amber-500" />
-                        {activeCount > 0 && (
-                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white dark:border-zinc-800 animate-pulse"></span>
-                        )}
-                    </div>
-                    <span className="text-sm font-black text-black dark:text-white uppercase transition-colors">Notificaciones</span>
-                </div>
-                <ChevronRight size={20} className={`text-gray-300 dark:text-zinc-500 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-            </button>
-
-            {isOpen && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-t-2 border-gray-200 dark:border-zinc-700 animate-in slide-in-from-top-2 duration-200">
-                    <div className="flex justify-between items-center mb-3">
-                        <p className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-widest">Recientes</p>
-                        {activeCount > 0 && (
-                            <button
-                                onClick={markAsRead}
-                                className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 uppercase underline"
-                            >
-                                Marcar como leídas
-                            </button>
-                        )}
-                    </div>
-                    {notifications.length > 0 ? (
-                        <ul className="space-y-2">
-                            {notifications.map((notif) => (
-                                <li key={notif._id} className={`text-xs font-bold text-black dark:text-white flex items-start gap-2 ${activeCount === 0 ? 'opacity-60' : ''}`}>
-                                    <span className={`w-2 h-2 rounded-full mt-1 shrink-0 bg-blue-500`}></span>
-                                    <div className="flex flex-col">
-                                        <span className="line-clamp-2" title={notif.title}>{notif.title}</span>
-                                        <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400 mt-0.5">{new Date(notif.date).toLocaleDateString()}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 italic">No tienes notificaciones nuevas.</p>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
