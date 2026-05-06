@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Bell, BookOpen, Building, User as UserIcon } from 'lucide-react';
+import { Bell, BookOpen, Building, User as UserIcon, Calendar as CalendarIcon } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
+import { ScheduleEditor } from '../components/ScheduleEditor';
 import { MOCK_EVENTS } from '../constants';
-import { User } from '../types';
+import { User, Course } from '../types';
 
 import { API_BASE_URL } from '../config';
 
@@ -12,8 +13,8 @@ interface TeacherDashboardViewProps {
 }
 
 export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user }) => {
-    const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'centro'>(() => {
-        return (localStorage.getItem('teacherActiveTab') as 'personal' | 'clase' | 'centro') || 'personal';
+    const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'centro' | 'horario'>(() => {
+        return (localStorage.getItem('teacherActiveTab') as any) || 'personal';
     });
 
     React.useEffect(() => {
@@ -21,6 +22,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     }, [activeTab]);
     const [events, setEvents] = useState<any[]>([]);
     const [messages, setMessages] = useState<any[]>([]);
+    const [teacherCourses, setTeacherCourses] = useState<Course[]>([]);
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
@@ -40,6 +42,25 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             })
             .catch(err => console.error('Error fetching events:', err));
     }, []);
+
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/courses`)
+            .then(res => res.json())
+            .then(data => {
+                const userId = user?._id || (user as any)?.id;
+                const filtered = data.filter((c: any) => (c.professor?._id || c.professor) === userId)
+                    .map((c: any) => ({
+                        id: c._id,
+                        title: c.title,
+                        description: c.description,
+                        professor: c.professor,
+                        image: c.image,
+                        totalWeeklyHours: c.totalWeeklyHours
+                    }));
+                setTeacherCourses(filtered);
+            })
+            .catch(err => console.error('Error fetching courses:', err));
+    }, [user]);
 
     // Fetch initial messages and Setup Socket.io for Real-time Updates
     useEffect(() => {
@@ -126,10 +147,32 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         Centro
                         {activeTab === 'centro' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-600 dark:bg-cyan-400" />}
                     </button>
+                    <button
+                        onClick={() => setActiveTab('horario')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'horario' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                    >
+                        <CalendarIcon size={18} className={activeTab === 'horario' ? 'text-blue-600 dark:text-blue-400' : ''} />
+                        Horario
+                        {activeTab === 'horario' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
+                    </button>
                 </div>
 
                 {/* Tab Content */}
                 <div className="p-6 min-h-[200px]">
+                    {activeTab === 'horario' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                                <CalendarIcon size={20} className="text-blue-500" />
+                                Gestión de Horario (Aula Única)
+                            </h2>
+                            <ScheduleEditor 
+                                courses={teacherCourses} 
+                                onScheduleChange={() => {
+                                    // Optionally refresh other parts of the dashboard if needed
+                                }}
+                            />
+                        </div>
+                    )}
                     {activeTab === 'personal' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">

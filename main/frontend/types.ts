@@ -15,8 +15,9 @@ export interface Course {
   id: string;
   title: string;
   description: string;
-  professor: string;
+  professor: any;
   image: string;
+  totalWeeklyHours?: number;
 }
 
 export interface ChatMessage {

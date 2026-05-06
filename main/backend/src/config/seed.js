@@ -27,10 +27,10 @@ async function seedData() {
 
         // 2. Ensure Courses exist
         const coursesData = [
-            { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1' },
-            { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2' },
-            { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3' },
-            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4' }
+            { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1', totalWeeklyHours: 6 },
+            { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2', totalWeeklyHours: 4 },
+            { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3', totalWeeklyHours: 4 },
+            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4', totalWeeklyHours: 5 }
         ];
 
         const courses = await Course.create(coursesData);
