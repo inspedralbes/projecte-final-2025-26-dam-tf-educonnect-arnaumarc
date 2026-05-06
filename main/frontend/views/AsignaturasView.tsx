@@ -15,15 +15,13 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   const realCourses = user?.enrolledCourses as any[] || [];
 
   const enrolledCoursesList = React.useMemo(() => {
-    return realCourses.length > 0
-      ? realCourses.map(c => ({
-        id: c._id || c,
-        title: c.title || 'Asignatura',
-        description: c.description || '',
-        professor: c.professor || '',
-        image: c.image || 'https://picsum.photos/300/200'
-      }))
-      : MOCK_COURSES.filter(course => MOCK_USER.enrolledCourses.includes(course.id));
+    return realCourses.map(c => ({
+      id: c._id || c,
+      title: c.title || 'Asignatura',
+      description: c.description || '',
+      professor: typeof c.professor === 'object' ? `${c.professor.nombre} ${c.professor.apellidos}` : (c.professor || 'Profesor'),
+      image: c.image || 'https://picsum.photos/300/200'
+    }));
   }, [realCourses]);
 
   const [selectedCourse, setSelectedCourse] = useState<any | null>(null);

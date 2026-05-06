@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const courseSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
-    professor: { type: String, required: true },
+    professor: { type: mongoose.Schema.Types.ObjectId, ref: 'Professor', required: true },
     image: { type: String }
 }, { timestamps: true });
 

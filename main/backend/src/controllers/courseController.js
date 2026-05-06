@@ -6,7 +6,7 @@ const Schedule = require('../models/Schedule');
 
 const getCourses = async (req, res) => {
     try {
-        const courses = await Course.find();
+        const courses = await Course.find().populate('professor');
         res.json(courses);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching courses' });

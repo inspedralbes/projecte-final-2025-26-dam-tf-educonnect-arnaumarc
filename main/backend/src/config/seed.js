@@ -6,39 +6,35 @@ const Schedule = require('../models/Schedule');
 
 async function seedData() {
     try {
+        // Limpieza inicial para asegurar integridad con el nuevo modelo
+        console.log('Seed: Cleaning collections...');
+        await Professor.deleteMany({});
+        await Course.deleteMany({});
+        await Schedule.deleteMany({});
+        await Alumno.deleteMany({});
+        await Event.deleteMany({});
+
         // 1. Ensure Professor exists
-        let professor = await Professor.findOne({ email: 'xavi@inspedralbes.cat' });
-        if (!professor) {
-            professor = await Professor.create({
-                dni: '12345678A',
-                nombre: 'Xavier',
-                apellidos: 'García',
-                email: 'xavi@inspedralbes.cat',
-                password: 'xavi@inspedralbes.cat',
-                especialidad: 'Programación'
-            });
-            console.log('Seed: Professor created');
-        }
+        let professor = await Professor.create({
+            dni: '12345678A',
+            nombre: 'Xavier',
+            apellidos: 'García',
+            email: 'xavi@inspedralbes.cat',
+            password: 'xavi@inspedralbes.cat',
+            especialidad: 'Programación'
+        });
+        console.log('Seed: Professor Xavier created');
 
         // 2. Ensure Courses exist
-        let courseCount = await Course.countDocuments();
-        let courses = [];
-        if (courseCount !== 4) {
-            console.log(`Seed: Course count is ${courseCount}, clearing to enforce 4 course limit`);
-            await Course.deleteMany({});
-            await Event.deleteMany({});
-            await Schedule.deleteMany({});
+        const coursesData = [
+            { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1' },
+            { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2' },
+            { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3' },
+            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4' }
+        ];
 
-            courses = await Course.create([
-                { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: 'Carles Narváez', image: 'https://picsum.photos/300/200?random=1' },
-                { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: 'Equip Docent', image: 'https://picsum.photos/300/200?random=2' },
-                { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: 'Pol Prats', image: 'https://picsum.photos/300/200?random=3' },
-                { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: 'Toni Martí', image: 'https://picsum.photos/300/200?random=4' }
-            ]);
-            console.log('Seed: Courses created');
-        } else {
-            courses = await Course.find();
-        }
+        const courses = await Course.create(coursesData);
+        console.log('Seed: Courses created and linked to Xavier');
 
         const courseIds = courses.map(c => c._id);
 
