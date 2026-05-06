@@ -5,7 +5,7 @@ export const getApiUrl = () => {
         return 'http://46.224.0.230:3005';
     }
     // In development, we use the current hostname to allow local and cross-device testing
-    return `http://${window.location.hostname}:3005`;
+    return `http://${window.location.hostname}:3006`;
 };
 
 export const API_BASE_URL = getApiUrl();

@@ -22,7 +22,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, { // /api
+      const response = await fetch(`${API_BASE_URL}/api/login`, { // /api
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

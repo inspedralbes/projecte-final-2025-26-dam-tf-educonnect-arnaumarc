@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ClipboardList, GraduationCap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { CalendarEvent } from '../types';
 
 interface MonthlyCalendarProps {
@@ -60,23 +60,23 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
 
     const getEventStyle = (type: CalendarEvent['type']) => {
         switch (type) {
-            case 'activity': return 'bg-cyan-200 dark:bg-cyan-600 dark:text-white';
-            case 'exam': return 'bg-rose-300 dark:bg-rose-600 dark:text-white';
-            case 'event': return 'bg-orange-200 dark:bg-orange-600 dark:text-white';
-            case 'holiday': return 'bg-green-200 dark:bg-green-600 dark:text-white';
-            case 'strike': return 'bg-yellow-400 dark:bg-yellow-600 dark:text-white';
-            default: return 'bg-gray-200 dark:bg-gray-600 dark:text-white';
+            case 'activity': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+            case 'exam': return 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800';
+            case 'event': return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800';
+            case 'holiday': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+            case 'strike': return 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700';
         }
     };
 
     const getEventPrefix = (type: CalendarEvent['type']) => {
         switch (type) {
-            case 'activity': return 'Act: ';
-            case 'exam': return 'Ex: ';
-            case 'event': return 'Ev: ';
-            case 'holiday': return 'Fes: ';
-            case 'strike': return 'Vag: ';
-            default: return '';
+            case 'activity': return '📝 ';
+            case 'exam': return '🎯 ';
+            case 'event': return '📢 ';
+            case 'holiday': return '🎉 ';
+            case 'strike': return '⚠️ ';
+            default: return '• ';
         }
     };
 
@@ -143,11 +143,11 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
                                                 key={i}
                                                 title={event.data.title}
                                                 className={`
-                          text-[10px] p-0.5 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] leading-tight truncate transition-all
+                          text-[10px] p-0.5 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] leading-tight truncate transition-all rounded-sm
                           ${getEventStyle(event.type)}
                         `}
                                             >
-                                                {getEventPrefix(event.type)}
+                                                <span className="font-bold">{getEventPrefix(event.type)}</span>
                                                 {event.data.title}
                                             </div>
                                         ))}
@@ -160,26 +160,26 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
             </div>
 
             {/* Legend */}
-            <div className="p-3 border-t-2 border-black dark:border-white flex flex-wrap gap-4 text-xs font-bold bg-white dark:bg-zinc-800 text-black dark:text-white transition-colors">
+            <div className="p-3 border-t-2 border-black dark:border-white flex flex-wrap gap-4 text-[10px] font-black bg-white dark:bg-zinc-900 text-black dark:text-white transition-colors uppercase tracking-widest">
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-cyan-200 dark:bg-cyan-600 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)]"></div>
-                    <span>ACTIVITATS</span>
+                    <div className="w-3 h-3 bg-blue-100 dark:bg-blue-900/30 border border-black dark:border-white"></div>
+                    <span>Activitats</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-rose-300 dark:bg-rose-600 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)]"></div>
-                    <span>EXÀMENS</span>
+                    <div className="w-3 h-3 bg-rose-100 dark:bg-rose-900/30 border border-black dark:border-white"></div>
+                    <span>Exàmens</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-orange-200 dark:bg-orange-600 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)]"></div>
-                    <span>EVENTOS</span>
+                    <div className="w-3 h-3 bg-amber-100 dark:bg-amber-900/30 border border-black dark:border-white"></div>
+                    <span>Esdeveniments</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-green-200 dark:bg-green-600 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)]"></div>
-                    <span>FIESTAS</span>
+                    <div className="w-3 h-3 bg-green-100 dark:bg-green-900/30 border border-black dark:border-white"></div>
+                    <span>Festius</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-yellow-400 dark:bg-yellow-600 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)]"></div>
-                    <span>VAGAS</span>
+                    <div className="w-3 h-3 bg-zinc-100 dark:bg-zinc-800 border border-black dark:border-white"></div>
+                    <span>Vagues</span>
                 </div>
             </div>
         </div>

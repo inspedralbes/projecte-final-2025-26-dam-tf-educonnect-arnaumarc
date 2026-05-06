@@ -55,7 +55,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined,
                 sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
                 date: new Date().toISOString(),
-                isPrivate: data.isPrivate
+                isPrivate: data.isPrivate,
+                type: data.type
             };
             setMessages((prevMessages) => [newMessage, ...prevMessages]);
         });
@@ -82,6 +83,54 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const classMessages = messages.filter(msg => !!msg.course && !msg.isPrivate);
     const generalMessages: any[] = [];
 
+    const getTypeDetails = (type: string, isPrivate: boolean, hasCourse: boolean) => {
+        // Map legacy logic to types if type is missing
+        let effectiveType = type;
+        if (!effectiveType) {
+            if (isPrivate) effectiveType = 'MESSAGE';
+            else if (hasCourse) effectiveType = 'ANNOUNCEMENT';
+            else effectiveType = 'SYSTEM';
+        }
+
+        switch (effectiveType) {
+            case 'EXAM': return { 
+                icon: <BookOpen size={16} color="#e11d48" />, 
+                label: 'Examen', 
+                bgColor: '#fff1f2', 
+                textColor: '#e11d48',
+                barColor: '#e11d48'
+            };
+            case 'MATERIAL': return { 
+                icon: <BookOpen size={16} color="#2563eb" />, 
+                label: 'Material', 
+                bgColor: '#eff6ff', 
+                textColor: '#2563eb',
+                barColor: '#2563eb'
+            };
+            case 'MESSAGE': return { 
+                icon: <Bell size={16} color="#16a34a" />, 
+                label: 'Mensaje', 
+                bgColor: '#f0fdf4', 
+                textColor: '#16a34a',
+                barColor: '#16a34a'
+            };
+            case 'ANNOUNCEMENT': return { 
+                icon: <Bell size={16} color="#d97706" />, 
+                label: 'Aviso', 
+                bgColor: '#fffbeb', 
+                textColor: '#d97706',
+                barColor: '#d97706'
+            };
+            default: return { 
+                icon: <Building size={16} color="#4b5563" />, 
+                label: 'Sistema', 
+                bgColor: '#f3f4f6', 
+                textColor: '#4b5563',
+                barColor: '#4b5563'
+            };
+        }
+    };
+
     const renderMessageList = (msgList: any[], type: 'personal' | 'clase' | 'general') => {
         if (loading) return <ActivityIndicator size="large" color="#06b6d4" style={{ marginTop: 20 }} />;
 
@@ -100,32 +149,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
         return (
             <View style={styles.list}>
-                {msgList.map((msg, idx) => (
-                    <View key={msg._id || idx} style={styles.messageCard}>
-                        <View style={styles.messageHeader}>
-                            <View style={[styles.iconContainer,
-                            type === 'personal' ? styles.blueIcon :
-                                type === 'clase' ? styles.amberIcon : styles.indigoIcon]}>
-                                {type === 'personal' ? <Bell size={16} color="#2563eb" /> :
-                                    type === 'clase' ? <BookOpen size={16} color="#d97706" /> :
-                                        <Building size={16} color="#4f46e5" />}
+                {msgList.map((msg, idx) => {
+                    const details = getTypeDetails(msg.type, msg.isPrivate, !!msg.course);
+                    return (
+                        <View key={msg._id || idx} style={[styles.messageCard, { borderLeftWidth: 4, borderLeftColor: details.barColor }]}>
+                            <View style={styles.messageHeader}>
+                                <View style={[styles.iconContainer, { backgroundColor: details.bgColor }]}>
+                                    {details.icon}
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                        <View style={[styles.badge, { backgroundColor: details.bgColor }]}>
+                                            <Text style={[styles.badgeText, { color: details.textColor }]}>{details.label}</Text>
+                                        </View>
+                                        <Text style={styles.messageDate}>{new Date(msg.date || msg.createdAt).toLocaleDateString()}</Text>
+                                    </View>
+                                    <Text style={styles.messageTitle}>{msg.title}</Text>
+                                    <Text style={styles.messageContent}>{msg.content}</Text>
+                                    <Text style={styles.messageSender}>
+                                        De: {msg.sender?.nombre} {msg.sender?.apellidos}
+                                        {msg.course?.title ? ` (${msg.course.title})` : ''}
+                                    </Text>
+                                </View>
+                                {type === 'personal' && (
+                                    <TouchableOpacity onPress={() => handleDeleteMessage(msg._id)} style={styles.deleteButton}>
+                                        <Trash2 size={18} color="#ef4444" />
+                                    </TouchableOpacity>
+                                )}
                             </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.messageTitle}>{msg.title}</Text>
-                                <Text style={styles.messageContent}>{msg.content}</Text>
-                                <Text style={styles.messageSender}>
-                                    De: {msg.sender?.nombre} {msg.sender?.apellidos}
-                                    {msg.course?.title ? ` (${msg.course.title})` : ''}
-                                </Text>
-                            </View>
-                            {type === 'personal' && (
-                                <TouchableOpacity onPress={() => handleDeleteMessage(msg._id)} style={styles.deleteButton}>
-                                    <Trash2 size={18} color="#ef4444" />
-                                </TouchableOpacity>
-                            )}
                         </View>
-                    </View>
-                ))}
+                    );
+                })}
             </View>
         );
     };
@@ -277,9 +331,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    blueIcon: { backgroundColor: '#dbeafe' },
-    amberIcon: { backgroundColor: '#fef3c7' },
-    indigoIcon: { backgroundColor: '#e0e7ff' },
     messageTitle: {
         fontWeight: 'bold',
         fontSize: 16,
@@ -296,6 +347,21 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#9ca3af',
         marginTop: 8,
+    },
+    messageDate: {
+        fontSize: 10,
+        color: '#9ca3af',
+        fontWeight: '500',
+    },
+    badge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    badgeText: {
+        fontSize: 9,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
     },
     deleteButton: {
         padding: 4,

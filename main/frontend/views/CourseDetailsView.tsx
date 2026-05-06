@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
+import { MOCK_SCHEDULE } from '../constants';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
@@ -55,6 +56,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         date: new Date().toISOString().split('T')[0]
     });
     const [courseEvents, setCourseEvents] = useState<any[]>([]);
+    const [courseSchedule, setCourseSchedule] = useState<any[]>([]);
+    const [loadingSchedule, setLoadingSchedule] = useState(false);
+
+    const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
     const fetchTopics = async () => {
         try {
@@ -85,9 +90,33 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         }
     };
 
+    const fetchCourseSchedule = async () => {
+        try {
+            const courseId = course._id || course.id;
+            setLoadingSchedule(true);
+            const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/schedule`);
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                setCourseSchedule(data);
+            } else {
+                // Fallback to MOCK_SCHEDULE if no data in DB for this course
+                const mockData = MOCK_SCHEDULE.filter(s => String(s.courseId) === String(courseId));
+                setCourseSchedule(mockData);
+            }
+        } catch (error) {
+            console.error('Error fetching schedule:', error);
+            const courseId = course._id || course.id;
+            const mockData = MOCK_SCHEDULE.filter(s => String(s.courseId) === String(courseId));
+            setCourseSchedule(mockData);
+        } finally {
+            setLoadingSchedule(false);
+        }
+    };
+
     useEffect(() => {
         fetchTopics();
         fetchEvents();
+        fetchCourseSchedule();
         if (userRole === 'TEACHER') {
             const courseId = course._id || course.id;
             if (!courseId) return;
@@ -373,8 +402,20 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                                     <Calendar className="text-blue-500" size={18} />
                                     Horarios
                                 </h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm">Lunes y Miércoles: 15:00 - 17:00</p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm">Aula: Lab 3</p>
+                                {loadingSchedule ? (
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">Cargando horarios...</p>
+                                ) : courseSchedule.length > 0 ? (
+                                    courseSchedule.map((s, idx) => (
+                                        <div key={s._id || idx} className="mb-1 last:mb-0">
+                                            <p className="text-gray-900 dark:text-white font-medium text-sm">
+                                                {DAYS[s.day - 1]}: {s.startTime} - {s.endTime}
+                                            </p>
+                                            <p className="text-gray-500 dark:text-gray-400 text-xs">Aula: {s.classroom}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">No hay horarios programados.</p>
+                                )}
                             </div>
                             <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">

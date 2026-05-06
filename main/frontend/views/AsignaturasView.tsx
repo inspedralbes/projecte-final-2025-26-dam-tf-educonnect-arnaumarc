@@ -76,9 +76,9 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
 
   const enrolledSchedule = (schedule.length > 0 ? schedule : MOCK_SCHEDULE).filter(session => {
     if (realCourses.length > 0) {
-      return realCourses.some(c => (c._id || c) === session.courseId);
+      return realCourses.some(c => String(c._id || c) === String(session.courseId));
     }
-    return MOCK_USER.enrolledCourses.includes(session.courseId);
+    return MOCK_USER.enrolledCourses.includes(String(session.courseId));
   });
 
   if (selectedCourse) {

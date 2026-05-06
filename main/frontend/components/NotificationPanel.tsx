@@ -9,13 +9,38 @@ interface NotificationPanelProps {
 export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose }) => {
     const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useSocket();
 
-    const getTypeIcon = (type: NotificationData['type']) => {
+    const getTypeDetails = (type: NotificationData['type']) => {
         switch (type) {
-            case 'EXAM': return <Calendar size={18} className="text-rose-500" />;
-            case 'MATERIAL': return <BookOpen size={18} className="text-blue-500" />;
-            case 'MESSAGE': return <MessageSquare size={18} className="text-green-500" />;
-            case 'ANNOUNCEMENT': return <Info size={18} className="text-amber-500" />;
-            default: return <Bell size={18} className="text-gray-500" />;
+            case 'EXAM': return { 
+                icon: <Calendar size={18} className="text-rose-500" />, 
+                label: 'Examen', 
+                color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
+                border: 'border-rose-500'
+            };
+            case 'MATERIAL': return { 
+                icon: <BookOpen size={18} className="text-blue-500" />, 
+                label: 'Material', 
+                color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+                border: 'border-blue-500'
+            };
+            case 'MESSAGE': return { 
+                icon: <MessageSquare size={18} className="text-green-500" />, 
+                label: 'Mensaje', 
+                color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+                border: 'border-green-500'
+            };
+            case 'ANNOUNCEMENT': return { 
+                icon: <Info size={18} className="text-amber-500" />, 
+                label: 'Aviso', 
+                color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+                border: 'border-amber-500'
+            };
+            default: return { 
+                icon: <Bell size={18} className="text-gray-500" />, 
+                label: 'Sistema', 
+                color: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400',
+                border: 'border-gray-500'
+            };
         }
     };
 
@@ -49,45 +74,56 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
             <div className="max-h-[400px] overflow-y-auto no-scrollbar">
                 {notifications.length > 0 ? (
                     <div className="divide-y divide-gray-100 dark:divide-zinc-800">
-                        {notifications.map((notif) => (
-                            <div 
-                                key={notif._id} 
-                                className={`p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors relative group ${!notif.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
-                            >
-                                <div className="flex gap-4">
-                                    <div className="mt-1">
-                                        {getTypeIcon(notif.type)}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h4 className={`text-sm font-bold ${!notif.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
-                                                {notif.title}
-                                            </h4>
-                                            {!notif.read && (
-                                                <button 
-                                                    onClick={() => markNotificationAsRead(notif._id)}
-                                                    className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"
-                                                />
-                                            )}
+                        {notifications.map((notif) => {
+                            const details = getTypeDetails(notif.type);
+                            return (
+                                <div 
+                                    key={notif._id} 
+                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors relative group ${!notif.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
+                                >
+                                    {/* Lateral bar for color coding */}
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${details.border} border-l-4 opacity-70`} />
+                                    
+                                    <div className="flex gap-4 pl-1">
+                                        <div className="mt-1">
+                                            {details.icon}
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-2">
-                                            {notif.content}
-                                        </p>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                                                <Clock size={10} />
-                                                {new Date(notif.createdAt).toLocaleDateString()}
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start mb-1 gap-2">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${details.color} w-fit`}>
+                                                        {details.label}
+                                                    </span>
+                                                    <h4 className={`text-sm font-bold ${!notif.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                                                        {notif.title}
+                                                    </h4>
+                                                </div>
+                                                {!notif.read && (
+                                                    <button 
+                                                        onClick={() => markNotificationAsRead(notif._id)}
+                                                        className="w-2 h-2 rounded-full bg-blue-600 animate-pulse flex-shrink-0 mt-1"
+                                                    />
+                                                )}
                                             </div>
-                                            {notif.link && (
-                                                <button className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:underline">
-                                                    Ir <ExternalLink size={10} />
-                                                </button>
-                                            )}
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-2">
+                                                {notif.content}
+                                            </p>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                                                    <Clock size={10} />
+                                                    {new Date(notif.createdAt).toLocaleDateString()}
+                                                </div>
+                                                {notif.link && (
+                                                    <button className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:underline">
+                                                        Ir <ExternalLink size={10} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="p-12 text-center">

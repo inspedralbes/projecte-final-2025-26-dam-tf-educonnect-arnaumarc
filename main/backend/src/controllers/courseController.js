@@ -2,6 +2,7 @@ const Course = require('../models/Course');
 const Alumno = require('../models/Alumno');
 const Message = require('../models/Message');
 const Notification = require('../models/Notification');
+const Schedule = require('../models/Schedule');
 
 const getCourses = async (req, res) => {
     try {
@@ -9,6 +10,16 @@ const getCourses = async (req, res) => {
         res.json(courses);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching courses' });
+    }
+};
+
+const getCourseSchedule = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const schedule = await Schedule.find({ courseId });
+        res.json(schedule);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching course schedule' });
     }
 };
 
@@ -101,4 +112,4 @@ const notifyAllStudents = async (req, res) => {
     }
 };
 
-module.exports = { getCourses, getStudentsByCourse, notifyAllStudents };
+module.exports = { getCourses, getStudentsByCourse, notifyAllStudents, getCourseSchedule };
