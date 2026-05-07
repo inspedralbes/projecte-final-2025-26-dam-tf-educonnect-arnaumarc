@@ -117,28 +117,27 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
         fetchTopics();
         fetchEvents();
         fetchCourseSchedule();
-        if (userRole === 'TEACHER') {
-            const courseId = course._id || course.id;
-            if (!courseId) return;
 
-            setLoadingStudents(true);
-            fetch(`${API_BASE_URL}/api/all-students`)
-                .then(res => res.json())
-                .then(data => {
-                    const studentList = Array.isArray(data) && data.length > 0 ? data : [
-                        { _id: '65cf1234567890abcdef0001', nombre: 'Arnau', apellidos: 'Perera Ganuza', email: 'a24arnpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24arnpergan' },
-                        { _id: '65cf1234567890abcdef0002', nombre: 'Marc', apellidos: 'Cara Montes', email: 'a24marcarmon@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24marcarmon' },
-                        { _id: '65cf1234567890abcdef0003', nombre: 'Nil', apellidos: 'Perera Ganuza', email: 'a24nilpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24nilpergan' }
-                    ];
-                    setStudents(studentList);
-                })
-                .catch(err => {
-                    console.error('Error fetching students:', err);
-                    setStudents([]);
-                })
-                .finally(() => setLoadingStudents(false));
-        }
-    }, [course, userRole]);
+        const courseId = course._id || course.id;
+        if (!courseId) return;
+
+        setLoadingStudents(true);
+        fetch(`${API_BASE_URL}/api/courses/${courseId}/students`)
+            .then(res => res.json())
+            .then(data => {
+                const studentList = Array.isArray(data) && data.length > 0 ? data : [
+                    { _id: '65cf1234567890abcdef0001', nombre: 'Arnau', apellidos: 'Perera Ganuza', email: 'a24arnpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24arnpergan' },
+                    { _id: '65cf1234567890abcdef0002', nombre: 'Marc', apellidos: 'Cara Montes', email: 'a24marcarmon@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24marcarmon' },
+                    { _id: '65cf1234567890abcdef0003', nombre: 'Nil', apellidos: 'Perera Ganuza', email: 'a24nilpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24nilpergan' }
+                ];
+                setStudents(studentList);
+            })
+            .catch(err => {
+                console.error('Error fetching students:', err);
+                setStudents([]);
+            })
+            .finally(() => setLoadingStudents(false));
+    }, [course]);
 
     const handleCreateTopic = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -343,7 +342,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                         {course.title}
                     </h1>
                     <p className="text-xl text-blue-300 font-medium tracking-wide">
-                        {course.professor}
+                        {typeof course.professor === 'object' ? `${course.professor.nombre} ${course.professor.apellidos}` : (course.professor || 'Profesor')}
                     </p>
                 </div>
             </div>
@@ -359,17 +358,15 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                     Información
                     {activeTab === 'info' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
-                {userRole === 'TEACHER' && (
-                    <button
-                        onClick={() => setActiveTab('students')}
-                        className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
+                <button
+                    onClick={() => setActiveTab('students')}
+                    className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
               ${activeTab === 'students' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
-                    >
-                        <Users size={18} className={activeTab === 'students' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                        Alumnos ({displayStudents.length})
-                        {activeTab === 'students' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
-                    </button>
-                )}
+                >
+                    <Users size={18} className={activeTab === 'students' ? 'text-blue-600 dark:text-blue-400' : ''} />
+                    Alumnos ({displayStudents.length})
+                    {activeTab === 'students' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
+                </button>
                 <button
                     onClick={() => setActiveTab('resources')}
                     className={`flex-1 py-4 font-semibold text-center transition-all duration-300 tracking-wide flex items-center justify-center gap-2 relative
@@ -419,16 +416,79 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                             </div>
                             <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                                    <FileText className="text-blue-500" size={18} />
-                                    Evaluación
+                                    <Users className="text-blue-500" size={18} />
+                                    Miembros de la Clase
                                 </h3>
-                                <div className="space-y-1">
-                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400"><span className="font-medium">Prácticas</span><span>40%</span></div>
-                                    <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '40%' }}></div></div>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <div className="flex -space-x-3 overflow-hidden">
+                                        {loadingStudents ? (
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 animate-pulse border-2 border-white dark:border-zinc-800"></div>
+                                        ) : displayStudents.slice(0, 5).map((student, i) => (
+                                            <img
+                                                key={student._id || i}
+                                                className="inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-zinc-800 object-cover"
+                                                src={student.profileImage || `https://i.pravatar.cc/150?u=${student._id}`}
+                                                alt={student.nombre}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="text-sm font-medium">
+                                        <span className="text-blue-600 dark:text-blue-400">{loadingStudents ? '...' : displayStudents.length}</span>
+                                        <span className="text-gray-500 dark:text-gray-400 ml-1">alumnos matriculados</span>
+                                    </div>
                                 </div>
-                                <div className="space-y-1 mt-2">
-                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400"><span className="font-medium">Examen Final</span><span>60%</span></div>
-                                    <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5"><div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: '60%' }}></div></div>
+                                <button
+                                    onClick={() => setActiveTab('students')}
+                                    className="mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 w-fit"
+                                >
+                                    Ver todos los miembros <ArrowLeft size={14} className="rotate-180" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                            <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl flex flex-col gap-3">
+                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                    <BookOpen className="text-blue-500" size={18} />
+                                    Información del Docente
+                                </h3>
+                                <div className="space-y-2">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        <span className="font-bold text-gray-900 dark:text-white mr-2">Especialidad:</span>
+                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en Educación'}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        <span className="font-bold text-gray-900 dark:text-white mr-2">Contacto:</span>
+                                        {typeof course.professor === 'object' ? course.professor.email : 'contacto@educonnect.com'}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (typeof course.professor === 'object') {
+                                            setMessageRecipient(course.professor);
+                                            setShowMessageModal(true);
+                                        }
+                                    }}
+                                    className="mt-2 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all w-fit"
+                                >
+                                    <MessageCircle size={16} />
+                                    Enviar Mensaje Directo
+                                </button>
+                            </div>
+
+                            <div className="p-6 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex flex-col gap-3">
+                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Calendar className="text-indigo-500" size={18} />
+                                    Carga Académica
+                                </h3>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between bg-white dark:bg-zinc-800 p-3 rounded-xl border border-indigo-50 dark:border-zinc-700">
+                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Dedicación Semanal</span>
+                                        <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{course.totalWeeklyHours || 4}h</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autónomo.
+                                    </p>
                                 </div>
                             </div>
                         </div>

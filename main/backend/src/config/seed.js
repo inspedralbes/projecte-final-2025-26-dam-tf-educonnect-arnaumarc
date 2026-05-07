@@ -26,11 +26,14 @@ async function seedData() {
         console.log('Seed: Professor Xavier created');
 
         // 2. Ensure Courses exist
+        console.log('Seed: Creating courses with updated hours (IPO II 6h, Accés 6h)...');
         const coursesData = [
             { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1', totalWeeklyHours: 6 },
             { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2', totalWeeklyHours: 4 },
             { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3', totalWeeklyHours: 4 },
-            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4', totalWeeklyHours: 5 }
+            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4', totalWeeklyHours: 6 },
+            { title: 'Mòbils', description: 'Programació multimèdia i dispositius mòbils.', professor: professor._id, image: 'https://picsum.photos/300/200?random=5', totalWeeklyHours: 6 },
+            { title: 'SGE', description: 'Sistemes de gestió empresarial.', professor: professor._id, image: 'https://picsum.photos/300/200?random=6', totalWeeklyHours: 4 }
         ];
 
         const courses = await Course.create(coursesData);
@@ -60,7 +63,7 @@ async function seedData() {
             } else {
                 // Update existing alumnos to ensure they have the profile image from seed if it changed
                 alumno.profileImage = data.profileImage;
-                if (!alumno.password || !alumno.enrolledCourses || alumno.enrolledCourses.length !== 4) {
+                if (!alumno.password || !alumno.enrolledCourses || alumno.enrolledCourses.length !== courseIds.length) {
                     alumno.password = alumno.password || alumno.email;
                     alumno.enrolledCourses = courseIds;
                 }
@@ -85,11 +88,31 @@ async function seedData() {
         const scheduleCount = await Schedule.countDocuments();
         if (scheduleCount === 0) {
             await Schedule.create([
-                { courseId: courseIds[0], day: 1, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" },
-                { courseId: courseIds[1], day: 2, startTime: "09:00", endTime: "11:00", classroom: "Aula Única" },
-                { courseId: courseIds[2], day: 3, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" },
-                { courseId: courseIds[3], day: 4, startTime: "13:00", endTime: "14:00", classroom: "Aula Única" },
-                { courseId: courseIds[0], day: 5, startTime: "17:00", endTime: "19:00", classroom: "Aula Única" }
+                // Lunes
+                { courseId: courseIds[0], day: 1, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" }, // IPO II
+                { courseId: courseIds[2], day: 1, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // PSP
+                { courseId: courseIds[4], day: 1, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }, // Mòbils
+                { courseId: courseIds[1], day: 1, startTime: "17:00", endTime: "19:00", classroom: "Aula Única" }, // Projecte
+
+                // Martes
+                { courseId: courseIds[3], day: 2, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" }, // Accés a Dades
+                { courseId: courseIds[5], day: 2, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // SGE
+                { courseId: courseIds[4], day: 2, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }, // Mòbils
+
+                // Miércoles
+                { courseId: courseIds[0], day: 3, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" }, // IPO II
+                { courseId: courseIds[2], day: 3, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // PSP
+                { courseId: courseIds[4], day: 3, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }, // Mòbils
+
+                // Jueves
+                { courseId: courseIds[3], day: 4, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" }, // Accés a Dades
+                { courseId: courseIds[5], day: 4, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // SGE
+                { courseId: courseIds[1], day: 4, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }, // Projecte
+
+                // Viernes
+                { courseId: courseIds[3], day: 5, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" }, // Accés a Dades
+                { courseId: courseIds[5], day: 5, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // SGE
+                { courseId: courseIds[0], day: 5, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }  // IPO II
             ]);
             console.log('Seed: Default schedule updated with 1h/2h sessions and new rules');
         }

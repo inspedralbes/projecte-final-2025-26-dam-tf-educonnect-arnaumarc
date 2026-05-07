@@ -12,21 +12,38 @@ interface AsignaturasViewProps {
 }
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
-  const realCourses = user?.enrolledCourses as any[] || [];
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const hasRestored = React.useRef(false);
+
+  const realCoursesIds = (user?.enrolledCourses as any[] || []).map(c => typeof c === 'object' ? (c._id || c.id) : c);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${API_BASE_URL}/api/courses`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCourses(data);
+        }
+      })
+      .catch(err => console.error('Error fetching courses:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const enrolledCoursesList = React.useMemo(() => {
-    return realCourses.map(c => ({
-      id: c._id || c,
-      title: c.title || 'Asignatura',
-      description: c.description || '',
-      professor: typeof c.professor === 'object' ? `${c.professor.nombre} ${c.professor.apellidos}` : (c.professor || 'Profesor'),
-      image: c.image || 'https://picsum.photos/300/200'
-    }));
-  }, [realCourses]);
-
-  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-  const [schedule, setSchedule] = useState<any[]>([]);
-  const hasRestored = React.useRef(false);
+    return courses
+      .filter(c => realCoursesIds.includes(c._id || c.id))
+      .map(c => ({
+        id: c._id || c.id,
+        title: c.title || 'Asignatura',
+        description: c.description || '',
+        professor: c.professor,
+        image: c.image || 'https://picsum.photos/300/200'
+      }));
+  }, [courses, realCoursesIds]);
 
   // Restore selected course from localStorage ONLY ONCE on mount
   useEffect(() => {
@@ -73,8 +90,8 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
   }, []);
 
   const enrolledSchedule = (schedule.length > 0 ? schedule : MOCK_SCHEDULE).filter(session => {
-    if (realCourses.length > 0) {
-      return realCourses.some(c => String(c._id || c) === String(session.courseId));
+    if (realCoursesIds.length > 0) {
+      return realCoursesIds.some(id => String(id) === String(session.courseId));
     }
     return MOCK_USER.enrolledCourses.includes(String(session.courseId));
   });

@@ -40,12 +40,15 @@ const getAllUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
     try {
-        let user = await Alumno.findById(req.params.id).populate('enrolledCourses');
+        let user = await Alumno.findById(req.params.id).populate({
+            path: 'enrolledCourses',
+            populate: { path: 'professor' }
+        });
         if (!user) {
             const professor = await Professor.findById(req.params.id).lean();
             if (professor) {
                 // Return only courses where this user is the professor
-                const courses = await Course.find({ professor: req.params.id });
+                const courses = await Course.find({ professor: req.params.id }).populate('professor');
                 professor.enrolledCourses = courses;
                 return res.json(professor);
             }
@@ -72,7 +75,14 @@ const updateUserSettings = async (req, res) => {
         if (theme !== undefined) user.theme = theme;
 
         await user.save();
-        res.json({ success: true, user });
+        
+        // Return populated user
+        const populatedUser = await (user.constructor.name === 'Alumno' 
+            ? Alumno.findById(user._id).populate({ path: 'enrolledCourses', populate: { path: 'professor' } })
+            : Professor.findById(user._id).populate({ path: 'enrolledCourses', populate: { path: 'professor' } })
+        );
+
+        res.json({ success: true, user: populatedUser || user });
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ success: false, message: 'Error al actualizar ajustes' });

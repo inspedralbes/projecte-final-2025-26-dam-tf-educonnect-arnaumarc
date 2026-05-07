@@ -29,7 +29,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
             {course.description}
           </p>
           <p className="font-semibold text-gray-900 dark:text-gray-300 transition-colors mt-2">
-            Profesor: <span className="font-normal text-gray-600 dark:text-gray-400 ml-1">{course.professor}</span>
+            Profesor: <span className="font-normal text-gray-600 dark:text-gray-400 ml-1">{typeof course.professor === 'object' ? `${course.professor.nombre} ${course.professor.apellidos}` : (course.professor || 'Profesor')}</span>
           </p>
         </div>
       </div>

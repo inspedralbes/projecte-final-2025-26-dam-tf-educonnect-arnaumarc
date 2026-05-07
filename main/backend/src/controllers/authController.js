@@ -4,7 +4,10 @@ const Professor = require('../models/Professor');
 const login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        let user = await Alumno.findOne({ email, password });
+        let user = await Alumno.findOne({ email, password }).populate({
+            path: 'enrolledCourses',
+            populate: { path: 'professor' }
+        });
         let type = 'alumno';
 
         if (!user) {

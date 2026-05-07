@@ -52,8 +52,17 @@ function App() {
     if (savedIsLoggedIn && savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
-        // Optional: verify with backend if token/session is still valid
-        // For now, we trust localStorage as per user requirements for simple persistence
+        // Refresh user data from API to ensure we have populated courses and latest info
+        fetch(`${API_BASE_URL}/api/user/${parsedUser._id}`)
+          .then(res => res.json())
+          .then(fullUserData => {
+            if (fullUserData && !fullUserData.error) {
+              const updatedUser = { ...fullUserData, type: parsedUser.type };
+              setUser(updatedUser);
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          })
+          .catch(err => console.error('Error refreshing user data:', err));
       } catch (error) {
         console.error('Error restoring session:', error);
         handleLogout();
