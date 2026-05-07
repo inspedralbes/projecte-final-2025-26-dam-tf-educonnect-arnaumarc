@@ -30,11 +30,11 @@ El sistema SHALL impedir la programación de clases durante el patio (11:00-11:3
 - **THEN** el sistema debe rechazar la operación
 
 ### Requirement: Single Classroom Management
-El sistema SHALL gestionar exclusivamente una única aula ("Aula Única"), eliminando cualquier selector o gestión de múltiples espacios en la interfaz de usuario y asegurando que no existan solapamientos horarios en dicho espacio.
+El sistema SHALL gestionar exclusivamente una única aula ("Aula Única") y un grupo único por curso, eliminando cualquier selector o gestión de múltiples espacios o divisiones de grupo en la interfaz de usuario. El sistema DEBE impedir cualquier solapamiento horario (físico o lógico) de sesiones, ya que solo existe un espacio físico y un grupo de alumnos disponible.
 
 #### Scenario: Single Classroom Assignment and Overlap Prevention
 - **WHEN** se crea una sesión de horario
-- **THEN** el sistema debe asignar automáticamente el valor "Aula Única" al campo classroom sin intervención del usuario e impedir solapamientos con otras sesiones en el mismo horario.
+- **THEN** el sistema debe asignar automáticamente el valor "Aula Única" al campo classroom e impedir cualquier solapamiento físico o lógico con otras sesiones en el mismo horario, garantizando la integridad del horario de grupo único.
 
 ### Requirement: Session Visual Grid Span
 El sistema SHALL representar visualmente el horario en bloques de 1 hora, donde cada celda del grid representa el intervalo desde el inicio de la hora hasta el inicio de la siguiente (ej. 08:00 - 09:00).

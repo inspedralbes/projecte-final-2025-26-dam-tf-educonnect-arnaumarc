@@ -62,8 +62,8 @@ const createScheduleSession = async (req, res) => {
             return res.status(400).json({ error: 'No se pueden programar clases durante la comida (15:30-17:00).' });
         }
 
-        // 3. Overlap check (Fixed to 'Aula Única')
-        const existingSessions = await Schedule.find({ day, classroom });
+        // 3. Overlap check (Forced to 'Aula Única')
+        const existingSessions = await Schedule.find({ day, classroom: 'Aula Única' });
         for (const s of existingSessions) {
             const [esH, esM] = s.startTime.split(':').map(Number);
             const [eeH, eeM] = s.endTime.split(':').map(Number);
@@ -71,7 +71,7 @@ const createScheduleSession = async (req, res) => {
             const eeTotal = eeH * 60 + eeM;
 
             if (startTotal < eeTotal && endTotal > esTotal) {
-                return res.status(400).json({ error: 'El aula ya está ocupada en ese horario.' });
+                return res.status(400).json({ error: 'El horario ya está ocupado (Aula Única).' });
             }
         }
 

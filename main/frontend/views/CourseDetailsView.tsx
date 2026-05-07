@@ -15,7 +15,8 @@ interface CourseDetailsViewProps {
     onBack: () => void;
 }
 
-export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, userRole, user, onBack }) => {
+export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: initialCourse, userRole, user, onBack }) => {
+    const [course, setCourse] = useState(initialCourse);
     const [activeTab, setActiveTab] = useState<'info' | 'students' | 'resources'>('info');
     const [students, setStudents] = useState<any[]>([]);
 
@@ -114,11 +115,28 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
     };
 
     useEffect(() => {
+        const fetchCourseDetails = async () => {
+            try {
+                const courseId = initialCourse._id || initialCourse.id;
+                const response = await fetch(`${API_BASE_URL}/api/courses`);
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    const currentCourse = data.find(c => (c._id || c.id) === courseId);
+                    if (currentCourse) {
+                        setCourse(currentCourse);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching course details:', error);
+            }
+        };
+
+        fetchCourseDetails();
         fetchTopics();
         fetchEvents();
         fetchCourseSchedule();
 
-        const courseId = course._id || course.id;
+        const courseId = initialCourse._id || initialCourse.id;
         if (!courseId) return;
 
         setLoadingStudents(true);
@@ -137,7 +155,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course, us
                 setStudents([]);
             })
             .finally(() => setLoadingStudents(false));
-    }, [course]);
+    }, [initialCourse]);
 
     const handleCreateTopic = async (e: React.FormEvent) => {
         e.preventDefault();

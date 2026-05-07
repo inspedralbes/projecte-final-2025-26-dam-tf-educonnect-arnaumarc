@@ -114,7 +114,7 @@ async function seedData() {
                 { courseId: courseIds[5], day: 5, startTime: "10:00", endTime: "11:00", classroom: "Aula Única" }, // SGE
                 { courseId: courseIds[0], day: 5, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" }  // IPO II
             ]);
-            console.log('Seed: Default schedule updated with 1h/2h sessions and new rules');
+            console.log('Seed: Default schedule updated with 1h/2h sessions in Aula Única');
         }
 
 

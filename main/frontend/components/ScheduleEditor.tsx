@@ -95,8 +95,8 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ courses, onSched
             courseId: selectedCourseId,
             day,
             startTime,
-            endTime,
-            classroom: selectedClassroom
+            endTime
+            // classroom is now forced by backend
         };
 
         fetch(`${API_BASE_URL}/api/schedule`, {
