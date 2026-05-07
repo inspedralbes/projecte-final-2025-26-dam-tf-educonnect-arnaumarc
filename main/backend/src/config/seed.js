@@ -81,17 +81,17 @@ async function seedData() {
             console.log('Seed: Events created');
         }
 
-        // 5. Ensure Schedule exists
+        // 5. Ensure Schedule exists - CLEAN SLATE
         const scheduleCount = await Schedule.countDocuments();
         if (scheduleCount === 0) {
             await Schedule.create([
-                { courseId: courseIds[0], day: 1, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
-                { courseId: courseIds[1], day: 1, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' },
-                { courseId: courseIds[1], day: 2, startTime: '08:00', endTime: '10:00', classroom: 'Aula 2' },
-                { courseId: courseIds[2], day: 3, startTime: '08:00', endTime: '10:00', classroom: 'Aula 1' },
-                { courseId: courseIds[1], day: 5, startTime: '10:00', endTime: '12:30', classroom: 'Aula 2' }
+                { courseId: courseIds[0], day: 1, startTime: "08:00", endTime: "10:00", classroom: "Aula Única" },
+                { courseId: courseIds[1], day: 2, startTime: "09:00", endTime: "11:00", classroom: "Aula Única" },
+                { courseId: courseIds[2], day: 3, startTime: "12:00", endTime: "14:00", classroom: "Aula Única" },
+                { courseId: courseIds[3], day: 4, startTime: "13:00", endTime: "14:00", classroom: "Aula Única" },
+                { courseId: courseIds[0], day: 5, startTime: "17:00", endTime: "19:00", classroom: "Aula Única" }
             ]);
-            console.log('Seed: Schedule created');
+            console.log('Seed: Default schedule updated with 1h/2h sessions and new rules');
         }
 
 

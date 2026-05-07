@@ -3,7 +3,7 @@ const Course = require('../models/Course');
 
 const getSchedule = async (req, res) => {
     try {
-        const schedule = await Schedule.find();
+        const schedule = await Schedule.find({});
         res.json(schedule);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching schedule' });
@@ -31,7 +31,8 @@ const getCourseRemainingHours = async (req, res) => {
 
 const createScheduleSession = async (req, res) => {
     try {
-        const { courseId, day, startTime, endTime, classroom } = req.body;
+        const { courseId, day, startTime, endTime } = req.body;
+        const classroom = 'Aula Única';
 
         // 1. Time range check (08:00-14:00 or 15:00-21:00)
         const [sH, sM] = startTime.split(':').map(Number);
@@ -46,15 +47,23 @@ const createScheduleSession = async (req, res) => {
             return res.status(400).json({ error: 'La sesión debe estar dentro del turno de mañana (08-14h) o tarde (15-21h).' });
         }
 
-        // 2. Break check (Patio 11:00-11:30)
+        // 2. Break checks
+        // Patio: 11:00 - 11:30
         const patioStart = 11 * 60;
         const patioEnd = 11 * 60 + 30;
         if ((startTotal < patioEnd && endTotal > patioStart)) {
             return res.status(400).json({ error: 'No se pueden programar clases durante el patio (11:00-11:30).' });
         }
 
-        // 3. Overlap check (Single classroom)
-        const existingSessions = await Schedule.find({ day });
+        // Comida: 15:30 - 17:00
+        const comidaStart = 15 * 60 + 30;
+        const comidaEnd = 17 * 60;
+        if ((startTotal < comidaEnd && endTotal > comidaStart)) {
+            return res.status(400).json({ error: 'No se pueden programar clases durante la comida (15:30-17:00).' });
+        }
+
+        // 3. Overlap check (Fixed to 'Aula Única')
+        const existingSessions = await Schedule.find({ day, classroom });
         for (const s of existingSessions) {
             const [esH, esM] = s.startTime.split(':').map(Number);
             const [eeH, eeM] = s.endTime.split(':').map(Number);
@@ -66,7 +75,12 @@ const createScheduleSession = async (req, res) => {
             }
         }
 
-        // 4. Hour purse check
+        // 4. Duration and Hour purse check
+        const duration = (endTotal - startTotal) / 60;
+        if (duration !== 1 && duration !== 2) {
+            return res.status(400).json({ error: 'La duración de la sesión debe ser de exactamente 1 o 2 horas.' });
+        }
+
         const course = await Course.findById(courseId);
         const sessions = await Schedule.find({ courseId });
         const usedHours = sessions.reduce((acc, s) => {
@@ -75,7 +89,6 @@ const createScheduleSession = async (req, res) => {
             return acc + (eH - sH) + (eM - sM) / 60;
         }, 0);
 
-        const duration = (endTotal - startTotal) / 60;
         if (usedHours + duration > course.totalWeeklyHours) {
             return res.status(400).json({ error: `Has agotado las horas semanales de esta asignatura (${course.totalWeeklyHours}h).` });
         }

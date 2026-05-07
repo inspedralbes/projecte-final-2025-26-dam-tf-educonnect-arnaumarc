@@ -145,7 +145,7 @@ function App() {
       case AppView.TABLON:
         return <TablonView user={user} />;
       case AppView.TEACHER_DASHBOARD:
-        return <TeacherDashboardView />;
+        return <TeacherDashboardView user={user} />;
 
       case AppView.ASIGNATURAS:
         return <AsignaturasView user={user} />;
@@ -160,7 +160,7 @@ function App() {
           </div>
         );
       default:
-        return user?.type === 'professor' ? <TeacherDashboardView /> : <TablonView user={user} />;
+        return user?.type === 'professor' ? <TeacherDashboardView user={user} /> : <TablonView user={user} />;
     }
   };
 

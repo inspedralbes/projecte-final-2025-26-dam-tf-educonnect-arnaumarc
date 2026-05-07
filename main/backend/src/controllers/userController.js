@@ -44,7 +44,8 @@ const getUser = async (req, res) => {
         if (!user) {
             const professor = await Professor.findById(req.params.id).lean();
             if (professor) {
-                const courses = await Course.find();
+                // Return only courses where this user is the professor
+                const courses = await Course.find({ professor: req.params.id });
                 professor.enrolledCourses = courses;
                 return res.json(professor);
             }

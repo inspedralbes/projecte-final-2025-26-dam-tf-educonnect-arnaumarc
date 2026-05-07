@@ -29,43 +29,63 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
         fetch(`${API_BASE_URL}/api/events`)
             .then(res => res.json())
             .then(data => {
-                const formattedEvents = data.map((ev: any) => ({
-                    type: ev.type,
-                    data: {
-                        id: ev._id,
-                        title: ev.title,
-                        date: ev.date,
-                        courseId: ev.courseId?._id
-                    }
-                }));
-                setEvents(formattedEvents);
+                if (Array.isArray(data)) {
+                    const formattedEvents = data.map((ev: any) => ({
+                        type: ev.type,
+                        data: {
+                            id: ev._id,
+                            title: ev.title,
+                            date: ev.date,
+                            courseId: ev.courseId?._id
+                        }
+                    }));
+                    setEvents(formattedEvents);
+                } else {
+                    setEvents([]);
+                }
             })
-            .catch(err => console.error('Error fetching events:', err));
+            .catch(err => {
+                console.error('Error fetching events:', err);
+                setEvents([]);
+            });
     }, []);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/api/courses`)
             .then(res => res.json())
             .then(data => {
-                const userId = user?._id || (user as any)?.id;
-                const filtered = data.filter((c: any) => (c.professor?._id || c.professor) === userId)
-                    .map((c: any) => ({
-                        id: c._id,
-                        title: c.title,
-                        description: c.description,
-                        professor: c.professor,
-                        image: c.image,
-                        totalWeeklyHours: c.totalWeeklyHours
-                    }));
-                setTeacherCourses(filtered);
+                const userId = (user?._id || (user as any)?.id)?.toString();
+                console.log('[DEBUG] Current User ID:', userId);
+                
+                if (Array.isArray(data)) {
+                    const filtered = data.filter((c: any) => {
+                        const courseProfId = (c.professor?._id || c.professor)?.toString();
+                        return courseProfId === userId;
+                    }).map((c: any) => ({
+                            id: c._id,
+                            title: c.title,
+                            description: c.description,
+                            professor: c.professor,
+                            image: c.image,
+                            totalWeeklyHours: c.totalWeeklyHours
+                        }));
+                    
+                    console.log('[DEBUG] Filtered Teacher Courses:', filtered);
+                    setTeacherCourses(filtered);
+                } else {
+                    setTeacherCourses([]);
+                }
             })
-            .catch(err => console.error('Error fetching courses:', err));
+            .catch(err => {
+                console.error('Error fetching courses:', err);
+                setTeacherCourses([]);
+            });
     }, [user]);
 
     // Fetch initial messages and Setup Socket.io for Real-time Updates
     useEffect(() => {
-        if (!user?._id && !(user as any)?.id) return;
-        const userId = user._id || (user as any).id;
+        const userId = (user?._id || (user as any)?.id)?.toString();
+        if (!userId) return;
 
         // 1. Fetch initial messages sent BY this teacher or TO this teacher
         fetch(`${API_BASE_URL}/api/users/${userId}/messages`)
@@ -163,7 +183,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                                 <CalendarIcon size={20} className="text-blue-500" />
-                                Gestión de Horario (Aula Única)
+                                Gestión de Horarios y Aulas
                             </h2>
                             <ScheduleEditor 
                                 courses={teacherCourses} 

@@ -101,8 +101,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ schedule, course
                         >
                             <span className="font-bold truncate leading-tight">{course.title}</span>
                             <div className="flex justify-between items-end text-[10px] font-medium opacity-80 mt-1">
-                                <span className="flex items-center gap-1"><MapPin size={10} /> {s.classroom}</span>
-                                <span className="flex items-center gap-1"><Clock size={10} /> {s.startTime}</span>
+                                <span className="flex items-center gap-1"><Clock size={10} /> {s.startTime} - {s.endTime}</span>
                             </div>
                         </div>
                     );
