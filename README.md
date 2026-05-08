@@ -1,62 +1,16 @@
-# EduConnect Project
+# transversals
+Esquema mínim de carpetes pels projectes transversals
 
-Proyecto final DAM - EduConnect.
-Integrantes: Arnau, Marc.
+És obligatori seguir aquesta estructura tot i que la podeu ampliar.
 
-## Estructura del Proyecto
+## Atenció
+Un cop comenceu heu de canviar aquesta explicació amb la corresponent al vostre projecte (utilitzant markdown)
 
-El proyecto está dividido en tres partes principales:
-
-- **main/backend**: Servidor Node.js con Express y MySQL.
-- **main/frontend**: Aplicación web React con Vite.
-- **main/expo-mobile**: Aplicación móvil con React Native y Expo.
-
-### Opción 1: En terminales separadas
-
-Para ejecutar todo el sistema de forma separada, necesitas abrir **3 terminales** y ejecutar los siguientes comandos en cada una:
-
-#### 1. Backend
-```powershell
-cd main/backend
-npm install
-npm run dev
-```
-
-#### 2. Frontend
-```powershell
-cd main/frontend
-npm install
-npm run dev
-```
-
-#### 3. Móvil
-```powershell
-cd main/expo-mobile
-npm install
-npm start
-```
-
-### Opción 2: Comando unificado (Frontend + Backend con Docker)
-
-Para iniciar el proyecto completo (Frontend web y Backend con Docker) desde la raíz del proyecto, puedes usar un solo comando. Asegúrate de tener **Docker Desktop abierto** antes de ejecutarlo.
-
-```powershell
-npm start
-```
-*(También puedes ejecutar este comando desde la carpeta `main`)*
-
-Esto se encargará de:
-1. Levantar el **Frontend** en el puerto 5173.
-2. Levantar el **Backend y la base de datos** usando `docker-compose up --build`.
-
-## Usuarios de Prueba
-
-Puedes usar los siguientes usuarios para probar la aplicación (la contraseña es la misma que el correo):
-
-### Profesores
-- `xavi@inspedralbes.cat` (Password: `xavi@inspedralbes.cat`)
-
-### Alumnos 
-- `a24arnpergan@inspedralbes.cat` (Password: `a24arnpergan@inspedralbes.cat`)
-- `a24marcarmon@inspedralbes.cat` (Password: `a24marcarmon@inspedralbes.cat`)
-
+# Aquest fitxer ha de contenir com a mínim:
+ * Nom dels integrants
+ * Nom del projecte
+ * Petita descripció
+ * Adreça del gestor de tasques (taiga, jira, trello...)
+ * Adreça del prototip gràfic del projecte (Penpot, figma, moqups...)
+ * URL de producció (quan la tingueu)
+ * Estat: (explicació d'en quin punt està)
