@@ -4,6 +4,7 @@ Llistat d'alguns dels punts que han de quedar explicats en aquesta carpeta. Pode
 És obligatori modificar aquest document!!
 
 ## Documentació bàsica MÍNIMA
+ * [Planificació](PLANIFICACIO.md)
  * Objectius
  * Arquitectura bàsica
    * Tecnologies utilitzades
