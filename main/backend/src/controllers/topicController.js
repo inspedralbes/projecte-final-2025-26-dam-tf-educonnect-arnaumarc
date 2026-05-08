@@ -68,28 +68,76 @@ exports.deleteTopic = async (req, res) => {
 exports.addResource = async (req, res) => {
     try {
         const { topicId } = req.params;
-        const { type, title, url, content } = req.body;
+        const { type, title, url, content, link, dueDate } = req.body;
 
         const topic = await Topic.findById(topicId);
         if (!topic) return res.status(404).json({ message: 'Topic not found' });
 
-        topic.resources.push({ type, title, url, content });
+        // Sanitizar campos opcionales
+        const resourceData = {
+            type,
+            title: title || undefined,
+            url: url || undefined,
+            content: content || undefined,
+            link: link || undefined,
+            dueDate: (dueDate && dueDate !== '') ? new Date(dueDate) : undefined
+        };
+
+        topic.resources.push(resourceData);
         await topic.save();
 
         // Notify students
-        const typeLabels = { note: 'Apunte', file: 'Archivo', link: 'Enlace', task: 'Tarea' };
+        const typeLabels = { material: 'Material', note: 'Apunte', file: 'Archivo', link: 'Enlace', task: 'Tarea' };
         const label = typeLabels[type] || 'recurso';
+        const displayTitle = title || 'sense títol';
+
         notifyCourseStudents(
             req, 
             topic.courseId, 
-            `Nou ${label}: ` + title, 
-            `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${title}`,
+            `Nou ${label}: ` + displayTitle, 
+            `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${displayTitle}`,
             'MATERIAL'
         );
 
         res.status(201).json(topic);
     } catch (error) {
-        res.status(500).json({ message: 'Error adding resource', error });
+        console.error('Error adding resource:', error);
+        res.status(500).json({ 
+            message: 'Error adding resource', 
+            error: error.message || error,
+            details: error.errors // Include validation details if any
+        });
+    }
+};
+
+exports.updateResource = async (req, res) => {
+    try {
+        const { topicId, resourceId } = req.params;
+        const { type, title, url, content, link, dueDate } = req.body;
+
+        const topic = await Topic.findById(topicId);
+        if (!topic) return res.status(404).json({ message: 'Topic not found' });
+
+        const resource = topic.resources.id(resourceId);
+        if (!resource) return res.status(404).json({ message: 'Resource not found' });
+
+        // Actualizar campos sanitizados
+        resource.type = type || resource.type;
+        resource.title = title || undefined;
+        resource.url = url || undefined;
+        resource.content = content || undefined;
+        resource.link = link || undefined;
+        resource.dueDate = (dueDate && dueDate !== '') ? new Date(dueDate) : undefined;
+
+        await topic.save();
+
+        res.json(topic);
+    } catch (error) {
+        console.error('Error updating resource:', error);
+        res.status(500).json({ 
+            message: 'Error updating resource', 
+            error: error.message || error 
+        });
     }
 };
 

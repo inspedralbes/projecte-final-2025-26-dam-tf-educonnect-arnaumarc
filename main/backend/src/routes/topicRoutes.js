@@ -8,6 +8,7 @@ router.put('/topics/:topicId', topicController.updateTopic);
 router.delete('/topics/:topicId', topicController.deleteTopic);
 router.post('/topics/:topicId/resources', topicController.addResource);
 router.delete('/topics/:topicId/resources/:resourceId', topicController.deleteResource);
+router.put('/topics/:topicId/resources/:resourceId', topicController.updateResource);
 router.patch('/topics/:topicId/resources/:resourceId/toggle-visibility', topicController.toggleResourceVisibility);
 
 module.exports = router;

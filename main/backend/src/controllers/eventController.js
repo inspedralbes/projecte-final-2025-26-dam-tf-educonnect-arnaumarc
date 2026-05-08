@@ -12,8 +12,16 @@ const getEvents = async (req, res) => {
 
 const createEvent = async (req, res) => {
     try {
-        const { type, title, date, courseId } = req.body;
-        const newEvent = new Event({ type, title, date, courseId });
+        const { type, title, date, courseId, topicId, modality, status } = req.body;
+        const newEvent = new Event({ 
+            type, 
+            title, 
+            date, 
+            courseId, 
+            topicId, 
+            modality: modality || 'digital', 
+            status: status || 'scheduled' 
+        });
         await newEvent.save();
 
         if (courseId) {
@@ -32,4 +40,20 @@ const createEvent = async (req, res) => {
     }
 };
 
-module.exports = { getEvents, createEvent };
+const updateEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const updatedEvent = await Event.findByIdAndUpdate(id, updates, { new: true });
+        
+        if (!updatedEvent) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        res.json(updatedEvent);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating event', error });
+    }
+};
+
+module.exports = { getEvents, createEvent, updateEvent };

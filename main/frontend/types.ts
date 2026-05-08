@@ -56,10 +56,15 @@ export interface Exam {
 }
 
 export interface Event {
-  id: string;
+  _id?: string;
+  id?: string;
   title: string;
   date: string;
-  courseId?: string;
+  courseId?: any;
+  topicId?: string;
+  modality?: 'paper' | 'digital';
+  status?: 'scheduled' | 'done' | 'graded';
+  type: 'activity' | 'exam' | 'event' | 'holiday' | 'strike';
 }
 
 export interface Holiday {
@@ -92,10 +97,12 @@ export interface ClassSession {
 
 export interface Resource {
   _id?: string;
-  type: 'file' | 'link' | 'task' | 'note';
+  type: 'material' | 'task' | 'file' | 'link' | 'note';
   title: string;
   url?: string;
+  link?: string;
   content?: string;
+  dueDate?: string;
   visible: boolean;
 }
 

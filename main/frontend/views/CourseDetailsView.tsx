@@ -5,7 +5,7 @@ import { MOCK_SCHEDULE } from '../constants';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
-    Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen
+    Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen, Clock, Award, Pencil
 } from 'lucide-react';
 
 interface CourseDetailsViewProps {
@@ -43,18 +43,24 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
     const [showAddResourceModal, setShowAddResourceModal] = useState(false);
     const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+    const [editingResourceId, setEditingResourceId] = useState<string | null>(null);
     const [newResource, setNewResource] = useState({
-        type: 'note' as Resource['type'],
+        type: 'material' as Resource['type'],
         title: '',
         url: '',
-        content: ''
+        link: '',
+        content: '',
+        dueDate: ''
     });
 
     const [showAddEventModal, setShowAddEventModal] = useState(false);
     const [newEvent, setNewEvent] = useState({
         type: 'activity' as 'activity' | 'exam' | 'event' | 'holiday' | 'strike',
         title: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        topicId: '',
+        modality: 'digital' as 'paper' | 'digital',
+        status: 'scheduled' as 'scheduled' | 'done' | 'graded'
     });
     const [courseEvents, setCourseEvents] = useState<any[]>([]);
     const [courseSchedule, setCourseSchedule] = useState<any[]>([]);
@@ -88,6 +94,27 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             }
         } catch (error) {
             console.error('Error fetching events:', error);
+        }
+    };
+
+    const getTopicEvents = (topicId: string) => {
+        return courseEvents.filter(e => (e.topicId?._id || e.topicId) === topicId);
+    };
+
+    const getUnassignedEvents = () => {
+        return courseEvents.filter(e => !e.topicId);
+    };
+
+    const handleUpdateEventStatus = async (eventId: string, newStatus: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (response.ok) fetchEvents();
+        } catch (error) {
+            console.error('Error updating event status:', error);
         }
     };
 
@@ -181,25 +208,57 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         }
     };
 
+    const handleEditResource = (topicId: string, resource: Resource) => {
+        setSelectedTopicId(topicId);
+        setEditingResourceId(resource._id || null);
+        setNewResource({
+            type: resource.type,
+            title: resource.title || '',
+            url: resource.url || '',
+            link: resource.link || '',
+            content: resource.content || '',
+            dueDate: resource.dueDate ? new Date(resource.dueDate).toISOString().split('T')[0] : ''
+        });
+        setShowAddResourceModal(true);
+    };
+
     const handleAddResource = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedTopicId) return;
+
+        // Validación: al menos un campo debe tener contenido
+        if (!newResource.title && !newResource.content && !newResource.link && !newResource.url) {
+            alert('Por favor, rellena al menos un campo (título, descripción, enlace o archivo).');
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_BASE_URL}/api/topics/${selectedTopicId}/resources`, {
-                method: 'POST',
+            const resourceData = {
+                ...newResource,
+                dueDate: newResource.type === 'task' ? newResource.dueDate : undefined,
+                senderId: user?._id || user?.id
+            };
+
+            const url = editingResourceId 
+                ? `${API_BASE_URL}/api/topics/${selectedTopicId}/resources/${editingResourceId}`
+                : `${API_BASE_URL}/api/topics/${selectedTopicId}/resources`;
+            
+            const method = editingResourceId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...newResource,
-                    senderId: user?._id || user?.id
-                })
+                body: JSON.stringify(resourceData)
             });
+
             if (response.ok) {
                 setShowAddResourceModal(false);
-                setNewResource({ type: 'note', title: '', url: '', content: '' });
+                setEditingResourceId(null);
+                setNewResource({ type: 'material', title: '', url: '', link: '', content: '', dueDate: '' });
                 fetchTopics();
             }
         } catch (error) {
-            console.error('Error adding resource:', error);
+            console.error('Error saving resource:', error);
         }
     };
 
@@ -570,17 +629,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <BookOpen className="text-blue-500" size={24} />
-                                Planificación y Recursos
+                                Planificación Temática
                             </h2>
                             {userRole === 'TEACHER' && (
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowAddEventModal(true)}
-                                        className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                                    >
-                                        <Calendar size={18} />
-                                        Añadir Evento
-                                    </button>
                                     <button
                                         onClick={() => setShowAddTopicModal(true)}
                                         className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
@@ -592,35 +644,28 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             )}
                         </div>
 
-                        {/* Sección de Agenda Próxima */}
-                        {courseEvents.length > 0 && (
-                            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                        {/* Eventos sin clasificar (Migración/Generales) */}
+                        {getUnassignedEvents().length > 0 && (
+                            <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
                                 <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <Calendar size={14} />
-                                    Agenda Próxima
+                                    <AlertCircle size={14} />
+                                    Eventos Generales / Sin Clasificar
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {courseEvents
-                                        .filter(e => new Date(e.date) >= new Date())
-                                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                                        .slice(0, 4)
-                                        .map(event => (
-                                            <div key={event._id} className="flex items-center gap-4 p-4 rounded-2xl border border-pink-100 dark:border-pink-900/20 bg-pink-50/30 dark:bg-pink-900/10 group hover:bg-pink-50/50 transition-all">
-                                                <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-800 rounded-xl p-2 min-w-[50px] shadow-sm border border-pink-100 dark:border-zinc-700">
-                                                    <span className="text-[10px] font-black text-pink-500 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
-                                                    <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
-                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${event.type === 'exam' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
-                                                            }`}>
-                                                            {event.type === 'exam' ? 'Examen' : 'Actividad'}
-                                                        </span>
-                                                    </div>
-                                                    <h4 className="font-bold text-gray-900 dark:text-white truncate">{event.title}</h4>
-                                                </div>
+                                    {getUnassignedEvents().map(event => (
+                                        <div key={event._id} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-800/50 group">
+                                            <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                                <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
                                             </div>
-                                        ))}
+                                            <div className="flex-1 min-w-0">
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase mb-1 inline-block ${event.type === 'exam' ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                                                    {event.type === 'exam' ? 'Examen' : 'Actividad'}
+                                                </span>
+                                                <h4 className="font-bold text-gray-900 dark:text-white truncate">{event.title}</h4>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -645,6 +690,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                             <Plus size={20} />
                                                         </button>
                                                         <button
+                                                            onClick={() => { setNewEvent({ ...newEvent, topicId: topic._id }); setShowAddEventModal(true); }}
+                                                            className="p-2 text-pink-600 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-xl transition-all"
+                                                            title="Añadir hito (Examen/Entrega)"
+                                                        >
+                                                            <Calendar size={20} />
+                                                        </button>
+                                                        <button
                                                             onClick={() => handleDeleteTopic(topic._id)}
                                                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                                                             title="Eliminar tema"
@@ -664,58 +716,154 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         </div>
 
                                         {expandedTopics[topic._id] && (
-                                            <div className="p-6 space-y-4 bg-white dark:bg-zinc-900/20 border-t border-gray-100 dark:border-zinc-800">
-                                                {topic.resources && topic.resources.length > 0 ? (
-                                                    topic.resources
-                                                        .filter(r => userRole === 'TEACHER' || r.visible)
-                                                        .map((resource, idx) => (
-                                                            <div key={resource._id || idx} className={`flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all group ${!resource.visible ? 'opacity-50 grayscale' : ''}`}>
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className={`p-3 rounded-2xl ${getResourceColor(resource.type)} shadow-sm`}>
-                                                                        {getResourceIcon(resource.type)}
+                                            <div className="p-6 space-y-8 bg-white dark:bg-zinc-900/20 border-t border-gray-100 dark:border-zinc-800">
+                                                
+                                                {/* Sección de Recursos del Tema */}
+                                                <div>
+                                                    <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                        <FileText size={14} />
+                                                        Materiales y Recursos
+                                                    </h4>
+                                                    <div className="space-y-3">
+                                                        {topic.resources && topic.resources.length > 0 ? (
+                                                            topic.resources
+                                                                .filter(r => userRole === 'TEACHER' || r.visible)
+                                                                .map((resource, idx) => (
+                                                                    <div key={resource._id || idx} className={`p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all group ${!resource.visible ? 'opacity-50 grayscale' : ''}`}>
+                                                                        <div className="flex items-start justify-between gap-4">
+                                                                            <div className="flex items-start gap-4 flex-1">
+                                                                                <div className={`p-3 rounded-2xl shrink-0 ${getResourceColor(resource.type)} shadow-sm`}>
+                                                                                    {getResourceIcon(resource.type)}
+                                                                                </div>
+                                                                                <div className="min-w-0 flex-1">
+                                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                                        <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">
+                                                                                            {resource.title || 'Recurso sin título'}
+                                                                                        </h4>
+                                                                                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase ${resource.type === 'task' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                                                            {resource.type === 'task' ? 'Tarea' : 'Material'}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    
+                                                                                    {resource.content && (
+                                                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap">{resource.content}</p>
+                                                                                    )}
+
+                                                                                    <div className="flex flex-wrap gap-3">
+                                                                                        {resource.link && (
+                                                                                            <a href={resource.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
+                                                                                                <Link size={12} /> ENLACE WEB
+                                                                                            </a>
+                                                                                        )}
+                                                                                        {resource.url && (
+                                                                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg transition-colors">
+                                                                                                <FileDown size={12} /> DESCARGAR ARCHIVO
+                                                                                            </a>
+                                                                                        )}
+                                                                                        {resource.dueDate && (
+                                                                                            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-pink-600 bg-pink-50 dark:bg-pink-900/20 px-3 py-1.5 rounded-lg">
+                                                                                                <Clock size={12} /> ENTREGA: {new Date(resource.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-1">
+                                                                                {userRole === 'TEACHER' && (
+                                                                                    <>
+                                                                                        <button
+                                                                                            onClick={() => handleToggleVisibility(topic._id, resource._id!)}
+                                                                                            className="p-2 text-gray-400 hover:text-blue-500 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                                                                        >
+                                                                                            {resource.visible ? <Eye size={18} /> : <EyeOff size={18} />}
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={() => handleEditResource(topic._id, resource)}
+                                                                                            className="p-2 text-gray-400 hover:text-amber-500 transition-all hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg"
+                                                                                            title="Editar recurso"
+                                                                                        >
+                                                                                            <Pencil size={18} />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={() => handleDeleteResource(topic._id, resource._id!)}
+                                                                                            className="p-2 text-gray-400 hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                                                                        >
+                                                                                            <Trash2 size={18} />
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                    <div>
-                                                                        <h4 className="font-bold text-gray-900 dark:text-white text-base">{resource.title}</h4>
-                                                                        {resource.type === 'link' && resource.url && (
-                                                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 mt-1 transition-colors">
-                                                                                {resource.url} <ExternalLink size={12} />
-                                                                            </a>
-                                                                        )}
-                                                                        {resource.content && (
-                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{resource.content}</p>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    {userRole === 'TEACHER' && (
-                                                                        <>
-                                                                            <button
-                                                                                onClick={() => handleToggleVisibility(topic._id, resource._id!)}
-                                                                                className="p-2 text-gray-400 hover:text-blue-500 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                                                                            >
-                                                                                {resource.visible ? <Eye size={18} /> : <EyeOff size={18} />}
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => handleDeleteResource(topic._id, resource._id!)}
-                                                                                className="p-2 text-gray-400 hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                                                                            >
-                                                                                <Trash2 size={18} />
-                                                                            </button>
-                                                                        </>
-                                                                    )}
-                                                                    {resource.type === 'file' && (
-                                                                        <button className="p-2 text-gray-400 hover:text-green-600 transition-all hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg">
-                                                                            <FileDown size={18} />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                ) : (
-                                                    <div className="text-center py-8">
-                                                        <p className="text-gray-400 font-medium italic">No hay recursos en este tema todavía.</p>
+                                                                ))
+                                                        ) : (
+                                                            <p className="text-sm text-gray-400 italic py-2">No hay materiales en este tema.</p>
+                                                        )}
                                                     </div>
-                                                )}
+                                                </div>
+
+                                                {/* Sección de Hitos (Agenda) del Tema */}
+                                                <div>
+                                                    <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                        <Calendar size={14} />
+                                                        Hitos y Evaluación
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {getTopicEvents(topic._id).length > 0 ? (
+                                                            getTopicEvents(topic._id).map(event => (
+                                                                <div key={event._id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                                                                    event.status === 'done' || event.status === 'graded' 
+                                                                    ? 'bg-green-50/30 border-green-100 dark:bg-green-900/10 dark:border-green-900/20' 
+                                                                    : 'bg-pink-50/30 border-pink-100 dark:bg-pink-900/10 dark:border-pink-900/20'
+                                                                }`}>
+                                                                    <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-800 rounded-xl p-2 min-w-[50px] shadow-sm border border-pink-100 dark:border-zinc-700">
+                                                                        <span className="text-[10px] font-black text-pink-500 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                                                        <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
+                                                                                event.modality === 'paper' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
+                                                                            }`}>
+                                                                                {event.modality === 'paper' ? 'Papel' : 'Digital'}
+                                                                            </span>
+                                                                            {event.status !== 'scheduled' && (
+                                                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase bg-green-100 text-green-600`}>
+                                                                                    {event.status === 'done' ? 'Realizado' : 'Calificado'}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{event.title}</h4>
+                                                                    </div>
+                                                                    {userRole === 'TEACHER' && (
+                                                                        <div className="flex flex-col gap-1">
+                                                                            {event.status === 'scheduled' && (
+                                                                                <button 
+                                                                                    onClick={() => handleUpdateEventStatus(event._id, 'done')}
+                                                                                    className="p-1.5 text-gray-400 hover:text-green-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                                                    title="Marcar como realizado"
+                                                                                >
+                                                                                    <CheckCircle2 size={16} />
+                                                                                </button>
+                                                                            )}
+                                                                            {event.status === 'done' && (
+                                                                                <button 
+                                                                                    onClick={() => handleUpdateEventStatus(event._id, 'graded')}
+                                                                                    className="p-1.5 text-gray-400 hover:text-blue-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                                                    title="Marcar como calificado"
+                                                                                >
+                                                                                    <Award size={16} />
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-sm text-gray-400 italic col-span-full">No hay hitos programados para este tema.</p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -801,33 +949,17 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
                                 <Plus className="text-blue-500" size={28} />
-                                Añadir Recurso
+                                Nuevo Material o Tarea
                             </h2>
                             <form onSubmit={handleAddResource} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         type="button"
-                                        onClick={() => setNewResource({ ...newResource, type: 'note' })}
-                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'note' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
+                                        onClick={() => setNewResource({ ...newResource, type: 'material' })}
+                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'material' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
-                                        <FileText className={newResource.type === 'note' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Nota / Apunte</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setNewResource({ ...newResource, type: 'link' })}
-                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'link' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
-                                    >
-                                        <Link className={newResource.type === 'link' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Enlace Web</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setNewResource({ ...newResource, type: 'file' })}
-                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'file' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
-                                    >
-                                        <File className={newResource.type === 'file' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Archivo</span>
+                                        <BookOpen className={newResource.type === 'material' ? 'text-blue-500' : 'text-gray-400'} />
+                                        <span className="text-xs font-bold uppercase">Material / Teoría</span>
                                     </button>
                                     <button
                                         type="button"
@@ -839,41 +971,65 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     </button>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Nombre del Recurso</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={newResource.title}
-                                        onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
-                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                        placeholder="Ej: Enunciado de la práctica 1"
-                                    />
-                                </div>
-
-                                {newResource.type === 'link' || newResource.type === 'file' ? (
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">URL / Enlace</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título (Opcional)</label>
                                         <input
-                                            type="url"
-                                            required
-                                            value={newResource.url}
-                                            onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+                                            type="text"
+                                            value={newResource.title}
+                                            onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="https://google.com/apuntes.pdf"
+                                            placeholder="Ej: Introducción a los bucles"
                                         />
                                     </div>
-                                ) : (
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Contenido / Detalles</label>
+                                    
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Detalles</label>
                                         <textarea
                                             value={newResource.content}
                                             onChange={(e) => setNewResource({ ...newResource, content: e.target.value })}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Detalles adicionales sobre este recurso..."
+                                            placeholder="Instrucciones o apuntes rápidos..."
                                         ></textarea>
                                     </div>
-                                )}
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Enlace Web (Opcional)</label>
+                                        <input
+                                            type="url"
+                                            value={newResource.link}
+                                            onChange={(e) => setNewResource({ ...newResource, link: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Archivo/URL Documento</label>
+                                        <input
+                                            type="text"
+                                            value={newResource.url}
+                                            onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="Ruta al archivo o PDF..."
+                                        />
+                                    </div>
+
+                                    {newResource.type === 'task' && (
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
+                                                <Clock size={14} className="text-pink-500" />
+                                                Fecha Límite de Entrega (Opcional)
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={newResource.dueDate}
+                                                onChange={(e) => setNewResource({ ...newResource, dueDate: e.target.value })}
+                                                className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="flex gap-4">
                                     <button
@@ -1044,22 +1200,38 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-8">
-                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
                                 <Calendar className="text-pink-500" size={28} />
-                                Nuevo Evento / Examen
+                                Nuevo Hito / Evento
                             </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+                                Vinculado a: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{topics.find(t => t._id === newEvent.topicId)?.title || 'General'}</span>
+                            </p>
                             <form onSubmit={handleCreateEvent} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tipo de Evento</label>
-                                    <select
-                                        value={newEvent.type}
-                                        onChange={(e: any) => setNewEvent({ ...newEvent, type: e.target.value })}
-                                        className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
-                                    >
-                                        <option value="activity">Actividad / Tarea</option>
-                                        <option value="exam">Examen / Prueba</option>
-                                        <option value="event">Evento / Salida</option>
-                                    </select>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tipo</label>
+                                        <select
+                                            value={newEvent.type}
+                                            onChange={(e: any) => setNewEvent({ ...newEvent, type: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
+                                        >
+                                            <option value="activity">Actividad</option>
+                                            <option value="exam">Examen</option>
+                                            <option value="event">Evento</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Modalidad</label>
+                                        <select
+                                            value={newEvent.modality}
+                                            onChange={(e: any) => setNewEvent({ ...newEvent, modality: e.target.value })}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
+                                        >
+                                            <option value="digital">Digital</option>
+                                            <option value="paper">Papel / Físico</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título</label>
@@ -1069,7 +1241,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={newEvent.title}
                                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                                        placeholder="Ej: Examen Final de la Unidad 1"
+                                        placeholder="Ej: Entrega Práctica Temas 1 y 2"
                                     />
                                 </div>
                                 <div>
@@ -1094,7 +1266,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         type="submit"
                                         className="flex-1 py-4 font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-2xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-1"
                                     >
-                                        CREAR EVENTO
+                                        CREAR HITO
                                     </button>
                                 </div>
                             </form>

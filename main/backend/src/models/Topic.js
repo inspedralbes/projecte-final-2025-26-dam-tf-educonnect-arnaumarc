@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
 
 const resourceSchema = new mongoose.Schema({
-    type: { type: String, enum: ['file', 'link', 'task', 'note'], default: 'note' },
-    title: { type: String, required: true },
-    url: { type: String }, // For files or links
-    content: { type: String }, // For notes or task details
+    type: { type: String, enum: ['material', 'task', 'file', 'link', 'note'], default: 'material' },
+    title: { type: String },
+    url: { type: String }, // For files
+    link: { type: String }, // For external links
+    content: { type: String }, // Description/details
+    dueDate: { type: Date }, // Optional deadline for tasks
     visible: { type: Boolean, default: true }
 });
 
