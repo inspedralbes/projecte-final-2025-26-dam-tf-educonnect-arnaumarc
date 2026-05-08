@@ -5,6 +5,7 @@ Llistat d'alguns dels punts que han de quedar explicats en aquesta carpeta. Pode
 
 ## Documentació bàsica MÍNIMA
  * [Planificació](PLANIFICACIO.md)
+ * [Manual d'Usuari](MANUAL.md)
  * Objectius
  * Arquitectura bàsica
    * Tecnologies utilitzades
