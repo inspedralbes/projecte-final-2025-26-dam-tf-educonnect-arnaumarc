@@ -28,7 +28,19 @@ L'EduBot és el nostre assistent virtual. Mai dorm i t'avisarà al moment perqu�
 - **Blau (Informa't)**: Avisos generals de classe.
 - **Gris/Verd (Tot OK)**: Notificacions de sistema o recordatoris tranquils.
 
-> [PLACEHOLDER: Una captura del Tauló on es vegi l'EduBot saludant]
+### Vista del Tauló i l'EduBot
+L'EduBot t'ajudarà a prioritzar la teva feina. Aquesta és la jerarquia d'avisos que veuràs:
+
+```mermaid
+graph TD
+    A[EduBot] --> B[Vermell: Urgent]
+    A --> C[Blau: Informació]
+    A --> D[Gris/Verd: Sistema]
+    B --> B1[Exàmens avui/demà]
+    C --> C1[Canvis d'aula]
+    D --> D1[Missatges llegits]
+```
+
 
 ---
 
