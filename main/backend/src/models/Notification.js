@@ -22,12 +22,17 @@ const notificationSchema = new mongoose.Schema({
     },
     type: { 
         type: String, 
-        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'SYSTEM'],
+        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'COURSE_INVITE', 'SYSTEM'],
         default: 'SYSTEM'
     },
     title: { type: String, required: true },
     content: { type: String, required: true },
     link: { type: String },
+    // Optional metadata for actionable notifications (e.g. course invites)
+    meta: {
+        courseId: { type: String },
+        professorId: { type: String }
+    },
     read: { type: Boolean, default: false }
 }, { timestamps: true });
 

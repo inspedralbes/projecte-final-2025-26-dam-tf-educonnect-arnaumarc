@@ -1,13 +1,14 @@
 import React from 'react';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
-import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info } from 'lucide-react';
+import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface NotificationPanelProps {
     onClose: () => void;
 }
 
 export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose }) => {
-    const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useSocket();
+    const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead } = useSocket();
 
     const getTypeDetails = (type: NotificationData['type']) => {
         switch (type) {
@@ -34,6 +35,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                 label: 'Aviso', 
                 color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
                 border: 'border-amber-500'
+            };
+            case 'COURSE_INVITE': return {
+                icon: <UserPlus size={18} className="text-indigo-500" />,
+                label: 'InvitaciÃ³n',
+                color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+                border: 'border-indigo-500'
             };
             default: return { 
                 icon: <Bell size={18} className="text-gray-500" />, 
@@ -108,6 +115,53 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-2">
                                                 {notif.content}
                                             </p>
+
+                                            {notif.type === 'COURSE_INVITE' && !notif.read && user && (
+                                                <div className="flex gap-2 mb-2">
+                                                    <button
+                                                        onClick={async () => {
+                                                            try {
+                                                                const res = await fetch(`${API_BASE_URL}/api/notifications/${notif._id}/respond`, {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ action: 'accept', userId: user._id })
+                                                                });
+                                                                const data = await res.json();
+                                                                if (res.ok && data?.success) {
+                                                                    markNotificationAsReadLocal(notif._id);
+                                                                }
+                                                            } catch (e) {
+                                                                // Keep silent; panel is non-blocking UI
+                                                                console.error('Error accepting invite', e);
+                                                            }
+                                                        }}
+                                                        className="flex-1 py-2 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors text-xs uppercase tracking-wider"
+                                                    >
+                                                        Aceptar
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            try {
+                                                                const res = await fetch(`${API_BASE_URL}/api/notifications/${notif._id}/respond`, {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ action: 'reject', userId: user._id })
+                                                                });
+                                                                const data = await res.json();
+                                                                if (res.ok && data?.success) {
+                                                                    markNotificationAsReadLocal(notif._id);
+                                                                }
+                                                            } catch (e) {
+                                                                console.error('Error rejecting invite', e);
+                                                            }
+                                                        }}
+                                                        className="flex-1 py-2 rounded-xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors text-xs uppercase tracking-wider"
+                                                    >
+                                                        Rechazar
+                                                    </button>
+                                                </div>
+                                            )}
+
                                             <div className="flex justify-between items-center">
                                                 <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
                                                     <Clock size={10} />

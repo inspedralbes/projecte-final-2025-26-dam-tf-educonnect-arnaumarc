@@ -26,22 +26,110 @@ const getCourseSchedule = async (req, res) => {
 const getStudentsByCourse = async (req, res) => {
     console.log(`GET /api/courses/${req.params.courseId}/students called`);
     try {
-        let students = await Alumno.find();
-        console.log(`Found ${students.length} students in DB`);
+        const { courseId } = req.params;
 
-        // Final fallback: if DB is empty, return the 3 students manually to ensure they appear
+        let students = await Alumno.find({ enrolledCourses: courseId });
+        console.log(`Found ${students.length} enrolled students for course ${courseId}`);
+
+        // Fallback: if DB is empty, return a small mock list to keep UI usable in demo mode
         if (students.length === 0) {
-            console.log('DB empty, returning manual student list');
+            console.log('No enrolled students found, returning manual student list (demo fallback)');
             students = [
                 { _id: '65cf1234567890abcdef0001', nombre: 'Arnau', apellidos: 'Perera Ganuza', email: 'a24arnpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24arnpergan' },
                 { _id: '65cf1234567890abcdef0002', nombre: 'Marc', apellidos: 'Cara Montes', email: 'a24marcarmon@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24marcarmon' },
                 { _id: '65cf1234567890abcdef0003', nombre: 'Nil', apellidos: 'Perera Ganuza', email: 'a24nilpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24nilpergan' }
             ];
         }
+
         res.json(students);
     } catch (error) {
         console.error('Error in students route:', error);
         res.status(500).json({ error: 'Error fetching students' });
+    }
+};
+
+const getAvailableStudentsByCourse = async (req, res) => {
+    console.log(`GET /api/courses/${req.params.courseId}/available-students called`);
+    try {
+        const { courseId } = req.params;
+        const students = await Alumno.find({ enrolledCourses: { $nin: [courseId] } });
+        res.json(students);
+    } catch (error) {
+        console.error('Error in available students route:', error);
+        res.status(500).json({ error: 'Error fetching available students' });
+    }
+};
+
+const inviteStudentToCourse = async (req, res) => {
+    console.log(`POST /api/courses/${req.params.courseId}/invite-student called`);
+    try {
+        const { courseId } = req.params;
+        const { professorId, studentId } = req.body || {};
+
+        if (!professorId || !studentId) {
+            return res.status(400).json({ success: false, message: 'professorId y studentId son obligatorios' });
+        }
+
+        const course = await Course.findById(courseId).lean();
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Asignatura no encontrada' });
+        }
+
+        // Minimal authorization check: only the course owner can invite students
+        if (String(course.professor) !== String(professorId)) {
+            return res.status(403).json({ success: false, message: 'No autorizado para invitar alumnos en esta asignatura' });
+        }
+
+        const student = await Alumno.findById(studentId).lean();
+        if (!student) {
+            return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
+        }
+
+        // If already enrolled, don't create a new invite
+        const alreadyEnrolled = Array.isArray(student.enrolledCourses)
+            && student.enrolledCourses.some((c) => String(c) === String(courseId));
+        if (alreadyEnrolled) {
+            return res.json({ success: true, message: 'El alumno ya estÃ¡ inscrito en esta asignatura' });
+        }
+
+        // Avoid duplicate pending invites (same student/course) by reusing unread invites
+        const existingInvite = await Notification.findOne({
+            recipient: studentId,
+            recipientModel: 'Alumno',
+            type: 'COURSE_INVITE',
+            read: false,
+            'meta.courseId': String(courseId)
+        }).lean();
+
+        if (existingInvite) {
+            return res.json({ success: true, message: 'Ya existe una invitaciÃ³n pendiente para este alumno' });
+        }
+
+        const inviteNotification = await Notification.create({
+            recipient: studentId,
+            recipientModel: 'Alumno',
+            sender: professorId,
+            senderModel: 'Professor',
+            type: 'COURSE_INVITE',
+            title: `InvitaciÃ³n a ${course.title}`,
+            content: `Has sido invitado a unirte a la asignatura \"${course.title}\".`,
+            link: '/asignaturas',
+            meta: {
+                courseId: String(courseId),
+                professorId: String(professorId)
+            }
+        });
+
+        // Emit real-time notification if the student is online
+        const socketId = req.connectedUsers?.get(String(studentId));
+        if (socketId && req.io) {
+            req.io.to(socketId).emit('new_notification', inviteNotification);
+        }
+
+        return res.json({ success: true, notification: inviteNotification });
+    } catch (error) {
+        console.error('Error inviting student:', error);
+        res.status(500).json({ success: false, message: 'Error invitando alumno', error: error.message });
     }
 };
 
@@ -112,4 +200,11 @@ const notifyAllStudents = async (req, res) => {
     }
 };
 
-module.exports = { getCourses, getStudentsByCourse, notifyAllStudents, getCourseSchedule };
+module.exports = {
+    getCourses,
+    getStudentsByCourse,
+    getAvailableStudentsByCourse,
+    inviteStudentToCourse,
+    notifyAllStudents,
+    getCourseSchedule
+};

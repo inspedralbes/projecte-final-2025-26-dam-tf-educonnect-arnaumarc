@@ -12,10 +12,14 @@ interface CallData {
 
 export interface NotificationData {
     _id: string;
-    type: 'EXAM' | 'MATERIAL' | 'MESSAGE' | 'ANNOUNCEMENT' | 'SYSTEM';
+    type: 'EXAM' | 'MATERIAL' | 'MESSAGE' | 'ANNOUNCEMENT' | 'COURSE_INVITE' | 'SYSTEM';
     title: string;
     content: string;
     link?: string;
+    meta?: {
+        courseId?: string;
+        professorId?: string;
+    };
     read: boolean;
     createdAt: string;
 }
@@ -23,6 +27,7 @@ export interface NotificationData {
 interface SocketContextType {
     socket: Socket | null;
     incomingCall: CallData | null;
+    user: User | null;
     notifications: NotificationData[];
     unreadCount: number;
     isInCall: boolean;
@@ -37,6 +42,7 @@ interface SocketContextType {
     setActiveCallUser: (user: { id: string, name: string } | null) => void;
     setIncomingCall: (call: CallData | null) => void;
     markNotificationAsRead: (id: string) => void;
+    markNotificationAsReadLocal: (id: string) => void;
     markAllNotificationsAsRead: () => void;
 }
 
@@ -131,6 +137,11 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         }
     };
 
+    const markNotificationAsReadLocal = (id: string) => {
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    };
+
     const markAllNotificationsAsRead = async () => {
         if (!user) return;
         try {
@@ -180,6 +191,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         <SocketContext.Provider value={{
             socket,
             incomingCall,
+            user,
             notifications,
             unreadCount,
             isInCall,
@@ -194,6 +206,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             setActiveCallUser,
             setIncomingCall,
             markNotificationAsRead,
+            markNotificationAsReadLocal,
             markAllNotificationsAsRead
         }}>
             {children}

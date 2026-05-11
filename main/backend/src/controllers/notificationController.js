@@ -1,4 +1,6 @@
 const Notification = require('../models/Notification');
+const Alumno = require('../models/Alumno');
+const Course = require('../models/Course');
 
 const getUserNotifications = async (req, res) => {
     try {
@@ -45,5 +47,58 @@ const markAllAsRead = async (req, res) => {
 module.exports = {
     getUserNotifications,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    respondCourseInvite: async (req, res) => {
+        try {
+            const { notificationId } = req.params;
+            const { action, userId } = req.body || {};
+
+            if (!userId || (action !== 'accept' && action !== 'reject')) {
+                return res.status(400).json({ success: false, message: 'userId y action (accept/reject) son obligatorios' });
+            }
+
+            const notification = await Notification.findById(notificationId);
+            if (!notification) {
+                return res.status(404).json({ success: false, message: 'Notification not found' });
+            }
+
+            if (String(notification.recipient) !== String(userId)) {
+                return res.status(403).json({ success: false, message: 'No autorizado' });
+            }
+
+            if (notification.type !== 'COURSE_INVITE') {
+                return res.status(400).json({ success: false, message: 'NotificaciÃ³n no es una invitaciÃ³n' });
+            }
+
+            const courseId = notification?.meta?.courseId;
+            if (!courseId) {
+                notification.read = true;
+                await notification.save();
+                return res.status(400).json({ success: false, message: 'InvitaciÃ³n invÃ¡lida (courseId missing)' });
+            }
+
+            if (action === 'accept') {
+                const course = await Course.findById(courseId).lean();
+                if (!course) {
+                    notification.read = true;
+                    await notification.save();
+                    return res.status(404).json({ success: false, message: 'Asignatura no encontrada' });
+                }
+
+                await Alumno.findByIdAndUpdate(
+                    userId,
+                    { $addToSet: { enrolledCourses: courseId } },
+                    { new: true }
+                );
+            }
+
+            // Mark invite as handled
+            notification.read = true;
+            await notification.save();
+
+            return res.json({ success: true, action, notification });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Error responding to invite', error: error.message });
+        }
+    }
 };
