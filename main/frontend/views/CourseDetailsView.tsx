@@ -73,7 +73,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [courseSchedule, setCourseSchedule] = useState<any[]>([]);
     const [loadingSchedule, setLoadingSchedule] = useState(false);
 
-    const DAYS = ['Lunes', 'Martes', 'MiÃ©rcoles', 'Jueves', 'Viernes'];
+    const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
     const fetchTopics = async () => {
         try {
@@ -231,7 +231,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             // Invitation is pending: do NOT enroll the student here.
             setAvailableStudents(prev => prev.filter(s => String(s._id || s.id) !== String(studentId)));
-            setInviteStatus({ type: 'success', message: data?.message || 'InvitaciÃ³n enviada' });
+            setInviteStatus({ type: 'success', message: data?.message || 'Invitación enviada' });
         } catch (error) {
             console.error('Error inviting student:', error);
             setInviteStatus({ type: 'error', message: 'Error invitando alumno' });
@@ -282,9 +282,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         e.preventDefault();
         if (!selectedTopicId) return;
 
-        // ValidaciÃ³n: al menos un campo debe tener contenido
+        // Validación: al menos un campo debe tener contenido
         if (!newResource.title && !newResource.content && !newResource.link && !newResource.url) {
-            alert('Por favor, rellena al menos un campo (tÃ­tulo, descripciÃ³n, enlace o archivo).');
+            alert('Por favor, rellena al menos un campo (título, descripción, enlace o archivo).');
             return;
         }
 
@@ -360,7 +360,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteTopic = async (topicId: string) => {
-        if (!window.confirm('Â¿EstÃ¡s seguro de que quieres eliminar este tema y todos sus recursos?')) return;
+        if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -370,7 +370,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteResource = async (topicId: string, resourceId: string) => {
-        if (!resourceId || !window.confirm('Â¿EstÃ¡s seguro de que quieres eliminar este recurso?')) return;
+        if (!resourceId || !window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -438,7 +438,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             const data = await response.json();
             if (response.ok && data.success) {
-                setNotifyStatus({ type: 'success', message: data.message || 'NotificaciÃ³n enviada correctamente.' });
+                setNotifyStatus({ type: 'success', message: data.message || 'Notificación enviada correctamente.' });
                 setTimeout(() => {
                     setIsNotifyClassModalOpen(false);
                     setNotifyTitle('');
@@ -446,10 +446,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     setNotifyStatus(null);
                 }, 2000);
             } else {
-                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificaciÃ³n.' });
+                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificación.' });
             }
         } catch (error) {
-            setNotifyStatus({ type: 'error', message: 'Error de conexiÃ³n del servidor.' });
+            setNotifyStatus({ type: 'error', message: 'Error de conexión del servidor.' });
         } finally {
             setIsSubmittingNotify(false);
         }
@@ -488,7 +488,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             ${activeTab === 'info' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
                     <FileText size={18} className={activeTab === 'info' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                    InformaciÃ³n
+                    Información
                     {activeTab === 'info' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
                 <button
@@ -519,7 +519,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <FileText className="text-blue-500" size={24} />
-                                DescripciÃ³n del Curso
+                                Descripción del Curso
                             </h2>
                             <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-4xl">
                                 {course.description}
@@ -583,12 +583,12 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <BookOpen className="text-blue-500" size={18} />
-                                    InformaciÃ³n del Docente
+                                    Información del Docente
                                 </h3>
                                 <div className="space-y-2">
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                         <span className="font-bold text-gray-900 dark:text-white mr-2">Especialidad:</span>
-                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en EducaciÃ³n'}
+                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en Educación'}
                                     </p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                         <span className="font-bold text-gray-900 dark:text-white mr-2">Contacto:</span>
@@ -612,15 +612,15 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Calendar className="text-indigo-500" size={18} />
-                                    Carga AcadÃ©mica
+                                    Carga Académica
                                 </h3>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between bg-white dark:bg-zinc-800 p-3 rounded-xl border border-indigo-50 dark:border-zinc-700">
-                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">DedicaciÃ³n Semanal</span>
+                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Dedicación Semanal</span>
                                         <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{course.totalWeeklyHours || 4}h</span>
                                     </div>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autÃ³nomo.
+                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autónomo.
                                     </p>
                                 </div>
                             </div>
@@ -697,7 +697,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <BookOpen className="text-blue-500" size={24} />
-                                PlanificaciÃ³n TemÃ¡tica
+                                Planificación Temática
                             </h2>
                             {userRole === 'TEACHER' && (
                                 <div className="flex gap-2">
@@ -706,13 +706,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                                     >
                                         <Plus size={18} />
-                                        AÃ±adir Tema
+                                        Añadir Tema
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Eventos sin clasificar (MigraciÃ³n/Generales) */}
+                        {/* Eventos sin clasificar (Migración/Generales) */}
                         {getUnassignedEvents().length > 0 && (
                             <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
                                 <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -753,14 +753,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                         <button
                                                             onClick={() => { setSelectedTopicId(topic._id); setShowAddResourceModal(true); }}
                                                             className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all"
-                                                            title="AÃ±adir recurso"
+                                                            title="Añadir recurso"
                                                         >
                                                             <Plus size={20} />
                                                         </button>
                                                         <button
                                                             onClick={() => { setNewEvent({ ...newEvent, topicId: topic._id }); setShowAddEventModal(true); }}
                                                             className="p-2 text-pink-600 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-xl transition-all"
-                                                            title="AÃ±adir hito (Examen/Entrega)"
+                                                            title="Añadir hito (Examen/Entrega)"
                                                         >
                                                             <Calendar size={20} />
                                                         </button>
@@ -786,7 +786,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         {expandedTopics[topic._id] && (
                                             <div className="p-6 space-y-8 bg-white dark:bg-zinc-900/20 border-t border-gray-100 dark:border-zinc-800">
                                                 
-                                                {/* SecciÃ³n de Recursos del Tema */}
+                                                {/* Sección de Recursos del Tema */}
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <FileText size={14} />
@@ -806,7 +806,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                 <div className="min-w-0 flex-1">
                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                         <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">
-                                                                                            {resource.title || 'Recurso sin tÃ­tulo'}
+                                                                                            {resource.title || 'Recurso sin título'}
                                                                                         </h4>
                                                                                         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase ${resource.type === 'task' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
                                                                                             {resource.type === 'task' ? 'Tarea' : 'Material'}
@@ -870,11 +870,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                     </div>
                                                 </div>
 
-                                                {/* SecciÃ³n de Hitos (Agenda) del Tema */}
+                                                {/* Sección de Hitos (Agenda) del Tema */}
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <Calendar size={14} />
-                                                        Hitos y EvaluaciÃ³n
+                                                        Hitos y Evaluación
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {getTopicEvents(topic._id).length > 0 ? (
@@ -959,7 +959,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             {/* Modals */}
 
-            {/* Modal AÃ±adir Tema */}
+            {/* Modal Añadir Tema */}
             {showAddTopicModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
@@ -970,23 +970,23 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             </h2>
                             <form onSubmit={handleCreateTopic} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo del Tema</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título del Tema</label>
                                     <input
                                         type="text"
                                         required
                                         value={newTopicTitle}
                                         onChange={(e) => setNewTopicTitle(e.target.value)}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                                        placeholder="Ej: Tema 1: IntroducciÃ³n a la algoritmia"
+                                        placeholder="Ej: Tema 1: Introducción a la algoritmia"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">DescripciÃ³n (Opcional)</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción (Opcional)</label>
                                     <textarea
                                         value={newTopicDesc}
                                         onChange={(e) => setNewTopicDesc(e.target.value)}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                                        placeholder="Breve resumen de lo que se verÃ¡ en este bloque..."
+                                        placeholder="Breve resumen de lo que se verá en este bloque..."
                                     ></textarea>
                                 </div>
                                 <div className="flex gap-4">
@@ -1010,7 +1010,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal AÃ±adir Recurso */}
+            {/* Modal Añadir Recurso */}
             {showAddResourceModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1027,7 +1027,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'material' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <BookOpen className={newResource.type === 'material' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Material / TeorÃ­a</span>
+                                        <span className="text-xs font-bold uppercase">Material / Teoría</span>
                                     </button>
                                     <button
                                         type="button"
@@ -1041,23 +1041,23 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo (Opcional)</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título (Opcional)</label>
                                         <input
                                             type="text"
                                             value={newResource.title}
                                             onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Ej: IntroducciÃ³n a los bucles"
+                                            placeholder="Ej: Introducción a los bucles"
                                         />
                                     </div>
                                     
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">DescripciÃ³n / Detalles</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Detalles</label>
                                         <textarea
                                             value={newResource.content}
                                             onChange={(e) => setNewResource({ ...newResource, content: e.target.value })}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Instrucciones o apuntes rÃ¡pidos..."
+                                            placeholder="Instrucciones o apuntes rápidos..."
                                         ></textarea>
                                     </div>
 
@@ -1087,7 +1087,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                 <Clock size={14} className="text-pink-500" />
-                                                Fecha LÃ­mite de Entrega (Opcional)
+                                                Fecha Límite de Entrega (Opcional)
                                             </label>
                                             <input
                                                 type="date"
@@ -1134,14 +1134,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             </p>
                             <form onSubmit={handleSendMessage} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">TÃ­tulo</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Título</label>
                                     <input
                                         type="text"
                                         required
                                         value={messageTitle}
                                         onChange={(e) => setMessageTitle(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe un tÃ­tulo..."
+                                        placeholder="Escribe un título..."
                                     />
                                 </div>
                                 <div>
@@ -1151,7 +1151,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={messageContent}
                                         onChange={(e) => setMessageContent(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe tu mensaje aquÃ­..."
+                                        placeholder="Escribe tu mensaje aquí..."
                                     ></textarea>
                                 </div>
                                 <div className="flex gap-3 pt-2">
@@ -1187,7 +1187,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         Invitar nuevo Alumno
                                     </h2>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Solo aparecen alumnos que no estÃ¡n inscritos en esta asignatura.
+                                        Solo aparecen alumnos que no están inscritos en esta asignatura.
                                     </p>
                                 </div>
                                 <button
@@ -1263,7 +1263,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     <div className="py-14 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/20">
                                         <Users size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
                                         <p className="text-gray-700 dark:text-gray-200 font-semibold">No hay alumnos disponibles para invitar.</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Todos los alumnos ya estÃ¡n inscritos o no hay alumnos en la base de datos.</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Todos los alumnos ya están inscritos o no hay alumnos en la base de datos.</p>
                                     </div>
                                 )}
                             </div>
@@ -1272,14 +1272,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal de NotificaciÃ³n Masiva */}
+            {/* Modal de Notificación Masiva */}
             {isNotifyClassModalOpen && (
                 <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <Send size={24} className="text-blue-600 dark:text-blue-400" />
-                                Nueva notificaciÃ³n a la clase
+                                Nueva notificación a la clase
                             </h2>
                             <button
                                 onClick={() => setIsNotifyClassModalOpen(false)}
@@ -1311,7 +1311,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    TÃ­tulo
+                                    Título
                                 </label>
                                 <input
                                     type="text"
@@ -1329,7 +1329,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 </label>
                                 <textarea
                                     className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                    placeholder="Escribe el mensaje para toda la clase aquÃ­..."
+                                    placeholder="Escribe el mensaje para toda la clase aquí..."
                                     value={notifyContent}
                                     onChange={(e) => setNotifyContent(e.target.value)}
                                     required
@@ -1360,7 +1360,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal AÃ±adir Evento de Agenda */}
+            {/* Modal Añadir Evento de Agenda */}
             {showAddEventModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1394,19 +1394,19 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
                                             <option value="digital">Digital</option>
-                                            <option value="paper">Papel / FÃ­sico</option>
+                                            <option value="paper">Papel / Físico</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título</label>
                                     <input
                                         type="text"
                                         required
                                         value={newEvent.title}
                                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                                        placeholder="Ej: Entrega PrÃ¡ctica Temas 1 y 2"
+                                        placeholder="Ej: Entrega Práctica Temas 1 y 2"
                                     />
                                 </div>
                                 <div>

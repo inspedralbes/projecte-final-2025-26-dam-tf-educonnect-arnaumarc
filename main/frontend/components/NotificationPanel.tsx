@@ -38,7 +38,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
             };
             case 'COURSE_INVITE': return {
                 icon: <UserPlus size={18} className="text-indigo-500" />,
-                label: 'InvitaciÃ³n',
+                label: 'Invitación',
                 color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
                 border: 'border-indigo-500'
             };

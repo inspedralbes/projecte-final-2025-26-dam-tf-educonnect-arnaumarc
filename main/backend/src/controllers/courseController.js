@@ -89,7 +89,7 @@ const inviteStudentToCourse = async (req, res) => {
         const alreadyEnrolled = Array.isArray(student.enrolledCourses)
             && student.enrolledCourses.some((c) => String(c) === String(courseId));
         if (alreadyEnrolled) {
-            return res.json({ success: true, message: 'El alumno ya estÃ¡ inscrito en esta asignatura' });
+            return res.json({ success: true, message: 'El alumno ya está inscrito en esta asignatura' });
         }
 
         // Avoid duplicate pending invites (same student/course) by reusing unread invites
@@ -102,7 +102,7 @@ const inviteStudentToCourse = async (req, res) => {
         }).lean();
 
         if (existingInvite) {
-            return res.json({ success: true, message: 'Ya existe una invitaciÃ³n pendiente para este alumno' });
+            return res.json({ success: true, message: 'Ya existe una invitación pendiente para este alumno' });
         }
 
         const inviteNotification = await Notification.create({
@@ -111,7 +111,7 @@ const inviteStudentToCourse = async (req, res) => {
             sender: professorId,
             senderModel: 'Professor',
             type: 'COURSE_INVITE',
-            title: `InvitaciÃ³n a ${course.title}`,
+            title: `Invitación a ${course.title}`,
             content: `Has sido invitado a unirte a la asignatura \"${course.title}\".`,
             link: '/asignaturas',
             meta: {
@@ -193,7 +193,7 @@ const notifyAllStudents = async (req, res) => {
             }
         });
 
-        res.json({ success: true, message: `NotificaciÃ³n enviada a ${students.length} estudiantes (${sentCount} en lÃ­nea)` });
+        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes (${sentCount} en línea)` });
     } catch (error) {
         console.error('Error enviando notificación a toda la clase:', error);
         res.status(500).json({ success: false, message: 'Error enviando notificación', error: error.message });

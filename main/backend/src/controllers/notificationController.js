@@ -67,14 +67,14 @@ module.exports = {
             }
 
             if (notification.type !== 'COURSE_INVITE') {
-                return res.status(400).json({ success: false, message: 'NotificaciÃ³n no es una invitaciÃ³n' });
+                return res.status(400).json({ success: false, message: 'Notificación no es una invitación' });
             }
 
             const courseId = notification?.meta?.courseId;
             if (!courseId) {
                 notification.read = true;
                 await notification.save();
-                return res.status(400).json({ success: false, message: 'InvitaciÃ³n invÃ¡lida (courseId missing)' });
+                return res.status(400).json({ success: false, message: 'Invitación inválida (courseId missing)' });
             }
 
             if (action === 'accept') {
