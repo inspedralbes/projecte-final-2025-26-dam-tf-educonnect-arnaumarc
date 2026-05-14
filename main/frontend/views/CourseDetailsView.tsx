@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
+import { RichTextEditor } from '../components/RichTextEditor';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
@@ -64,6 +65,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [newEvent, setNewEvent] = useState({
         type: 'activity' as 'activity' | 'exam' | 'event' | 'holiday' | 'strike',
         title: '',
+        description: '',
         date: new Date().toISOString().split('T')[0],
         topicId: '',
         modality: 'digital' as 'paper' | 'digital',
@@ -376,6 +378,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             if (response.ok) fetchTopics();
         } catch (error) {
             console.error('Error deleting resource:', error);
+        }
+    };
+
+    const handleDeleteEvent = async (eventId: string) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar este hito de la agenda? Esta acción es definitiva.')) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
+            if (response.ok) fetchEvents();
+        } catch (error) {
+            console.error('Error deleting event:', error);
         }
     };
 
@@ -713,30 +725,78 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         </div>
 
                         {/* Eventos sin clasificar (Migración/Generales) */}
-                        {getUnassignedEvents().length > 0 && (
-                            <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
-                                <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <AlertCircle size={14} />
-                                    Eventos Generales / Sin Clasificar
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {getUnassignedEvents().map(event => (
-                                        <div key={event._id} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-800/50 group">
-                                            <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
-                                                <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase mb-1 inline-block ${event.type === 'exam' ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600'}`}>
-                                                    {event.type === 'exam' ? 'Examen' : 'Actividad'}
+                {getUnassignedEvents().length > 0 && (
+                    <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
+                        <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <AlertCircle size={14} />
+                            Eventos Generales / Sin Clasificar
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {getUnassignedEvents().map(event => (
+                                <div key={event._id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                                    event.status === 'done' || event.status === 'graded' 
+                                    ? 'bg-green-50/30 border-green-100 dark:bg-green-900/10 dark:border-green-900/20' 
+                                    : 'bg-white border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-800'
+                                } group`}>
+                                    <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                        <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
+                                                event.modality === 'paper' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
+                                            }`}>
+                                                {event.modality === 'paper' ? 'Papel' : 'Digital'}
+                                            </span>
+                                            {event.status !== 'scheduled' && (
+                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase bg-green-100 text-green-600`}>
+                                                    {event.status === 'done' ? 'Realizado' : 'Calificado'}
                                                 </span>
-                                                <h4 className="font-bold text-gray-900 dark:text-white truncate">{event.title}</h4>
-                                            </div>
+                                            )}
                                         </div>
-                                    ))}
+                                        <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{event.title}</h4>
+                                        {event.description && (
+                                            <div 
+                                                className="text-xs text-gray-500 dark:text-gray-400 mt-2 rich-content"
+                                                dangerouslySetInnerHTML={{ __html: event.description }}
+                                            />
+                                        )}
+                                    </div>
+                                    {userRole === 'TEACHER' && (
+                                        <div className="flex flex-col gap-1">
+                                            {event.status === 'scheduled' && (
+                                                <button 
+                                                    onClick={() => handleUpdateEventStatus(event._id, 'done')}
+                                                    className="p-1.5 text-gray-400 hover:text-green-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                    title="Marcar como realizado"
+                                                >
+                                                    <CheckCircle2 size={16} />
+                                                </button>
+                                            )}
+                                            {event.status === 'done' && (
+                                                <button 
+                                                    onClick={() => handleUpdateEventStatus(event._id, 'graded')}
+                                                    className="p-1.5 text-gray-400 hover:text-blue-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                    title="Marcar como calificado"
+                                                >
+                                                    <Award size={16} />
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => handleDeleteEvent(event._id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                title="Eliminar evento"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                         <div className="space-y-4">
                             {topics.length > 0 ? (
@@ -814,9 +874,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                     </div>
                                                                                     
                                                                                     {resource.content && (
-                                                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap">{resource.content}</p>
+                                                                                        <div 
+                                                                                           className="text-sm text-gray-600 dark:text-gray-400 mb-3 rich-content"
+                                                                                           dangerouslySetInnerHTML={{ __html: resource.content }}
+                                                                                        />
                                                                                     )}
-
                                                                                     <div className="flex flex-wrap gap-3">
                                                                                         {resource.link && (
                                                                                             <a href={resource.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
@@ -902,6 +964,12 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                             )}
                                                                         </div>
                                                                         <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{event.title}</h4>
+                                                                        {event.description && (
+                                                                            <div 
+                                                                                className="text-xs text-gray-500 dark:text-gray-400 mt-2 rich-content"
+                                                                                dangerouslySetInnerHTML={{ __html: event.description }}
+                                                                            />
+                                                                        )}
                                                                     </div>
                                                                     {userRole === 'TEACHER' && (
                                                                         <div className="flex flex-col gap-1">
@@ -923,6 +991,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                     <Award size={16} />
                                                                                 </button>
                                                                             )}
+                                                                            <button 
+                                                                                onClick={() => handleDeleteEvent(event._id)}
+                                                                                className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                                                title="Eliminar evento"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1053,12 +1128,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Detalles</label>
-                                        <textarea
-                                            value={newResource.content}
-                                            onChange={(e) => setNewResource({ ...newResource, content: e.target.value })}
-                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        <RichTextEditor
+                                            content={newResource.content}
+                                            onChange={(html) => setNewResource({ ...newResource, content: html })}
                                             placeholder="Instrucciones o apuntes rápidos..."
-                                        ></textarea>
+                                        />
                                     </div>
 
                                     <div>
@@ -1327,13 +1401,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     Mensaje
                                 </label>
-                                <textarea
-                                    className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                                <RichTextEditor
+                                    content={notifyContent}
+                                    onChange={(html) => setNotifyContent(html)}
                                     placeholder="Escribe el mensaje para toda la clase aquí..."
-                                    value={notifyContent}
-                                    onChange={(e) => setNotifyContent(e.target.value)}
-                                    required
-                                ></textarea>
+                                />
                             </div>
 
                             <div className="flex gap-3 pt-2">
@@ -1417,6 +1489,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={newEvent.date}
                                         onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Instrucciones</label>
+                                    <RichTextEditor
+                                        content={newEvent.description}
+                                        onChange={(html) => setNewEvent({ ...newEvent, description: html })}
+                                        placeholder="Detalles del examen o actividad..."
                                     />
                                 </div>
                                 <div className="flex gap-4">

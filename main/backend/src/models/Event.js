@@ -7,6 +7,7 @@ const eventSchema = new mongoose.Schema({
         enum: ['activity', 'exam', 'event', 'holiday', 'strike']
     },
     title: { type: String, required: true },
+    description: { type: String },
     date: { type: Date, required: true },
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic' },
