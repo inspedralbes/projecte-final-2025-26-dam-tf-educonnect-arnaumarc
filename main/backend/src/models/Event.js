@@ -20,7 +20,9 @@ const eventSchema = new mongoose.Schema({
         type: String, 
         enum: ['scheduled', 'done', 'graded'], 
         default: 'scheduled' 
-    }
+    },
+    requiresSubmission: { type: Boolean, default: false },
+    submissionType: { type: String, enum: ['file', 'comment', 'done'], default: 'done' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

@@ -1,14 +1,4 @@
-## Purpose
-Define la estructura y gestión multimodal de los recursos educativos dentro de las asignaturas, permitiendo una organización clara y accesible de materiales y tareas.
-
-## Requirements
-
-### Requirement: Multimodal Resource Structure
-El sistema SHALL permitir que un recurso individual contenga simultáneamente un título, una descripción detallada, un enlace web externo y un archivo adjunto.
-
-#### Scenario: Creating a complete material
-- **WHEN** un profesor crea un recurso de tipo "Material" completando el título, la descripción, la URL y adjuntando un archivo
-- **THEN** el sistema debe guardar y mostrar todos estos componentes dentro de la misma entrada del tema.
+## MODIFIED Requirements
 
 ### Requirement: Simplified Resource Categories
 El sistema SHALL simplificar los tipos de recursos a dos categorías principales: "Material" (para contenidos teóricos) y "Tarea" (para actividades prácticas). Para las tareas, el sistema DEBE permitir configurar el tipo de entrega requerido.
@@ -27,10 +17,3 @@ El sistema SHALL permitir establecer una fecha límite de entrega para los recur
 #### Scenario: Task without deadline
 - **WHEN** un profesor crea una "Tarea" y deja vacío el campo de "Fecha Límite"
 - **THEN** el sistema debe guardar la tarea sin restricciones de tiempo y tratar todas las entregas como "A TIEMPO".
-
-### Requirement: Resource UI Visual Integrity
-La interfaz de gestión de recursos SHALL presentar etiquetas y controles con ortografía correcta en español, eliminando cualquier error de codificación heredado en títulos de modales, etiquetas de campos y botones de acción.
-
-#### Scenario: Viewing resource management modals
-- **WHEN** un profesor abre los modales de "Añadir Tema" o "Añadir Recurso"
-- **THEN** todas las etiquetas de los campos (ej. "Título", "Descripción") deben mostrarse con las tildes correctas y sin caracteres extraños.
