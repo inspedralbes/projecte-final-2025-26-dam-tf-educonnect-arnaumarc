@@ -7,6 +7,7 @@ const eventSchema = new mongoose.Schema({
         enum: ['activity', 'exam', 'event', 'holiday', 'strike']
     },
     title: { type: String, required: true },
+    description: { type: String },
     date: { type: Date, required: true },
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic' },
@@ -19,7 +20,9 @@ const eventSchema = new mongoose.Schema({
         type: String, 
         enum: ['scheduled', 'done', 'graded'], 
         default: 'scheduled' 
-    }
+    },
+    requiresSubmission: { type: Boolean, default: false },
+    submissionType: { type: String, enum: ['file', 'comment', 'done'], default: 'done' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

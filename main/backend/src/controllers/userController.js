@@ -63,8 +63,11 @@ const updateUserSettings = async (req, res) => {
     const { profileImage, theme } = req.body;
     try {
         let user = await Alumno.findById(req.params.id);
+        let isAlumno = true;
+        
         if (!user) {
             user = await Professor.findById(req.params.id);
+            isAlumno = false;
         }
 
         if (!user) {
@@ -76,11 +79,19 @@ const updateUserSettings = async (req, res) => {
 
         await user.save();
         
-        // Return populated user
-        const populatedUser = await (user.constructor.name === 'Alumno' 
-            ? Alumno.findById(user._id).populate({ path: 'enrolledCourses', populate: { path: 'professor' } })
-            : Professor.findById(user._id).populate({ path: 'enrolledCourses', populate: { path: 'professor' } })
-        );
+        let populatedUser;
+        if (isAlumno) {
+            populatedUser = await Alumno.findById(user._id).populate({ 
+                path: 'enrolledCourses', 
+                populate: { path: 'professor' } 
+            });
+        } else {
+            // Para profesores, cargamos sus cursos y los inyectamos como enrolledCourses
+            const professorData = await Professor.findById(user._id).lean();
+            const courses = await Course.find({ professor: user._id }).populate('professor');
+            professorData.enrolledCourses = courses;
+            populatedUser = professorData;
+        }
 
         res.json({ success: true, user: populatedUser || user });
     } catch (error) {

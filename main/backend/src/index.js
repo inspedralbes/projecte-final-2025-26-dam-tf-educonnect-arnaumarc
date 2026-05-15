@@ -17,6 +17,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const topicRoutes = require('./routes/topicRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
 const Notification = require('./models/Notification');
 
 const app = express();
@@ -139,6 +140,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 const publicPath = path.join(__dirname, '../public');
 console.log(`Serving static files from: ${publicPath}`);
 app.use(express.static(publicPath));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Connect to MongoDB
 connectDB();
@@ -158,6 +160,7 @@ app.use('/api', messageRoutes);
 app.use('/api', eventRoutes);
 app.use('/api', scheduleRoutes);
 app.use('/api', topicRoutes);
+app.use('/api/submissions', submissionRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // The "catchall" handler: for any request that doesn't

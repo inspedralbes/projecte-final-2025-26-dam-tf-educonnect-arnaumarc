@@ -7,7 +7,9 @@ const resourceSchema = new mongoose.Schema({
     link: { type: String }, // For external links
     content: { type: String }, // Description/details
     dueDate: { type: Date }, // Optional deadline for tasks
-    visible: { type: Boolean, default: true }
+    visible: { type: Boolean, default: true },
+    requiresSubmission: { type: Boolean, default: false },
+    submissionType: { type: String, enum: ['file', 'comment', 'done'], default: 'done' }
 });
 
 const topicSchema = new mongoose.Schema({

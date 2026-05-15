@@ -15,6 +15,43 @@
       body {
         font-family: 'Inter', sans-serif;
       }
+      .rich-content table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      .rich-content table td, .rich-content table th {
+        min-width: 1em;
+        border: 2px solid #ddd;
+        padding: 3px 5px;
+        vertical-align: top;
+        box-sizing: border-box;
+        position: relative;
+      }
+      .dark .rich-content table td, .dark .rich-content table th {
+        border-color: #3f3f46;
+      }
+      .rich-content table th {
+        font-weight: bold;
+        text-align: left;
+        background-color: #f1f5f9;
+      }
+      .dark .rich-content table th {
+        background-color: #27272a;
+      }
+      .rich-content ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+      }
+      .rich-content ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+      }
+      .rich-content {
+        overflow-x: auto;
+      }
     </style>
   <script type="importmap">
 {

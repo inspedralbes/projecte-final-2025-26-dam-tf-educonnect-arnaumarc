@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
+import { RichTextEditor } from '../components/RichTextEditor';
+import { SubmissionTracker } from '../components/SubmissionTracker';
+import { useSocket } from '../src/context/SocketContext';
 import {
-    Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle,
+    Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle, AlertTriangle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
     Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen, Clock, Award, Pencil, UserPlus
 } from 'lucide-react';
@@ -57,21 +60,73 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         url: '',
         link: '',
         content: '',
-        dueDate: ''
+        dueDate: '',
+        requiresSubmission: false,
+        submissionType: 'done' as Resource['submissionType']
     });
 
     const [showAddEventModal, setShowAddEventModal] = useState(false);
     const [newEvent, setNewEvent] = useState({
         type: 'activity' as 'activity' | 'exam' | 'event' | 'holiday' | 'strike',
         title: '',
+        description: '',
         date: new Date().toISOString().split('T')[0],
         topicId: '',
         modality: 'digital' as 'paper' | 'digital',
-        status: 'scheduled' as 'scheduled' | 'done' | 'graded'
+        status: 'scheduled' as 'scheduled' | 'done' | 'graded',
+        requiresSubmission: false,
+        submissionType: 'done' as 'file' | 'comment' | 'done'
     });
     const [courseEvents, setCourseEvents] = useState<any[]>([]);
     const [courseSchedule, setCourseSchedule] = useState<any[]>([]);
     const [loadingSchedule, setLoadingSchedule] = useState(false);
+
+    // Seguimiento de entregas
+    const [submissions, setSubmissions] = useState<any[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSubmissionModal, setShowSubmissionModal] = useState(false);
+    const [showTrackerModal, setShowTrackerModal] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState<{ id: string, type: 'resource' | 'event', title: string, submissionType: string } | null>(null);
+    const [submissionContent, setSubmissionContent] = useState('');
+    const [submissionFile, setSubmissionFile] = useState<File | null>(null);
+    const [showConfirmOverwrite, setShowConfirmOverwrite] = useState(false);
+
+    const fetchSubmissions = async () => {
+        try {
+            const courseId = course._id || course.id;
+            const response = await fetch(`${API_BASE_URL}/api/submissions/course/${courseId}`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setSubmissions(data);
+            }
+        } catch (error) {
+            console.error('Error fetching submissions:', error);
+        }
+    };
+
+    const { socket } = useSocket();
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('submission_updated', (data: any) => {
+            const courseId = course._id || course.id;
+            if (String(data.courseId) === String(courseId)) {
+                // Actualizar la lista de entregas localmente
+                setSubmissions(prev => {
+                    const exists = prev.find(s => String(s._id || s.id) === String(data.submission._id || data.submission.id));
+                    if (exists) {
+                        return prev.map(s => String(s._id || s.id) === String(data.submission._id || data.submission.id) ? data.submission : s);
+                    }
+                    return [...prev, data.submission];
+                });
+            }
+        });
+
+        return () => {
+            socket.off('submission_updated');
+        };
+    }, [socket, course]);
 
     const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
@@ -169,6 +224,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         fetchTopics();
         fetchEvents();
         fetchCourseSchedule();
+        fetchSubmissions();
 
         const courseId = initialCourse._id || initialCourse.id;
         if (!courseId) return;
@@ -273,7 +329,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             url: resource.url || '',
             link: resource.link || '',
             content: resource.content || '',
-            dueDate: resource.dueDate ? new Date(resource.dueDate).toISOString().split('T')[0] : ''
+            dueDate: resource.dueDate ? new Date(resource.dueDate).toISOString().split('T')[0] : '',
+            requiresSubmission: resource.requiresSubmission || false,
+            submissionType: resource.submissionType || 'done'
         });
         setShowAddResourceModal(true);
     };
@@ -359,6 +417,57 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         }
     };
 
+    const getSubmissionForActivity = (activityId: string) => {
+        return submissions.find(s => String(s.activityId) === String(activityId) && String(s.studentId?._id || s.studentId) === String(user?._id || user?.id));
+    };
+
+    const handleSubmission = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        if (!selectedActivity) return;
+
+        // Tarea 6.4: Verificar si ya existe entrega para pedir confirmación
+        const existing = getSubmissionForActivity(selectedActivity.id);
+        if (existing && !showConfirmOverwrite) {
+            setShowConfirmOverwrite(true);
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const courseId = course._id || course.id;
+            const formData = new FormData();
+            formData.append('studentId', user?._id || user?.id || '');
+            formData.append('activityId', selectedActivity.id);
+            formData.append('activityType', selectedActivity.type);
+            formData.append('courseId', courseId);
+            formData.append('submissionType', selectedActivity.submissionType);
+
+            if (selectedActivity.submissionType === 'file' && submissionFile) {
+                formData.append('file', submissionFile);
+            } else if (submissionContent) {
+                formData.append('content', submissionContent);
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                setShowSubmissionModal(false);
+                setShowConfirmOverwrite(false);
+                setSubmissionContent('');
+                setSubmissionFile(null);
+                setSelectedActivity(null);
+                fetchSubmissions();
+            }
+        } catch (error) {
+            console.error('Error submitting:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleDeleteTopic = async (topicId: string) => {
         if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
         try {
@@ -376,6 +485,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             if (response.ok) fetchTopics();
         } catch (error) {
             console.error('Error deleting resource:', error);
+        }
+    };
+
+    const handleDeleteEvent = async (eventId: string) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar este hito de la agenda? Esta acción es definitiva.')) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
+            if (response.ok) fetchEvents();
+        } catch (error) {
+            console.error('Error deleting event:', error);
         }
     };
 
@@ -713,30 +832,78 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         </div>
 
                         {/* Eventos sin clasificar (Migración/Generales) */}
-                        {getUnassignedEvents().length > 0 && (
-                            <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
-                                <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <AlertCircle size={14} />
-                                    Eventos Generales / Sin Clasificar
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {getUnassignedEvents().map(event => (
-                                        <div key={event._id} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-800/50 group">
-                                            <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
-                                                <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase mb-1 inline-block ${event.type === 'exam' ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600'}`}>
-                                                    {event.type === 'exam' ? 'Examen' : 'Actividad'}
+                {getUnassignedEvents().length > 0 && (
+                    <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
+                        <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <AlertCircle size={14} />
+                            Eventos Generales / Sin Clasificar
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {getUnassignedEvents().map(event => (
+                                <div key={event._id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                                    event.status === 'done' || event.status === 'graded' 
+                                    ? 'bg-green-50/30 border-green-100 dark:bg-green-900/10 dark:border-green-900/20' 
+                                    : 'bg-white border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-800'
+                                } group`}>
+                                    <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                        <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
+                                                event.modality === 'paper' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
+                                            }`}>
+                                                {event.modality === 'paper' ? 'Papel' : 'Digital'}
+                                            </span>
+                                            {event.status !== 'scheduled' && (
+                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase bg-green-100 text-green-600`}>
+                                                    {event.status === 'done' ? 'Realizado' : 'Calificado'}
                                                 </span>
-                                                <h4 className="font-bold text-gray-900 dark:text-white truncate">{event.title}</h4>
-                                            </div>
+                                            )}
                                         </div>
-                                    ))}
+                                        <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{event.title}</h4>
+                                        {event.description && (
+                                            <div 
+                                                className="text-xs text-gray-500 dark:text-gray-400 mt-2 rich-content"
+                                                dangerouslySetInnerHTML={{ __html: event.description }}
+                                            />
+                                        )}
+                                    </div>
+                                    {userRole === 'TEACHER' && (
+                                        <div className="flex flex-col gap-1">
+                                            {event.status === 'scheduled' && (
+                                                <button 
+                                                    onClick={() => handleUpdateEventStatus(event._id, 'done')}
+                                                    className="p-1.5 text-gray-400 hover:text-green-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                    title="Marcar como realizado"
+                                                >
+                                                    <CheckCircle2 size={16} />
+                                                </button>
+                                            )}
+                                            {event.status === 'done' && (
+                                                <button 
+                                                    onClick={() => handleUpdateEventStatus(event._id, 'graded')}
+                                                    className="p-1.5 text-gray-400 hover:text-blue-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                    title="Marcar como calificado"
+                                                >
+                                                    <Award size={16} />
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => handleDeleteEvent(event._id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                title="Eliminar evento"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                         <div className="space-y-4">
                             {topics.length > 0 ? (
@@ -814,9 +981,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                     </div>
                                                                                     
                                                                                     {resource.content && (
-                                                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap">{resource.content}</p>
+                                                                                        <div 
+                                                                                           className="text-sm text-gray-600 dark:text-gray-400 mb-3 rich-content"
+                                                                                           dangerouslySetInnerHTML={{ __html: resource.content }}
+                                                                                        />
                                                                                     )}
-
                                                                                     <div className="flex flex-wrap gap-3">
                                                                                         {resource.link && (
                                                                                             <a href={resource.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
@@ -834,6 +1003,43 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                             </div>
                                                                                         )}
                                                                                     </div>
+
+                                                                                    {/* Estado de entrega para Alumnos */}
+                                                                                    {userRole === 'STUDENT' && resource.requiresSubmission && (
+                                                                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+                                                                                            {getSubmissionForActivity(resource._id!) ? (
+                                                                                                <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">
+                                                                                                    <CheckCircle2 size={16} />
+                                                                                                    Tarea Entregada {getSubmissionForActivity(resource._id!)?.status === 'TARDE' && (
+                                                                                                        <span className="text-orange-500">(FUERA DE PLAZO)</span>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            ) : (
+                                                                                                <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-wider">
+                                                                                                    <AlertCircle size={16} />
+                                                                                                    Pendiente de entrega
+                                                                                                </div>
+                                                                                            )}
+
+                                                                                            {!getSubmissionForActivity(resource._id!) && (
+                                                                                                <button
+                                                                                                    onClick={() => {
+                                                                                                        setSelectedActivity({
+                                                                                                            id: resource._id!,
+                                                                                                            type: 'resource',
+                                                                                                            title: resource.title || 'Tarea',
+                                                                                                            submissionType: resource.submissionType || 'done'
+                                                                                                        });
+                                                                                                        setShowSubmissionModal(true);
+                                                                                                    }}
+                                                                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm transition-all hover:scale-105 active:scale-95"
+                                                                                                >
+                                                                                                    REALIZAR ENTREGA
+                                                                                                </button>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex items-center gap-1">
@@ -857,6 +1063,20 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                             className="p-2 text-gray-400 hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                                                                                         >
                                                                                             <Trash2 size={18} />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={() => {
+                                                                                                setSelectedActivity({
+                                                                                                    id: resource._id!,
+                                                                                                    type: 'resource',
+                                                                                                    title: resource.title || 'Tarea',
+                                                                                                    submissionType: resource.submissionType || 'done'
+                                                                                                });
+                                                                                                setShowTrackerModal(true);
+                                                                                            }}
+                                                                                            className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-black shadow-sm transition-all hover:scale-105"
+                                                                                        >
+                                                                                            SEGUIMIENTO
                                                                                         </button>
                                                                                     </>
                                                                                 )}
@@ -902,6 +1122,46 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                             )}
                                                                         </div>
                                                                         <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{event.title}</h4>
+                                                                        {event.description && (
+                                                                            <div 
+                                                                                className="text-xs text-gray-500 dark:text-gray-400 mt-2 rich-content"
+                                                                                dangerouslySetInnerHTML={{ __html: event.description }}
+                                                                            />
+                                                                        )}
+
+                                                                        {/* Estado de entrega para Alumnos en Eventos */}
+                                                                        {userRole === 'STUDENT' && event.requiresSubmission && (
+                                                                            <div className="mt-3 pt-3 border-t border-pink-100 dark:border-pink-900/30 flex items-center justify-between gap-4">
+                                                                                {getSubmissionForActivity(event._id!) ? (
+                                                                                    <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-bold text-[10px] uppercase">
+                                                                                        <CheckCircle2 size={14} />
+                                                                                        Entregado
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <div className="flex items-center gap-1.5 text-pink-600 font-bold text-[10px] uppercase">
+                                                                                        <AlertCircle size={14} />
+                                                                                        Pendiente
+                                                                                    </div>
+                                                                                )}
+
+                                                                                {!getSubmissionForActivity(event._id!) && (
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            setSelectedActivity({
+                                                                                                id: event._id!,
+                                                                                                type: 'event',
+                                                                                                title: event.title,
+                                                                                                submissionType: event.submissionType || 'done'
+                                                                                            });
+                                                                                            setShowSubmissionModal(true);
+                                                                                        }}
+                                                                                        className="bg-pink-600 hover:bg-pink-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all"
+                                                                                    >
+                                                                                        ENTREGAR
+                                                                                    </button>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                     {userRole === 'TEACHER' && (
                                                                         <div className="flex flex-col gap-1">
@@ -923,6 +1183,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                     <Award size={16} />
                                                                                 </button>
                                                                             )}
+                                                                            <button 
+                                                                                onClick={() => handleDeleteEvent(event._id)}
+                                                                                className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
+                                                                                title="Eliminar evento"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1053,12 +1320,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Detalles</label>
-                                        <textarea
-                                            value={newResource.content}
-                                            onChange={(e) => setNewResource({ ...newResource, content: e.target.value })}
-                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        <RichTextEditor
+                                            content={newResource.content}
+                                            onChange={(html) => setNewResource({ ...newResource, content: html })}
                                             placeholder="Instrucciones o apuntes rápidos..."
-                                        ></textarea>
+                                        />
                                     </div>
 
                                     <div>
@@ -1084,18 +1350,50 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     </div>
 
                                     {newResource.type === 'task' && (
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
-                                                <Clock size={14} className="text-pink-500" />
-                                                Fecha Límite de Entrega (Opcional)
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={newResource.dueDate}
-                                                onChange={(e) => setNewResource({ ...newResource, dueDate: e.target.value })}
-                                                className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                                            />
-                                        </div>
+                                        <>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
+                                                    <Clock size={14} className="text-pink-500" />
+                                                    Configuración de Entrega
+                                                </label>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNewResource({ ...newResource, requiresSubmission: true, submissionType: 'done' })}
+                                                        className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newResource.requiresSubmission && newResource.submissionType === 'done' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-400'}`}
+                                                    >
+                                                        Solo Completar
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNewResource({ ...newResource, requiresSubmission: true, submissionType: 'comment' })}
+                                                        className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newResource.requiresSubmission && newResource.submissionType === 'comment' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-400'}`}
+                                                    >
+                                                        Comentario
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNewResource({ ...newResource, requiresSubmission: true, submissionType: 'file' })}
+                                                        className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newResource.requiresSubmission && newResource.submissionType === 'file' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-400'}`}
+                                                    >
+                                                        Archivo
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
+                                                    <Clock size={14} className="text-pink-500" />
+                                                    Fecha Límite de Entrega (Opcional)
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={newResource.dueDate}
+                                                    onChange={(e) => setNewResource({ ...newResource, dueDate: e.target.value })}
+                                                    className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                                                />
+                                            </div>
+                                        </>
                                     )}
                                 </div>
 
@@ -1327,13 +1625,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     Mensaje
                                 </label>
-                                <textarea
-                                    className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                                <RichTextEditor
+                                    content={notifyContent}
+                                    onChange={(html) => setNotifyContent(html)}
                                     placeholder="Escribe el mensaje para toda la clase aquí..."
-                                    value={notifyContent}
-                                    onChange={(e) => setNotifyContent(e.target.value)}
-                                    required
-                                ></textarea>
+                                />
                             </div>
 
                             <div className="flex gap-3 pt-2">
@@ -1397,6 +1693,38 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <option value="paper">Papel / Físico</option>
                                         </select>
                                     </div>
+
+                                    {newEvent.modality === 'digital' && (
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
+                                                <Clock size={14} className="text-pink-500" />
+                                                Configuración de Entrega
+                                            </label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNewEvent({ ...newEvent, requiresSubmission: true, submissionType: 'done' })}
+                                                    className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newEvent.requiresSubmission && newEvent.submissionType === 'done' ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-gray-200 text-gray-400'}`}
+                                                >
+                                                    Solo Completar
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNewEvent({ ...newEvent, requiresSubmission: true, submissionType: 'comment' })}
+                                                    className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newEvent.requiresSubmission && newEvent.submissionType === 'comment' ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-gray-200 text-gray-400'}`}
+                                                >
+                                                    Comentario
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNewEvent({ ...newEvent, requiresSubmission: true, submissionType: 'file' })}
+                                                    className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${newEvent.requiresSubmission && newEvent.submissionType === 'file' ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-gray-200 text-gray-400'}`}
+                                                >
+                                                    Archivo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título</label>
@@ -1419,6 +1747,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Instrucciones</label>
+                                    <RichTextEditor
+                                        content={newEvent.description}
+                                        onChange={(html) => setNewEvent({ ...newEvent, description: html })}
+                                        placeholder="Detalles del examen o actividad..."
+                                    />
+                                </div>
                                 <div className="flex gap-4">
                                     <button
                                         type="button"
@@ -1435,6 +1771,121 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Panel de Seguimiento (Profesor) */}
+            {showTrackerModal && selectedActivity && (
+                <SubmissionTracker
+                    activity={selectedActivity}
+                    courseId={course._id || course.id}
+                    allStudents={students}
+                    submissions={submissions}
+                    onClose={() => setShowTrackerModal(false)}
+                    onRefresh={fetchSubmissions}
+                    currentUserId={user?._id || user?.id || ''}
+                />
+            )}
+
+            {/* Modal de Entrega (Alumno) */}
+            {showSubmissionModal && selectedActivity && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
+                                <Send className="text-blue-500" size={28} />
+                                Realizar Entrega
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+                                Actividad: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{selectedActivity.title}</span>
+                            </p>
+
+                            <form onSubmit={handleSubmission} className="space-y-6">
+                                {selectedActivity.submissionType === 'file' && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">URL del Archivo / Enlace Entrega</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={submissionContent}
+                                            onChange={(e) => setSubmissionContent(e.target.value)}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="https://drive.google.com/..."
+                                        />
+                                    </div>
+                                )}
+
+                                {selectedActivity.submissionType === 'comment' && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Comentario de Confirmación</label>
+                                        <textarea
+                                            required
+                                            value={submissionContent}
+                                            onChange={(e) => setSubmissionContent(e.target.value)}
+                                            className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            placeholder="Escribe aquí tu respuesta o confirmación..."
+                                        ></textarea>
+                                    </div>
+                                )}
+
+                                {selectedActivity.submissionType === 'done' && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                                        <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                                            Esta actividad solo requiere que confirmes que la has completado. Pulsa el botón de abajo para finalizar.
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSubmissionModal(false)}
+                                        className="flex-1 py-4 font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-2xl transition-colors"
+                                    >
+                                        CANCELAR
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 py-4 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1"
+                                    >
+                                        {isSubmitting ? 'ENVIANDO...' : 'ENTREGAR AHORA'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Confirmación de Re-entrega */}
+            {showConfirmOverwrite && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8 text-center">
+                            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">¿Sobrescribir Entrega?</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+                                Ya has realizado una entrega para esta actividad. Al enviar una nueva, la anterior será reemplazada permanentemente.
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => handleSubmission()}
+                                    className="w-full py-4 font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-2xl shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-1"
+                                >
+                                    SÍ, SOBRESCRIBIR
+                                </button>
+                                <button
+                                    onClick={() => setShowConfirmOverwrite(false)}
+                                    className="w-full py-4 font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-2xl transition-colors"
+                                >
+                                    CANCELAR
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

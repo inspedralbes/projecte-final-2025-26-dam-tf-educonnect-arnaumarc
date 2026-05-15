@@ -65,6 +65,8 @@ export interface Event {
   modality?: 'paper' | 'digital';
   status?: 'scheduled' | 'done' | 'graded';
   type: 'activity' | 'exam' | 'event' | 'holiday' | 'strike';
+  requiresSubmission?: boolean;
+  submissionType?: 'file' | 'comment' | 'done';
 }
 
 export interface Holiday {
@@ -104,6 +106,8 @@ export interface Resource {
   content?: string;
   dueDate?: string;
   visible: boolean;
+  requiresSubmission?: boolean;
+  submissionType?: 'file' | 'comment' | 'done';
 }
 
 export interface Topic {
