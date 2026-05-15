@@ -17,12 +17,12 @@ const notificationSchema = new mongoose.Schema({
     },
     senderModel: { 
         type: String, 
-        enum: ['Professor', 'Alumno'], 
+        enum: ['Professor', 'Alumno', 'System', 'Admin'], 
         default: 'Professor' 
     },
     type: { 
         type: String, 
-        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'COURSE_INVITE', 'SYSTEM'],
+        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'COURSE_INVITE', 'SYSTEM', 'MEET_CALL', 'MEET_MESSAGE', 'PROFESSOR_ADVISORY'],
         default: 'SYSTEM'
     },
     title: { type: String, required: true },
@@ -33,7 +33,12 @@ const notificationSchema = new mongoose.Schema({
         courseId: { type: String },
         professorId: { type: String }
     },
-    read: { type: Boolean, default: false }
+    read: { type: Boolean, default: false },
+    priority: {
+        type: String,
+        enum: ['LOW', 'HIGH'],
+        default: 'LOW'
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Notification', notificationSchema);

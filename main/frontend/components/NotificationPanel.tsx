@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
-import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus } from 'lucide-react';
+import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 interface NotificationPanelProps {
@@ -10,7 +10,8 @@ interface NotificationPanelProps {
 export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose }) => {
     const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead } = useSocket();
 
-    const getTypeDetails = (type: NotificationData['type']) => {
+    const getTypeDetails = (notif: NotificationData) => {
+        const { type } = notif;
         switch (type) {
             case 'EXAM': return { 
                 icon: <Calendar size={18} className="text-rose-500" />, 
@@ -42,11 +43,30 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                 color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
                 border: 'border-indigo-500'
             };
+            case 'MEET_CALL': return {
+                icon: <Phone size={18} className="text-blue-600" />,
+                label: 'Llamada Meet',
+                color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                border: 'border-blue-600'
+            };
+            case 'MEET_MESSAGE': return {
+                icon: <MessageSquare size={18} className="text-blue-600" />,
+                label: 'Chat Meet',
+                color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                border: 'border-blue-600'
+            };
+            case 'PROFESSOR_ADVISORY': return {
+                icon: <GraduationCap size={18} className="text-indigo-600" />,
+                label: 'Aviso Profesor',
+                color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+                border: 'border-indigo-600'
+            };
+            case 'SYSTEM':
             default: return { 
                 icon: <Bell size={18} className="text-gray-500" />, 
-                label: 'Sistema', 
+                label: notif.senderModel === 'Admin' ? 'Admin' : 'Sistema', 
                 color: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400',
-                border: 'border-gray-500'
+                border: notif.senderModel === 'Admin' ? 'border-gray-800' : 'border-gray-500'
             };
         }
     };
@@ -82,7 +102,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                 {notifications.length > 0 ? (
                     <div className="divide-y divide-gray-100 dark:divide-zinc-800">
                         {notifications.map((notif) => {
-                            const details = getTypeDetails(notif.type);
+                            const details = getTypeDetails(notif);
                             return (
                                 <div 
                                     key={notif._id} 

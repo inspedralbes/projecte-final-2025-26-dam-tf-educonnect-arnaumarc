@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, User as UserIcon, BookOpen, Building, Trash2, ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { Bell, User as UserIcon, BookOpen, Building, Trash2, ChevronDown, ChevronRight, Clock, Phone, MessageSquare, GraduationCap } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
 import { User } from '../types';
@@ -67,21 +67,32 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   // Filtrar por tab y luego aplicar agrupación
   const getCategorizedFeed = () => {
     if (activeTab === 'personal') {
-      return feed.filter(item => 
-        (item.source === 'message' && (item.raw as any).isPrivate) || 
-        item.type === 'COURSE_INVITE' || 
-        (!item.courseId && item.source === 'message')
-      );
+      return feed.filter(item => {
+        const isPersonalType = ['MESSAGE', 'DIRECT_MESSAGE', 'MEET_CALL', 'MEET_MESSAGE', 'PROFESSOR_ADVISORY', 'COURSE_INVITE'].includes(item.type);
+        const isPrivateMessage = item.source === 'message' && (item.raw as any).isPrivate;
+        const isProfessorAdvisory = item.type === 'PROFESSOR_ADVISORY';
+        const isMeetEvent = item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE';
+        
+        return isPersonalType || isPrivateMessage || isProfessorAdvisory || isMeetEvent || (!item.courseId && item.source === 'message');
+      });
     } else if (activeTab === 'clase') {
-      return feed.filter(item => 
-        (!!item.courseId && item.type !== 'COURSE_INVITE') && 
-        (item.source === 'notification' || (item.source === 'message' && !(item.raw as any).isPrivate)) &&
-        !isOld(item.date) // Auto-archivo
-      );
+      return feed.filter(item => {
+        const isAcademicType = ['MATERIAL', 'ANNOUNCEMENT', 'EXAM'].includes(item.type);
+        const isCourseMessage = item.source === 'message' && !(item.raw as any).isPrivate;
+        const isFromProfessor = (item.raw as any).senderModel === 'Professor';
+
+        return (!!item.courseId && item.type !== 'COURSE_INVITE') && 
+               (item.source === 'notification' || isCourseMessage) &&
+               !isOld(item.date);
+      });
     } else {
-      return feed.filter(item => 
-        !item.courseId && item.source === 'notification' && item.type !== 'COURSE_INVITE'
-      );
+      // General: Avisos institucionales (sin curso y de System/Admin) o tipo SYSTEM
+      return feed.filter(item => {
+        const isInstitutional = (item.raw as any).senderModel === 'System' || (item.raw as any).senderModel === 'Admin';
+        const isSystemType = item.type === 'SYSTEM';
+        return (!item.courseId && (isInstitutional || isSystemType)) || 
+               (!item.courseId && item.source === 'notification' && item.type === 'ANNOUNCEMENT');
+      });
     }
   };
 
@@ -119,6 +130,33 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         }
       }
 
+      // Nueva agrupación para eventos de Meet del mismo remitente y mismo día
+      if (item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE') {
+        const sameSenderAndDay = items.filter(other => 
+          other.id !== item.id &&
+          !processedIds.has(other.id) &&
+          (other.type === 'MEET_CALL' || other.type === 'MEET_MESSAGE') &&
+          other.sender?._id === item.sender?._id &&
+          new Date(other.date).toDateString() === new Date(item.date).toDateString()
+        );
+
+        if (sameSenderAndDay.length > 0) {
+          const groupItems = [item, ...sameSenderAndDay];
+          const groupId = `group-meet-${item.sender?._id}-${new Date(item.date).toDateString()}`;
+          groups.push({
+            isGroup: true,
+            id: groupId,
+            items: groupItems,
+            type: 'MEET_GROUP',
+            courseId: '',
+            title: `Actividad reciente en Meet de ${item.sender?.nombre || 'Profesor'} ${item.sender?.apellidos || ''}`,
+            date: item.date
+          });
+          groupItems.forEach(gi => processedIds.add(gi.id));
+          return;
+        }
+      }
+
       groups.push(item);
       processedIds.add(item.id);
     });
@@ -142,17 +180,46 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   };
 
   const renderFeedItem = (item: FeedItem, isInsideGroup = false) => {
-    const Icon = item.source === 'message' ? UserIcon : (item.type === 'MATERIAL' ? BookOpen : Bell);
-    const bgColor = item.source === 'message' ? 'bg-blue-50 dark:bg-blue-900/30' : (item.type === 'MATERIAL' ? 'bg-amber-50 dark:bg-amber-900/30' : 'bg-rose-50 dark:bg-rose-900/30');
-    const textColor = item.source === 'message' ? 'text-blue-600 dark:text-blue-400' : (item.type === 'MATERIAL' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
+    const isHighPriority = (item.raw as any).priority === 'HIGH';
+    
+    // Icon Mapping
+    let Icon = Bell;
+    if (item.source === 'message') Icon = UserIcon;
+    else if (item.type === 'MATERIAL') Icon = BookOpen;
+    else if (item.type === 'MEET_CALL') Icon = Phone;
+    else if (item.type === 'MEET_MESSAGE' || item.type === 'MESSAGE') Icon = MessageSquare;
+    else if (item.type === 'PROFESSOR_ADVISORY') Icon = GraduationCap;
+    else if (item.type === 'SYSTEM' || (item.raw as any).senderModel === 'Admin') Icon = Building;
+
+    // Color Mapping
+    let bgColor = 'bg-rose-50 dark:bg-rose-900/30';
+    let textColor = 'text-rose-600 dark:text-rose-400';
+    
+    if (item.source === 'message' || item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE') {
+      bgColor = 'bg-blue-50 dark:bg-blue-900/30';
+      textColor = 'text-blue-600 dark:text-blue-400';
+    } else if (item.type === 'MATERIAL' || item.type === 'ANNOUNCEMENT') {
+      bgColor = 'bg-amber-50 dark:bg-amber-900/30';
+      textColor = 'text-amber-600 dark:text-amber-400';
+    } else if (item.type === 'PROFESSOR_ADVISORY') {
+      bgColor = 'bg-indigo-50 dark:bg-indigo-900/30';
+      textColor = 'text-indigo-600 dark:text-indigo-400';
+    }
 
     return (
-      <li key={item.id} className={`flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group relative ${isInsideGroup ? 'ml-8 border-l-4 border-l-blue-500' : ''}`}>
+      <li key={item.id} className={`flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group relative ${isInsideGroup ? 'ml-8 border-l-4 border-l-blue-500' : ''} ${isHighPriority ? 'ring-2 ring-red-500/50 bg-red-50/10 dark:bg-red-900/10' : ''}`}>
         <div className={`flex-shrink-0 mt-1 p-2 ${bgColor} ${textColor} rounded-full transition-colors`}>
           <Icon size={16} />
         </div>
         <div className="flex-1 pr-8">
-          <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{item.title}</p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-semibold text-gray-900 dark:text-white text-base">{item.title}</p>
+            {isHighPriority && (
+              <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-widest rounded-md animate-pulse">
+                Urgente
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item.content}</p>
           <div className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center justify-between">
             <span className="flex items-center gap-1">
@@ -237,9 +304,10 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                       >
                         <div className="flex items-center gap-3 text-gray-900 dark:text-white font-bold">
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                            {item.type === 'MATERIAL' ? <BookOpen size={16} /> : <Bell size={16} />}
+                            {item.type === 'MATERIAL' ? <BookOpen size={16} /> : (item.type === 'MEET_GROUP' ? <Phone size={16} /> : <Bell size={16} />)}
                           </div>
                           {item.title}
+                          <span className="ml-2 text-xs font-medium text-gray-400">({item.items.length})</span>
                         </div>
                         {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                       </button>

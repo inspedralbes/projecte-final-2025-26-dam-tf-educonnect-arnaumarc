@@ -12,7 +12,7 @@ interface CallData {
 
 export interface NotificationData {
     _id: string;
-    type: 'EXAM' | 'MATERIAL' | 'MESSAGE' | 'ANNOUNCEMENT' | 'COURSE_INVITE' | 'SYSTEM';
+    type: 'EXAM' | 'MATERIAL' | 'MESSAGE' | 'ANNOUNCEMENT' | 'COURSE_INVITE' | 'SYSTEM' | 'MEET_CALL' | 'MEET_MESSAGE' | 'PROFESSOR_ADVISORY';
     title: string;
     content: string;
     link?: string;
@@ -21,7 +21,9 @@ export interface NotificationData {
         professorId?: string;
     };
     read: boolean;
+    priority?: 'LOW' | 'HIGH';
     createdAt: string;
+    senderModel?: 'Professor' | 'Alumno' | 'System' | 'Admin';
 }
 
 export interface MessageData {
@@ -103,7 +105,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         })),
         ...messages.map(m => ({
             id: m._id,
-            type: 'DIRECT_MESSAGE' as const,
+            type: m.title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'DIRECT_MESSAGE' as const,
             title: m.title,
             content: m.content,
             date: m.date,
@@ -168,6 +170,17 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
 
         newSocket.on('incoming_call', (data: CallData) => {
             setIncomingCall(data);
+            // Add a local notification for the feed
+            const meetNotif: NotificationData = {
+                _id: `temp-${Date.now()}`,
+                type: 'MEET_CALL',
+                title: 'Llamada de Meet entrante',
+                content: `Llamada de ${data.fromName}`,
+                read: false,
+                createdAt: new Date().toISOString(),
+                senderModel: 'Professor' // Assuming professor initiated
+            };
+            setNotifications(prev => [meetNotif, ...prev]);
         });
 
         newSocket.on('new_notification', (data: NotificationData) => {
