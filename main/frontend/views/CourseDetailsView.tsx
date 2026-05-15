@@ -8,7 +8,7 @@ import { useSocket } from '../src/context/SocketContext';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle, AlertTriangle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
-    Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen, Clock, Award, Pencil, UserPlus
+    Trash2, Eye, EyeOff, ExternalLink, FileDown, BookOpen, Clock, Award, Pencil, UserPlus, UserMinus
 } from 'lucide-react';
 
 interface CourseDetailsViewProps {
@@ -20,6 +20,7 @@ interface CourseDetailsViewProps {
 
 export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: initialCourse, userRole, user, onBack }) => {
     const [course, setCourse] = useState(initialCourse);
+    const courseId = course._id || course.id;
     const [activeTab, setActiveTab] = useState<'info' | 'students' | 'resources'>('info');
     const [students, setStudents] = useState<any[]>([]);
 
@@ -226,7 +227,6 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         fetchCourseSchedule();
         fetchSubmissions();
 
-        const courseId = initialCourse._id || initialCourse.id;
         if (!courseId) return;
 
         setLoadingStudents(true);
@@ -246,6 +246,32 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             })
             .finally(() => setLoadingStudents(false));
     }, [initialCourse]);
+
+    const handleUnenroll = async () => {
+        if (!user?._id) return;
+        if (!window.confirm(`¿Estás seguro de que quieres desapuntarte de ${course.title}?`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/courses/${courseId}/unenroll`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: user._id })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                onBack(); // Volver al listado de asignaturas ya que el alumno ya no pertenece a esta
+            } else {
+                alert(data.message || 'Error al desapuntarse');
+            }
+        } catch (error) {
+            console.error('Error unenrolling:', error);
+            alert('Error al desapuntarse de la asignatura');
+        }
+    };
 
     const fetchAvailableStudents = async () => {
         const courseId = course._id || course.id;
@@ -578,13 +604,26 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8 transition-colors duration-300">
-            <button
-                onClick={onBack}
-                className="flex items-center text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors gap-2 font-medium bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-xl focus:outline-none w-fit"
-            >
-                <ArrowLeft size={18} />
-                Volver a Asignaturas
-            </button>
+            <div className="flex justify-between items-center mb-4">
+                <button
+                    onClick={onBack}
+                    className="flex items-center text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors gap-2 font-medium bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-xl focus:outline-none w-fit"
+                >
+                    <ArrowLeft size={18} />
+                    Volver a Asignaturas
+                </button>
+
+                {userRole === 'STUDENT' && (
+                    <button
+                        onClick={handleUnenroll}
+                        className="flex items-center gap-2 text-red-500 hover:text-white hover:bg-red-500 dark:text-red-400 dark:hover:text-white dark:hover:bg-red-500/80 transition-all font-medium border border-red-500/30 px-4 py-2 rounded-xl focus:outline-none shadow-sm"
+                        title="Darse de baja de esta asignatura"
+                    >
+                        <UserMinus size={18} />
+                        Desapuntarse
+                    </button>
+                )}
+            </div>
 
             {/* Header */}
             <div className="relative h-64 w-full overflow-hidden rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none group mb-8 border border-gray-200 dark:border-zinc-800">
@@ -747,32 +786,34 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     </div>
                 )}
 
-                {activeTab === 'students' && userRole === 'TEACHER' && (
+                {activeTab === 'students' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                  <Users className="text-blue-500" size={24} />
                                  Lista de Alumnos
                              </h2>
-                             <div className="flex flex-wrap gap-3">
-                                 <button
-                                     onClick={() => {
-                                         setIsInviteStudentModalOpen(true);
-                                         fetchAvailableStudents();
-                                     }}
-                                     className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                                 >
-                                     <UserPlus size={18} />
-                                     Invitar nuevo Alumno
-                                 </button>
-                                 <button
-                                     onClick={() => setIsNotifyClassModalOpen(true)}
-                                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                                 >
-                                     <Send size={18} />
-                                     Notificar a Toda la Clase
-                                 </button>
-                             </div>
+                             {userRole === 'TEACHER' && (
+                                 <div className="flex flex-wrap gap-3">
+                                     <button
+                                         onClick={() => {
+                                             setIsInviteStudentModalOpen(true);
+                                             fetchAvailableStudents();
+                                         }}
+                                         className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                                     >
+                                         <UserPlus size={18} />
+                                         Invitar nuevo Alumno
+                                     </button>
+                                     <button
+                                         onClick={() => setIsNotifyClassModalOpen(true)}
+                                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                                     >
+                                         <Send size={18} />
+                                         Notificar a Toda la Clase
+                                     </button>
+                                 </div>
+                             )}
                          </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
                             {loadingStudents ? (

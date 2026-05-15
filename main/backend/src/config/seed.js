@@ -6,40 +6,41 @@ const Schedule = require('../models/Schedule');
 
 async function seedData() {
     try {
-        // Limpieza inicial para asegurar integridad con el nuevo modelo
-        console.log('Seed: Cleaning collections...');
-        await Professor.deleteMany({});
-        await Course.deleteMany({});
-        await Schedule.deleteMany({});
-        await Alumno.deleteMany({});
-        await Event.deleteMany({});
-
         // 1. Ensure Professor exists
-        let professor = await Professor.create({
-            dni: '12345678A',
-            nombre: 'Xavier',
-            apellidos: 'García',
-            email: 'xavi@inspedralbes.cat',
-            password: 'xavi@inspedralbes.cat',
-            especialidad: 'Programación'
-        });
-        console.log('Seed: Professor Xavier created');
+        let professor = await Professor.findOne({ email: 'xavi@inspedralbes.cat' });
+        if (!professor) {
+            professor = await Professor.create({
+                dni: '12345678A',
+                nombre: 'Xavier',
+                apellidos: 'García',
+                email: 'xavi@inspedralbes.cat',
+                password: 'xavi@inspedralbes.cat',
+                especialidad: 'Programación'
+            });
+            console.log('Seed: Professor Xavier created');
+        }
 
         // 2. Ensure Courses exist
-        console.log('Seed: Creating courses with updated hours (IPO II 6h, Accés 6h)...');
-        const coursesData = [
-            { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1', totalWeeklyHours: 6 },
-            { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2', totalWeeklyHours: 4 },
-            { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3', totalWeeklyHours: 4 },
-            { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4', totalWeeklyHours: 6 },
-            { title: 'Mòbils', description: 'Programació multimèdia i dispositius mòbils.', professor: professor._id, image: 'https://picsum.photos/300/200?random=5', totalWeeklyHours: 6 },
-            { title: 'SGE', description: 'Sistemes de gestió empresarial.', professor: professor._id, image: 'https://picsum.photos/300/200?random=6', totalWeeklyHours: 4 }
-        ];
+        const courseCount = await Course.countDocuments();
+        let courseIds = [];
+        if (courseCount === 0) {
+            console.log('Seed: Creating courses with updated hours (IPO II 6h, Accés 6h)...');
+            const coursesData = [
+                { title: 'IPO II', description: 'Interacció Persona-Ordinador II.', professor: professor._id, image: 'https://picsum.photos/300/200?random=1', totalWeeklyHours: 6 },
+                { title: 'Projecte', description: 'Projecte de Desenvolupament d\'Aplicacions Multiplataforma.', professor: professor._id, image: 'https://picsum.photos/300/200?random=2', totalWeeklyHours: 4 },
+                { title: 'PSP', description: 'Programació de Serveis i Processos.', professor: professor._id, image: 'https://picsum.photos/300/200?random=3', totalWeeklyHours: 4 },
+                { title: 'Accés a Dades', description: 'Gestió i accés a bases de dades.', professor: professor._id, image: 'https://picsum.photos/300/200?random=4', totalWeeklyHours: 6 },
+                { title: 'Mòbils', description: 'Programació multimèdia i dispositius mòbils.', professor: professor._id, image: 'https://picsum.photos/300/200?random=5', totalWeeklyHours: 6 },
+                { title: 'SGE', description: 'Sistemes de gestió empresarial.', professor: professor._id, image: 'https://picsum.photos/300/200?random=6', totalWeeklyHours: 4 }
+            ];
 
-        const courses = await Course.create(coursesData);
-        console.log('Seed: Courses created and linked to Xavier');
-
-        const courseIds = courses.map(c => c._id);
+            const courses = await Course.create(coursesData);
+            console.log('Seed: Courses created and linked to Xavier');
+            courseIds = courses.map(c => c._id);
+        } else {
+            const courses = await Course.find();
+            courseIds = courses.map(c => c._id);
+        }
 
         // 3. Ensure Alumnos exist and are updated
         const alumnosData = [

@@ -15,5 +15,6 @@ router.get('/courses/:courseId/available-students', getAvailableStudentsByCourse
 router.get('/courses/:courseId/schedule', getCourseSchedule);
 router.post('/courses/:courseId/notify-all', notifyAllStudents);
 router.post('/courses/:courseId/invite-student', inviteStudentToCourse);
+router.post('/courses/:courseId/unenroll', unenrollStudent);
 
 module.exports = router;
