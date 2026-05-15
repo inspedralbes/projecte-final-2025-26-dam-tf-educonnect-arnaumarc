@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, PhoneOff, PhoneIncoming } from 'lucide-react';
+import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, PhoneOff, PhoneIncoming, MessageSquare } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { User } from '../types';
 import toast from 'react-hot-toast';
 import { useSocket } from '../src/context/SocketContext';
+import { ChatPanel } from '../components/ChatPanel';
 
 interface MockUser {
     id: string;
@@ -41,6 +42,21 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1024) {
+                setIsSidebarOpen(false);
+            } else {
+                setIsSidebarOpen(true);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -335,12 +351,15 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             )}
 
             {/* Sidebar - User List */}
-            <div className="w-80 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 flex flex-col shadow-sm z-10">
-                <div className="p-5 border-b border-gray-100 dark:border-zinc-800">
+            <div className={`${isSidebarOpen ? 'flex' : 'hidden'} lg:flex w-full lg:w-80 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 flex-col shadow-sm z-20 absolute lg:relative inset-0 lg:inset-auto`}>
+                <div className="p-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <UserIcon className="text-blue-500" size={20} />
                         Usuarios Conectados
                     </h2>
+                    <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-400">
+                        <X size={20} />
+                    </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {isLoading ? (
@@ -386,7 +405,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             </div>
 
             {/* Main Area - Call Interface */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-8 relative">
                 {isInCall && selectedUser ? (
                     <div className="w-full h-full max-w-6xl bg-black rounded-3xl overflow-hidden shadow-2xl relative flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
                         {/* Remote Video */}
@@ -435,33 +454,54 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* Controls Bar */}
-                        <div className="h-28 bg-zinc-900/90 backdrop-blur-md flex items-center justify-center space-x-6 px-8 border-t border-white/5">
-                            <div className="flex items-center space-x-4 bg-zinc-800/80 p-2.5 rounded-full border border-white/5">
+                        {/* Controls Bar (Floating) */}
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-6 px-6 py-4 bg-zinc-900/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl transition-all hover:bg-zinc-900/80">
+                            <div className="flex items-center space-x-2 md:space-x-4">
+                                <button
+                                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                    className={`p-3 md:p-4 rounded-full transition-all ${isSidebarOpen ? 'bg-blue-500 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    title="Usuarios"
+                                >
+                                    <UserIcon size={20} md:size={24} />
+                                </button>
+
                                 <button
                                     onClick={toggleMute}
-                                    className={`p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    className={`p-3 md:p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    title={isMuted ? "Activar Micro" : "Mutear"}
                                 >
-                                    {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
+                                    {isMuted ? <MicOff size={20} md:size={24} /> : <Mic size={20} md:size={24} />}
                                 </button>
 
                                 <button
                                     onClick={toggleVideo}
-                                    className={`p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    className={`p-3 md:p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    title={isVideoOff ? "Activar Cámara" : "Apagar Cámara"}
                                 >
-                                    {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
+                                    {isVideoOff ? <VideoOff size={20} md:size={24} /> : <Video size={20} md:size={24} />}
                                 </button>
 
-                                <button className="p-4 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors">
+                                <button className="p-3 md:p-4 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors hidden md:flex">
                                     <MonitorUp size={24} />
+                                </button>
+
+                                <button 
+                                    onClick={() => setIsChatOpen(!isChatOpen)}
+                                    className={`p-3 md:p-4 rounded-full transition-all ${isChatOpen ? 'bg-blue-500 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
+                                    title="Chat"
+                                >
+                                    <MessageSquare size={20} md:size={24} />
                                 </button>
                             </div>
 
+                            <div className="w-px h-8 bg-white/10 mx-2" />
+
                             <button
                                 onClick={endCall}
-                                className="p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/20 active:scale-95"
+                                className="p-4 md:p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/40 active:scale-95"
+                                title="Colgar"
                             >
-                                <PhoneOff size={28} />
+                                <PhoneOff size={24} md:size={28} />
                             </button>
                         </div>
                     </div>
@@ -479,6 +519,17 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                     </div>
                 )}
             </div>
+
+            {/* Chat Panel */}
+            {isChatOpen && (
+                <div className="absolute lg:relative right-0 top-0 bottom-0 z-40 w-full lg:w-80 h-full shadow-2xl">
+                    <ChatPanel 
+                        currentUser={user} 
+                        targetUser={selectedUser ? { id: selectedUser.id, name: selectedUser.name } : null}
+                        onClose={() => setIsChatOpen(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 };

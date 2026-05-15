@@ -26,7 +26,8 @@ const notifyCourseStudents = async (req, courseId, title, content, type = 'ANNOU
             type,
             title,
             content,
-            link
+            link,
+            meta: { courseId }
         }));
 
         const savedNotifications = await Notification.insertMany(notificationsToCreate);

@@ -193,7 +193,8 @@ const notifyAllStudents = async (req, res) => {
             type: 'ANNOUNCEMENT',
             title: 'Aviso de Clase: ' + title,
             content: content,
-            link: '/asignaturas' // O la ruta del curso
+            link: '/asignaturas', // O la ruta del curso
+            meta: { courseId: req.params.courseId }
         }));
 
         const savedNotifications = await Notification.insertMany(notificationsToCreate);
