@@ -150,7 +150,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChang
     );
 };
 
-const X = ({ size, className }: { size: number, className: string }) => (
+const X = ({ size, className }: { size: number, className?: string }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         width={size} 
