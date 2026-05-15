@@ -1,27 +1,28 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Bell, User as UserIcon, BookOpen, Building, Trash2 } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
+import { Bell, User as UserIcon, BookOpen, Building, Trash2, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
-import { MOCK_EVENTS, MOCK_USER } from '../constants';
-import { User, Course } from '../types';
+import { MOCK_EVENTS } from '../constants';
+import { User } from '../types';
 import { API_BASE_URL } from '../config';
+import { useSocket, FeedItem } from '../src/context/SocketContext';
 
 interface TablonViewProps {
   user: User | null;
 }
 
 export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
+  const { feed, deleteMessage } = useSocket();
   const [activeTab, setActiveTab] = useState<'personal' | 'clase' | 'general'>(() => {
     return (localStorage.getItem('tablonActiveTab') as 'personal' | 'clase' | 'general') || 'personal';
   });
+
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     localStorage.setItem('tablonActiveTab', activeTab);
   }, [activeTab]);
 
   const [events, setEvents] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
-  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/events`)
@@ -41,46 +42,6 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       .catch(err => console.error('Error fetching events:', err));
   }, []);
 
-  // Fetch initial messages and Setup Socket.io for Real-time Updates
-  useEffect(() => {
-    if (!user?._id) return;
-
-    // 1. Fetch initial messages
-    fetch(`${API_BASE_URL}/api/users/${user._id}/messages`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setMessages(data);
-      })
-      .catch(err => console.error('Error fetching messages:', err));
-
-    // 2. Setup Socket.io connection for this view
-    socketRef.current = io(API_BASE_URL || window.location.origin);
-    const socket = socketRef.current;
-
-    socket.on('connect', () => {
-      socket.emit('register_user', user._id || (user as any).id);
-    });
-
-    socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
-      // We create a new message format based on what is expected on the frontend
-      const newMessage = {
-        _id: Date.now().toString(), // fake id just for react keys until refresh
-        title: data.title,
-        content: data.content,
-        course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined, // simplified course to satisfy rendering condition
-        sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
-        date: new Date().toISOString(),
-        isPrivate: data.isPrivate
-      };
-
-      setMessages((prevMessages) => [newMessage, ...prevMessages]);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [user]);
-
   const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
     if (ev.type === 'activity' || ev.type === 'exam') {
       if (user?.enrolledCourses) {
@@ -93,25 +54,130 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     return true;
   });
 
-  // Filter messages by category based on if they have a course associated or if marked as private
-  const personalMessages = messages.filter(msg => msg.isPrivate || !msg.course);
-  const classMessages = messages.filter(msg => !!msg.course && !msg.isPrivate);
-  const generalMessages: any[] = []; // Currently no general messages implemented in DB
+  // --- Lógica de Smart Feed ---
+
+  const isOld = (date: string) => {
+    const now = new Date();
+    const itemDate = new Date(date);
+    const diffTime = Math.abs(now.getTime() - itemDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 7;
+  };
+
+  // Filtrar por tab y luego aplicar agrupación
+  const getCategorizedFeed = () => {
+    if (activeTab === 'personal') {
+      return feed.filter(item => 
+        (item.source === 'message' && (item.raw as any).isPrivate) || 
+        item.type === 'COURSE_INVITE' || 
+        (!item.courseId && item.source === 'message')
+      );
+    } else if (activeTab === 'clase') {
+      return feed.filter(item => 
+        (!!item.courseId && item.type !== 'COURSE_INVITE') && 
+        (item.source === 'notification' || (item.source === 'message' && !(item.raw as any).isPrivate)) &&
+        !isOld(item.date) // Auto-archivo
+      );
+    } else {
+      return feed.filter(item => 
+        !item.courseId && item.source === 'notification' && item.type !== 'COURSE_INVITE'
+      );
+    }
+  };
+
+  const groupFeed = (items: FeedItem[]) => {
+    const groups: (FeedItem | { isGroup: true, items: FeedItem[], type: string, courseId: string, title: string, date: string, id: string })[] = [];
+    const processedIds = new Set<string>();
+
+    items.forEach((item) => {
+      if (processedIds.has(item.id)) return;
+
+      // Solo agrupar notificaciones de material/aviso del mismo curso en 48h
+      if (item.source === 'notification' && (item.type === 'MATERIAL' || item.type === 'ANNOUNCEMENT') && item.courseId) {
+        const sameTypeAndCourse = items.filter(other => 
+          other.id !== item.id &&
+          other.source === 'notification' &&
+          other.type === item.type &&
+          other.courseId === item.courseId &&
+          Math.abs(new Date(other.date).getTime() - new Date(item.date).getTime()) < 48 * 60 * 60 * 1000
+        );
+
+        if (sameTypeAndCourse.length > 0) {
+          const groupItems = [item, ...sameTypeAndCourse];
+          const groupId = `group-${item.type}-${item.courseId}-${new Date(item.date).toDateString()}`;
+          groups.push({
+            isGroup: true,
+            id: groupId,
+            items: groupItems,
+            type: item.type,
+            courseId: item.courseId,
+            title: `${groupItems.length} nuevos ${item.type === 'MATERIAL' ? 'materiales' : 'avisos'} de clase`,
+            date: item.date
+          });
+          groupItems.forEach(gi => processedIds.add(gi.id));
+          return;
+        }
+      }
+
+      groups.push(item);
+      processedIds.add(item.id);
+    });
+
+    return groups;
+  };
+
+  const currentCategorizedFeed = getCategorizedFeed();
+  const groupedFeed = groupFeed(currentCategorizedFeed);
+
+  const toggleGroup = (groupId: string) => {
+    const newSet = new Set(expandedGroups);
+    if (newSet.has(groupId)) newSet.delete(groupId);
+    else newSet.add(groupId);
+    setExpandedGroups(newSet);
+  };
 
   const handleDeleteMessage = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/messages/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setMessages(prev => prev.filter(msg => msg._id !== id));
-      } else {
-        console.error('Failed to delete message');
-      }
-    } catch (error) {
-      console.error('Error deleting message:', error);
-    }
+    await deleteMessage(id);
+  };
+
+  const renderFeedItem = (item: FeedItem, isInsideGroup = false) => {
+    const Icon = item.source === 'message' ? UserIcon : (item.type === 'MATERIAL' ? BookOpen : Bell);
+    const bgColor = item.source === 'message' ? 'bg-blue-50 dark:bg-blue-900/30' : (item.type === 'MATERIAL' ? 'bg-amber-50 dark:bg-amber-900/30' : 'bg-rose-50 dark:bg-rose-900/30');
+    const textColor = item.source === 'message' ? 'text-blue-600 dark:text-blue-400' : (item.type === 'MATERIAL' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
+
+    return (
+      <li key={item.id} className={`flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group relative ${isInsideGroup ? 'ml-8 border-l-4 border-l-blue-500' : ''}`}>
+        <div className={`flex-shrink-0 mt-1 p-2 ${bgColor} ${textColor} rounded-full transition-colors`}>
+          <Icon size={16} />
+        </div>
+        <div className="flex-1 pr-8">
+          <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{item.title}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item.content}</p>
+          <div className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Clock size={12} />
+              {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            {item.sender && (
+              <span className="flex items-center gap-1">
+                <UserIcon size={12} />
+                De: {item.sender?.nombre} {item.sender?.apellidos}
+              </span>
+            )}
+          </div>
+        </div>
+        {item.source === 'message' && (
+          <button
+            onClick={(e) => handleDeleteMessage(item.id, e)}
+            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+            title="Eliminar mensaje"
+          >
+            <Trash2 size={18} />
+          </button>
+        )}
+      </li>
+    );
   };
 
   return (
@@ -152,101 +218,48 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
 
         {/* Tab Content */}
         <div className="p-6 min-h-[200px]">
-          {activeTab === 'personal' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                <Bell size={20} className="text-blue-500" />
-                Notificaciones Personales
-              </h2>
-              <ul className="space-y-4">
-                {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group relative">
-                    <div className="flex-shrink-0 mt-1 p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
-                      <Bell size={16} />
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+              {activeTab === 'personal' && <Bell size={20} className="text-blue-500" />}
+              {activeTab === 'clase' && <BookOpen size={20} className="text-amber-500" />}
+              {activeTab === 'general' && <Building size={20} className="text-indigo-500" />}
+              {activeTab === 'personal' ? 'Notificaciones Personales' : activeTab === 'clase' ? 'Avisos de Clase' : 'Avisos de la Escuela'}
+            </h2>
+            <ul className="space-y-4">
+              {groupedFeed.length > 0 ? groupedFeed.map((item, idx) => {
+                if ('isGroup' in item) {
+                  const isExpanded = expandedGroups.has(item.id);
+                  return (
+                    <div key={item.id} className="space-y-2">
+                      <button 
+                        onClick={() => toggleGroup(item.id)}
+                        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/30 border border-gray-200 dark:border-zinc-700/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-zinc-800/50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 text-gray-900 dark:text-white font-bold">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                            {item.type === 'MATERIAL' ? <BookOpen size={16} /> : <Bell size={16} />}
+                          </div>
+                          {item.title}
+                        </div>
+                        {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                      </button>
+                      {isExpanded && (
+                        <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                          {item.items.map(subItem => renderFeedItem(subItem, true))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 pr-8">
-                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
-                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
-                        <UserIcon size={12} />
-                        De: {msg.sender?.nombre} {msg.sender?.apellidos}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => handleDeleteMessage(msg._id, e)}
-                      className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
-                      title="Eliminar notificación"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </li>
-                )) : (
-                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
-                    <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No tienes nuevas notificaciones personales.</p>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === 'clase' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                <BookOpen size={20} className="text-amber-500" />
-                Avisos de Clase
-              </h2>
-              <ul className="space-y-4">
-                {classMessages.length > 0 ? classMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-                    <div className="flex-shrink-0 mt-1 p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
-                      <BookOpen size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
-                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
-                        <UserIcon size={12} />
-                        De: {msg.sender?.nombre || 'Profesor'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
-                      </p>
-                    </div>
-                  </li>
-                )) : (
-                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
-                    <BookOpen className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos de tus clases.</p>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === 'general' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                <Building size={20} className="text-indigo-500" />
-                Avisos de la Escuela
-              </h2>
-              <ul className="space-y-4">
-                {generalMessages.length > 0 ? generalMessages.map((msg, idx) => (
-                  <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-                    <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
-                      <Building size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">{msg.title}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
-                    </div>
-                  </li>
-                )) : (
-                  <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
-                    <Building className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                    <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos generales de la escuela actualmente.</p>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
+                  );
+                }
+                return renderFeedItem(item as FeedItem);
+              }) : (
+                <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
+                  <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
+                  <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay nuevos avisos en esta categoría.</p>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -262,8 +275,6 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
           <MonthlyCalendar events={filteredEvents} />
         </div>
       </div>
-
-      {/* Quick Links / Status indicator section can go here */}
     </div>
   );
 };

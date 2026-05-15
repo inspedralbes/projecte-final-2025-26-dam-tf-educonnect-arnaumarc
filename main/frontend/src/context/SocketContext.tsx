@@ -24,11 +24,38 @@ export interface NotificationData {
     createdAt: string;
 }
 
+export interface MessageData {
+    _id: string;
+    sender: any;
+    receiver: string;
+    course?: any;
+    title: string;
+    content: string;
+    date: string;
+    read: boolean;
+    isPrivate: boolean;
+}
+
+export type FeedItem = {
+    id: string;
+    type: NotificationData['type'] | 'DIRECT_MESSAGE';
+    title: string;
+    content: string;
+    date: string;
+    source: 'notification' | 'message';
+    raw: NotificationData | MessageData;
+    courseId?: string;
+    sender?: any;
+    read: boolean;
+};
+
 interface SocketContextType {
     socket: Socket | null;
     incomingCall: CallData | null;
     user: User | null;
     notifications: NotificationData[];
+    messages: MessageData[];
+    feed: FeedItem[];
     unreadCount: number;
     isInCall: boolean;
     isCalling: boolean;
@@ -44,6 +71,7 @@ interface SocketContextType {
     markNotificationAsRead: (id: string) => void;
     markNotificationAsReadLocal: (id: string) => void;
     markAllNotificationsAsRead: () => void;
+    deleteMessage: (id: string) => Promise<boolean>;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -52,12 +80,40 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
     const [socket, setSocket] = useState<Socket | null>(null);
     const [incomingCall, setIncomingCall] = useState<CallData | null>(null);
     const [notifications, setNotifications] = useState<NotificationData[]>([]);
+    const [messages, setMessages] = useState<MessageData[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isInCall, setIsInCall] = useState(false);
     const [isCalling, setIsCalling] = useState(false);
     const [activeCallUser, setActiveCallUser] = useState<{ id: string, name: string } | null>(null);
 
     const socketRef = useRef<Socket | null>(null);
+
+    // Unify notifications and messages into a feed
+    const feed: FeedItem[] = [
+        ...notifications.map(n => ({
+            id: n._id,
+            type: n.type,
+            title: n.title,
+            content: n.content,
+            date: n.createdAt,
+            source: 'notification' as const,
+            raw: n,
+            courseId: n.meta?.courseId,
+            read: n.read
+        })),
+        ...messages.map(m => ({
+            id: m._id,
+            type: 'DIRECT_MESSAGE' as const,
+            title: m.title,
+            content: m.content,
+            date: m.date,
+            source: 'message' as const,
+            raw: m,
+            courseId: m.course?._id || m.course,
+            sender: m.sender,
+            read: m.read
+        }))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     // Cargar notificaciones iniciales vía API
     const fetchNotifications = async (userId: string) => {
@@ -73,6 +129,18 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         }
     };
 
+    const fetchMessages = async (userId: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}/messages`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setMessages(data);
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    };
+
     useEffect(() => {
         if (!user) {
             if (socketRef.current) {
@@ -81,11 +149,13 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
                 setSocket(null);
             }
             setNotifications([]);
+            setMessages([]);
             setUnreadCount(0);
             return;
         }
 
         fetchNotifications(user._id);
+        fetchMessages(user._id);
 
         const newSocket = io(API_BASE_URL || window.location.origin);
         socketRef.current = newSocket;
@@ -104,6 +174,11 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             setNotifications(prev => [data, ...prev]);
             setUnreadCount(prev => prev + 1);
             toast.success(`Notificación: ${data.title}`);
+        });
+
+        newSocket.on('new_message', (data: MessageData) => {
+            setMessages(prev => [data, ...prev]);
+            toast.success(`Nuevo mensaje de ${data.sender?.nombre || 'Alguien'}`);
         });
 
         newSocket.on('sync_notifications', (data: NotificationData[]) => {
@@ -153,6 +228,22 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         }
     };
 
+    const deleteMessage = async (id: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/messages/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setMessages(prev => prev.filter(msg => msg._id !== id));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            return false;
+        }
+    };
+
     const startCall = (targetId: string, targetName: string, offer: any) => {
         if (!socketRef.current || !user) return;
 
@@ -193,6 +284,8 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             incomingCall,
             user,
             notifications,
+            messages,
+            feed,
             unreadCount,
             isInCall,
             isCalling,
@@ -207,7 +300,8 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             setIncomingCall,
             markNotificationAsRead,
             markNotificationAsReadLocal,
-            markAllNotificationsAsRead
+            markAllNotificationsAsRead,
+            deleteMessage
         }}>
             {children}
         </SocketContext.Provider>
