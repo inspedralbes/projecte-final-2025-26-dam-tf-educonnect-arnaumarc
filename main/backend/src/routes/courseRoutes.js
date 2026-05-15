@@ -6,7 +6,8 @@ const {
     getAvailableStudentsByCourse,
     inviteStudentToCourse,
     notifyAllStudents,
-    getCourseSchedule
+    getCourseSchedule,
+    unenrollStudent
 } = require('../controllers/courseController');
 
 router.get('/courses', getCourses);
