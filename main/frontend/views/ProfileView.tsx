@@ -36,7 +36,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onUpdateUser }) 
                         body: JSON.stringify({ profileImage: base64String })
                     });
                     const data = await response.json();
-                    if (data.success) {
+                    if (data.success && data.user) {
+                        onUpdateUser(data.user);
+                        window.dispatchEvent(new Event('profile_image_updated'));
+                    } else if (data.success) {
                         onUpdateUser({ ...user, profileImage: base64String });
                         window.dispatchEvent(new Event('profile_image_updated'));
                     }
@@ -143,7 +146,9 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
                 body: JSON.stringify({ theme: newTheme })
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.success && data.user) {
+                onUpdateUser(data.user);
+            } else if (data.success) {
                 onUpdateUser({ ...user, theme: newTheme });
             }
         } catch (error) {

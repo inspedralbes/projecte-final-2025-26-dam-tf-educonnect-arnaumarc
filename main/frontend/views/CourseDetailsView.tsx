@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
 import { RichTextEditor } from '../components/RichTextEditor';
 import { SubmissionTracker } from '../components/SubmissionTracker';
-import { useSocket } from '../context/SocketContext';
+import { useSocket } from '../src/context/SocketContext';
 import {
     Users, FileText, Calendar, ArrowLeft, MessageCircle, Send, X, AlertCircle, AlertTriangle,
     CheckCircle2, Plus, ChevronDown, ChevronUp, Link, File, ClipboardList,
@@ -104,7 +104,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         }
     };
 
-    const socket = useSocket();
+    const { socket } = useSocket();
 
     useEffect(() => {
         if (!socket) return;
