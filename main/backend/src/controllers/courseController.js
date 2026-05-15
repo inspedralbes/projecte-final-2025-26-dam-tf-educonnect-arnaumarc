@@ -52,7 +52,22 @@ const getAvailableStudentsByCourse = async (req, res) => {
     console.log(`GET /api/courses/${req.params.courseId}/available-students called`);
     try {
         const { courseId } = req.params;
-        const students = await Alumno.find({ enrolledCourses: { $nin: [courseId] } });
+        // Buscamos alumnos que NO tengan este curso en su lista de inscritos
+        let students = await Alumno.find({ enrolledCourses: { $ne: courseId } });
+        
+        // Fallback para modo demo: si no hay alumnos en la base de datos, devolvemos una lista mock
+        if (students.length === 0) {
+            const count = await Alumno.countDocuments();
+            if (count === 0) {
+                console.log('No students found in DB, returning mock available students');
+                students = [
+                    { _id: '65cf1234567890abcdef0004', nombre: 'Eduard', apellidos: 'Garcia', email: 'eduard@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=4' },
+                    { _id: '65cf1234567890abcdef0005', nombre: 'Paula', apellidos: 'Martínez', email: 'paula@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=5' },
+                    { _id: '65cf1234567890abcdef0006', nombre: 'Jordi', apellidos: 'Sánchez', email: 'jordi@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=6' }
+                ];
+            }
+        }
+        
         res.json(students);
     } catch (error) {
         console.error('Error in available students route:', error);
@@ -201,11 +216,38 @@ const notifyAllStudents = async (req, res) => {
     }
 };
 
+const unenrollStudent = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { studentId } = req.body;
+
+        if (!studentId) {
+            return res.status(400).json({ success: false, message: 'studentId es obligatorio' });
+        }
+
+        const result = await Alumno.findByIdAndUpdate(
+            studentId,
+            { $pull: { enrolledCourses: courseId } },
+            { new: true }
+        );
+
+        if (!result) {
+            return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
+        }
+
+        res.json({ success: true, message: 'Te has desapuntado de la asignatura correctamente' });
+    } catch (error) {
+        console.error('Error unenrolling student:', error);
+        res.status(500).json({ success: false, message: 'Error al desapuntarse de la asignatura' });
+    }
+};
+
 module.exports = {
     getCourses,
     getStudentsByCourse,
     getAvailableStudentsByCourse,
     inviteStudentToCourse,
     notifyAllStudents,
-    getCourseSchedule
+    getCourseSchedule,
+    unenrollStudent
 };

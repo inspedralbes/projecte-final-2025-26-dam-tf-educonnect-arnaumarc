@@ -241,7 +241,7 @@ const ServerDropdown = () => {
                             </div>
                         </div>
                         <a
-                            href="https://discord.gg/FqxXzrAu"
+                            href="https://discord.gg/2ukgKvaH9"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[10px] font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] px-4 py-2 rounded-lg transition-all shadow-sm flex items-center gap-2"
