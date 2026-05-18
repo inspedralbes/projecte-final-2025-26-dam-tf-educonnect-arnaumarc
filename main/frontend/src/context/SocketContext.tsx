@@ -70,6 +70,7 @@ interface SocketContextType {
     setCalling: (value: boolean) => void;
     setActiveCallUser: (user: { id: string, name: string } | null) => void;
     setIncomingCall: (call: CallData | null) => void;
+    setMessages: React.Dispatch<React.SetStateAction<MessageData[]>>;
     markNotificationAsRead: (id: string) => void;
     markNotificationAsReadLocal: (id: string) => void;
     markAllNotificationsAsRead: () => void;
@@ -190,8 +191,17 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         });
 
         newSocket.on('new_message', (data: MessageData) => {
-            setMessages(prev => [data, ...prev]);
-            toast.success(`Nuevo mensaje de ${data.sender?.nombre || 'Alguien'}`);
+            console.log('Real-time message received:', data);
+            setMessages(prev => {
+                // Prevent duplicates from multiple socket events or manual updates
+                if (prev.some(m => m._id === data._id)) return prev;
+                return [data, ...prev];
+            });
+            
+            // Only show toast if it's not from the current user
+            if (data.sender?._id !== user?._id) {
+                toast.success(`Nuevo mensaje de ${data.sender?.nombre || 'Alguien'}`);
+            }
         });
 
         newSocket.on('sync_notifications', (data: NotificationData[]) => {
@@ -311,6 +321,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             setCalling: setIsCalling,
             setActiveCallUser,
             setIncomingCall,
+            setMessages,
             markNotificationAsRead,
             markNotificationAsReadLocal,
             markAllNotificationsAsRead,

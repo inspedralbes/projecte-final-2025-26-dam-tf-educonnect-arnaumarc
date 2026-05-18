@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const messageSchema = new mongoose.Schema({
     sender: { type: mongoose.Schema.Types.ObjectId, refPath: 'senderModel' },
     senderModel: { type: String, enum: ['Professor', 'Alumno'] },
-    receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'Alumno' },
+    receiver: { type: mongoose.Schema.Types.ObjectId, refPath: 'receiverModel' },
+    receiverModel: { type: String, enum: ['Professor', 'Alumno'] },
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     title: String,
     content: String,

@@ -39,8 +39,9 @@ io.on('connection', (socket) => {
     // Register user ID with their socket
     socket.on('register_user', async (userId) => {
         if (userId) {
+            socket.join(String(userId));
             connectedUsers.set(String(userId), socket.id);
-            console.log(`Usuario registrado en socket: ${userId} -> ${socket.id}`);
+            console.log(`Usuario registrado en sala: ${userId} (socket: ${socket.id})`);
 
             // Sincronizar notificaciones no leídas al conectar
             try {

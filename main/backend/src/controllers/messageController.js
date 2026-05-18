@@ -2,9 +2,21 @@ const Message = require('../models/Message');
 const Notification = require('../models/Notification');
 
 const sendMessage = async (req, res) => {
-    const { sender, senderModel, receiver, course, title, content } = req.body;
+    const { sender, senderModel, receiver, receiverModel, course, title, content } = req.body;
     try {
-        const message = await Message.create({ sender, senderModel, receiver, course, title, content, isPrivate: true });
+        let message = await Message.create({ 
+            sender, 
+            senderModel, 
+            receiver, 
+            receiverModel: receiverModel || 'Alumno', // Default to Alumno if not provided
+            course, 
+            title, 
+            content, 
+            isPrivate: true 
+        });
+        
+        // Populate sender info for immediate UI update
+        message = await Message.findById(message._id).populate('sender', 'nombre apellidos profileImage');
 
         // Crear notificación persistente
         const notification = await Notification.create({
@@ -18,10 +30,13 @@ const sendMessage = async (req, res) => {
             link: '/perfil' // O la ruta del chat
         });
 
-        // Emit real-time notification to the receiver if connected
-        const receiverSocketId = req.connectedUsers?.get(String(receiver));
-        if (receiverSocketId && req.io) {
-            req.io.to(receiverSocketId).emit('new_notification', notification);
+        // Emit real-time notification and message to the receiver room
+        if (req.io) {
+            req.io.to(String(receiver)).emit('new_notification', notification);
+            req.io.to(String(receiver)).emit('new_message', message);
+            
+            // Also emit to the sender room (to sync other devices/tabs)
+            req.io.to(String(sender)).emit('new_message', message);
         }
 
         res.json({ success: true, message });

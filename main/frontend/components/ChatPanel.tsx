@@ -6,38 +6,58 @@ import { API_BASE_URL } from '../config';
 
 interface ChatPanelProps {
     currentUser: User | null;
-    targetUser?: { id: string, name: string } | null;
+    targetUser?: { id: string, name: string, role?: string } | null;
     onClose?: () => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, onClose }) => {
-    const { socket, messages: allMessages } = useSocket();
+    const { socket, messages: allMessages, setMessages } = useSocket();
     const [message, setMessage] = useState('');
-    const [sessionMessages, setSessionMessages] = useState<any[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Helper to safely get string ID from various formats
+    const getSafeId = (user: any) => {
+        if (!user) return null;
+        if (typeof user === 'string') return user;
+        return String(user._id || user.id || '');
+    };
 
     // Filter relevant messages for this conversation if targetUser exists
     const relevantMessages = targetUser 
-        ? allMessages.filter(m => 
-            (m.sender?._id === currentUser?._id && m.receiver === targetUser.id) ||
-            (m.sender?._id === targetUser.id && m.receiver === currentUser?._id)
-          )
+        ? allMessages.filter(m => {
+            const mSenderId = getSafeId(m.sender);
+            const mReceiverId = getSafeId(m.receiver);
+            const currentId = getSafeId(currentUser);
+            const targetId = getSafeId(targetUser);
+
+            return (
+                (mSenderId === currentId && mReceiverId === targetId) ||
+                (mSenderId === targetId && mReceiverId === currentId)
+            );
+        })
         : [];
 
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [relevantMessages, sessionMessages]);
+    }, [relevantMessages]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!message.trim() || !currentUser || !targetUser) return;
+        const targetId = getSafeId(targetUser);
+        const currentId = getSafeId(currentUser);
+        
+        if (!message.trim() || !currentId || !targetId) return;
+
+        // Map frontend role to backend model name
+        const receiverModel = targetUser?.role === 'Teacher' ? 'Professor' : 'Alumno';
 
         const messageData = {
-            sender: currentUser._id,
-            senderModel: currentUser.type === 'professor' ? 'Professor' : 'Alumno',
-            receiver: targetUser.id,
+            sender: currentId,
+            senderModel: currentUser?.type === 'professor' ? 'Professor' : 'Alumno',
+            receiver: targetId,
+            receiverModel: receiverModel,
             title: 'Mensaje de Meet',
             content: message.trim(),
             isPrivate: true
@@ -50,10 +70,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
                 body: JSON.stringify(messageData)
             });
 
-            if (response.ok) {
+            const data = await response.json();
+            if (response.ok && data.success && data.message) {
                 setMessage('');
-                // The global socket listener in SocketContext will pick up the new message
-                // if the backend emits it back to the sender too, or we rely on the API refresh
+                // Manually update the messages list with the actual message object from the response
+                setMessages(prev => {
+                    // Check for duplicates just in case (already handled by room sync but good for safety)
+                    if (prev.some(m => m._id === data.message._id)) return prev;
+                    return [data.message, ...prev];
+                });
             }
         } catch (error) {
             console.error('Error sending message:', error);
@@ -88,7 +113,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                 {relevantMessages.length > 0 ? (
                     relevantMessages.slice().reverse().map((msg) => {
-                        const isMe = msg.sender?._id === currentUser?._id;
+                        const isMe = getSafeId(msg.sender) === getSafeId(currentUser);
                         return (
                             <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                 <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${
