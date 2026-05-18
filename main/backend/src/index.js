@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
             connectedUsers.set(String(userId), socket.id);
             console.log(`Usuario registrado en sala: ${userId} (socket: ${socket.id})`);
 
-            // Sincronizar notificaciones no leídas al conectar
+            // Sincronizar notificaciones no leÃ­das al conectar
             try {
                 const pendingNotifications = await Notification.find({ 
                     recipient: userId, 
@@ -133,7 +133,14 @@ io.on('connection', (socket) => {
     });
 });
 
-app.use(cors());
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins === '*') return callback(null, true);
+        return callback(null, allowedOrigins.includes(origin));
+    },
+    credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -188,3 +195,4 @@ app.get('*', (req, res) => {
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
+

@@ -1,21 +1,33 @@
-# Documentació
-Llistat d'alguns dels punts que han de quedar explicats en aquesta carpeta. Poden ser tots en aquest fitxer o en diversos fitxers enllaçats.
+﻿# Documentació (EduConnect)
 
-És obligatori modificar aquest document!!
+Tota la documentació d'entrega és dins `./doc`.
 
-## Documentació bàsica MÍNIMA
- * [Planificació](PLANIFICACIO.md)
- * [Manual d'Usuari](MANUAL.md)
- * Objectius
- * Arquitectura bàsica
-   * Tecnologies utilitzades
-   * Interrelació entre els diversos components
- * Com crees l'entorn de desenvolupament
- * Com desplegues l'aplicació a producció
- * Llistat d'endpoints de l'API de backend (també podeu documentar-ho amb swagger)
-    * Rutes
-   * Exemples de JSON de peticó
-   * Exemples de JSON de resposta i els seus codis d'estat 200? 404?
- * Aplicació Android
- * Altres elements importants.
- * ...
+## Entrega mínima a l’arrel de `doc/`
+A l’arrel de `doc/` hi ha (com a mínim) aquests fitxers, tal com demanen els requisits:
+
+- `comercial_2425_EduConnect.pdf`
+- `tecnica_2425_EduConnect.pdf`
+- `resum_2425_EduConnect.pdf`
+- `pitch_2425_EduConnect.mp4`
+- `demo_2425_EduConnect.mp4`
+
+> Nota: aquests fitxers es generen amb l’script `doc/tools/generate-required-assets.mjs` i després s’han de **substituir** pels PDFs i vídeos finals (amb contingut real) abans de l’entrega.
+
+## 10 apartats (A–J)
+
+- **A. Presentació resum (PDF)**: `A-Resum/resum.md`
+- **B. Planificació**: `PLANIFICACIO.md`
+- **C. Disseny (wireframes + UML/E-R)**: `C-Disseny/`
+- **D. Codi font + instal·ladors + manual instal·lació/desplegament**: `D-CodiFont/INSTALL.md` i `../main/`
+- **E. Documentació tècnica (punt d’entrada per contribuïdors)**: `E-Documentacio-Tecnica/README.md`
+- **F. Presentació funcional/comercial (PDF)**: `F-Comercial/comercial.md`
+- **G. Demo (vídeo)**: `G-Demo/README.md`
+- **H. Presentació tècnica (PDF)**: `H-Tecnica/tecnica.md`
+- **I. Manual d’usuari**: `MANUAL.md`
+- **J. Pitch (1 minut)**: `J-Pitch/README.md`
+
+## Generació ràpida (placeholders)
+
+- Genera els fitxers mínims a l’arrel de `doc/`:
+  - `node doc/tools/generate-required-assets.mjs`
+
