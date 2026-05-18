@@ -1,0 +1,105 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 121 >>
+stream
+BT
+/F1 28 Tf
+72 540 Td
+(EduConnect  Presentacio comercial) Tj
+ET
+BT
+/F1 16 Tf
+72 484 Td
+(Objectius i abast: TODO) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 149 >>
+stream
+BT
+/F1 28 Tf
+72 540 Td
+(Funcionalitats) Tj
+ET
+BT
+/F1 16 Tf
+72 484 Td
+(Web) Tj
+0 -22 Td (Mobile) Tj
+0 -22 Td (Discord) Tj
+0 -22 Td (Temps real) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 79 >>
+stream
+BT
+/F1 28 Tf
+72 540 Td
+(Competencia) Tj
+ET
+BT
+/F1 16 Tf
+72 484 Td
+(TODO) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 138 >>
+stream
+BT
+/F1 28 Tf
+72 540 Td
+(Costos i requeriments) Tj
+ET
+BT
+/F1 16 Tf
+72 484 Td
+(Infraestructura: TODO) Tj
+0 -22 Td (Manteniment: TODO) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R ] /Count 4 >>
+endobj
+11 0 obj
+<< /Type /Catalog /Pages 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000250 00000 n 
+0000000377 00000 n 
+0000000576 00000 n 
+0000000703 00000 n 
+0000000831 00000 n 
+0000000958 00000 n 
+0000001146 00000 n 
+0000001273 00000 n 
+0000001351 00000 n 
+trailer
+<< /Size 12 /Root 11 0 R >>
+startxref
+1402
+%%EOF
