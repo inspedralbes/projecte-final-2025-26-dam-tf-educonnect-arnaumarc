@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '../../config';
 import { User } from '../../types';
 import toast from 'react-hot-toast';
+import { InteractiveToast } from '../../components/InteractiveToast';
 
 interface CallData {
     from: string;
@@ -24,6 +25,9 @@ export interface NotificationData {
     priority?: 'LOW' | 'HIGH';
     createdAt: string;
     senderModel?: 'Professor' | 'Alumno' | 'System' | 'Admin';
+    count?: number; // Added for grouping
+    isGrouped?: boolean; // Added for grouping
+    ids?: string[]; // Original IDs of grouped notifications
 }
 
 export interface MessageData {
@@ -49,6 +53,8 @@ export type FeedItem = {
     courseId?: string;
     sender?: any;
     read: boolean;
+    count?: number; // Added for grouping
+    isGrouped?: boolean; // Added for grouping
 };
 
 interface SocketContextType {
@@ -102,7 +108,9 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             source: 'notification' as const,
             raw: n,
             courseId: n.meta?.courseId,
-            read: n.read
+            read: n.read,
+            count: n.count,
+            isGrouped: n.isGrouped
         })),
         ...messages.map(m => ({
             id: m._id,
@@ -141,6 +149,45 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
+        }
+    };
+
+    const markNotificationAsRead = async (id: string) => {
+        const notif = notifications.find(n => n._id === id);
+        const ids = notif?.isGrouped ? notif.ids : [id];
+        
+        try {
+            await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, { 
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids })
+            });
+
+            if (notif?.isGrouped && ids) {
+                setNotifications(prev => prev.map(n => ids.includes(n._id) ? { ...n, read: true } : n));
+                setUnreadCount(prev => Math.max(0, prev - ids.length));
+            } else {
+                setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    const markNotificationAsReadLocal = (id: string) => {
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    };
+
+    const markAllNotificationsAsRead = async () => {
+        if (!user) return;
+        try {
+            await fetch(`${API_BASE_URL}/api/notifications/user/${user._id}/read-all`, { method: 'PATCH' });
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch (error) {
+            console.error('Error marking all as read:', error);
         }
     };
 
@@ -187,7 +234,15 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         newSocket.on('new_notification', (data: NotificationData) => {
             setNotifications(prev => [data, ...prev]);
             setUnreadCount(prev => prev + 1);
-            toast.success(`Notificación: ${data.title}`);
+            
+            toast.custom((t) => (
+                <InteractiveToast 
+                    id={t.id}
+                    title={data.title}
+                    content={data.content}
+                    onMarkAsRead={() => markNotificationAsRead(data._id)}
+                />
+            ), { duration: 5000 });
         });
 
         newSocket.on('new_message', (data: MessageData) => {
@@ -224,32 +279,6 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             newSocket.disconnect();
         };
     }, [user?._id]);
-
-    const markNotificationAsRead = async (id: string) => {
-        try {
-            await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, { method: 'PATCH' });
-            setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
-            setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
-    };
-
-    const markNotificationAsReadLocal = (id: string) => {
-        setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
-        setUnreadCount(prev => Math.max(0, prev - 1));
-    };
-
-    const markAllNotificationsAsRead = async () => {
-        if (!user) return;
-        try {
-            await fetch(`${API_BASE_URL}/api/notifications/user/${user._id}/read-all`, { method: 'PATCH' });
-            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-            setUnreadCount(0);
-        } catch (error) {
-            console.error('Error marking all as read:', error);
-        }
-    };
 
     const deleteMessage = async (id: string) => {
         try {

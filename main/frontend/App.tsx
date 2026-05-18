@@ -7,6 +7,7 @@ import { TeacherDashboardView } from './views/TeacherDashboardView';
 import { AsignaturasView } from './views/AsignaturasView';
 import { MeetView } from './views/MeetView';
 import { ProfileView } from './views/ProfileView';
+import { ActivityHistoryView } from './views/ActivityHistoryView';
 import { AppView, User } from './types';
 import { Toaster } from 'react-hot-toast';
 import { NotificationBot } from './components/NotificationBot';
@@ -162,6 +163,8 @@ function App() {
         return <MeetView user={user} />;
       case AppView.PROFILE:
         return <ProfileView user={user} onUpdateUser={updateUser} />;
+      case AppView.ACTIVITY_HISTORY:
+        return <ActivityHistoryView user={user} />;
       case AppView.WORKSHOPS:
         return (
           <div className="flex items-center justify-center h-[calc(100vh-60px)]">

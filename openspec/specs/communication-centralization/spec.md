@@ -7,12 +7,12 @@ El sistema SHALL mostrar en una única interfaz (Tablón) todos los avisos del c
 - **WHEN** un estudiante accede a la vista del Tablón
 - **THEN** el sistema debe mostrar una lista cronológica que integre tanto los objetos de tipo "Message" como los de tipo "Notification" pertinentes al usuario.
 
-### Requirement: Smart Notification Grouping
-El sistema SHALL agrupar automáticamente las notificaciones del mismo tipo y asignatura que se hayan producido en una ventana de 48 horas para evitar el colapso visual.
+### Requirement: Smart Notification Grouping and Interactive Toasts
+El sistema SHALL agrupar dinámicamente las notificaciones del mismo tipo, origen y ventana de tiempo para evitar el colapso visual. Además, los Toasts de notificación SHALL ser interactivos, permitiendo acciones rápidas como marcar como leído.
 
 #### Scenario: Multiple resources added same day
-- **WHEN** un profesor añade 5 archivos al mismo tema en una tarde
-- **THEN** el sistema debe mostrar en el Tablón una única entrada agrupada que diga "X ha añadido 5 nuevos recursos en [Asignatura]".
+- **WHEN** el usuario recibe múltiples notificaciones similares y se muestran los Toasts
+- **THEN** el sistema debe mostrar entradas agrupadas (ej: "3 nuevos materiales") y permitir interactuar con el Toast directamente.
 
 ### Requirement: Auto-Archiving of Transient Alerts
 El sistema SHALL ocultar automáticamente del feed principal las notificaciones de tipo informativo (materiales, temas) que tengan más de 7 días de antigüedad.

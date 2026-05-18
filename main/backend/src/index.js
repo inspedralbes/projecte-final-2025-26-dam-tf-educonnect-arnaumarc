@@ -74,9 +74,30 @@ io.on('connection', (socket) => {
     // --- WebRTC Signaling Events ---
 
     // When a user initiates a call
-    socket.on('call_user', (data) => {
+    socket.on('call_user', async (data) => {
         const { to, offer, from, fromName } = data;
         const targetSocket = connectedUsers.get(String(to));
+
+        // Persist call event as notification
+        try {
+            const notification = await Notification.create({
+                recipient: to,
+                recipientModel: 'Alumno', // Calls are currently student-target based in design, but polymorphic-safe refs are used
+                sender: from,
+                senderModel: 'Professor', // Typically professors start calls in this flow
+                type: 'MEET_CALL',
+                title: 'Llamada de Meet',
+                content: `${fromName} te está llamando...`,
+                link: '/meet'
+            });
+
+            if (targetSocket) {
+                io.to(targetSocket).emit('new_notification', notification);
+            }
+        } catch (err) {
+            console.error('Error creating call notification:', err);
+        }
+
         if (targetSocket) {
             console.log(`Forwarding offer from ${from} to ${to}`);
             io.to(targetSocket).emit('incoming_call', {

@@ -6,7 +6,8 @@ export enum AppView {
   COURSE_DETAILS = 'COURSE_DETAILS',
   WORKSHOPS = 'WORKSHOPS',
   MEET = 'MEET',
-  PROFILE = 'PROFILE'
+  PROFILE = 'PROFILE',
+  ACTIVITY_HISTORY = 'ACTIVITY_HISTORY'
 }
 
 export type UserRole = 'STUDENT' | 'TEACHER';
@@ -39,6 +40,7 @@ export interface User {
   profileImage?: string | null;
   theme?: 'light' | 'dark';
   type: 'alumno' | 'professor';
+  enrolledCourses?: any[];
 }
 
 export interface Activity {

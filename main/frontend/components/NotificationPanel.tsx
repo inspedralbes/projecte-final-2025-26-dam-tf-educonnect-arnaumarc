@@ -5,9 +5,10 @@ import { API_BASE_URL } from '../config';
 
 interface NotificationPanelProps {
     onClose: () => void;
+    onViewHistory?: () => void;
 }
 
-export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose }) => {
+export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, onViewHistory }) => {
     const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead } = useSocket();
 
     const getTypeDetails = (notif: NotificationData) => {
@@ -121,9 +122,16 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                                                     <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${details.color} w-fit`}>
                                                         {details.label}
                                                     </span>
-                                                    <h4 className={`text-sm font-bold ${!notif.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
-                                                        {notif.title}
-                                                    </h4>
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className={`text-sm font-bold ${!notif.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                                                            {notif.title}
+                                                        </h4>
+                                                        {notif.count && notif.count > 1 && (
+                                                            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded-full font-black">
+                                                                +{notif.count}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {!notif.read && (
                                                     <button 
@@ -151,7 +159,6 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
                                                                     markNotificationAsReadLocal(notif._id);
                                                                 }
                                                             } catch (e) {
-                                                                // Keep silent; panel is non-blocking UI
                                                                 console.error('Error accepting invite', e);
                                                             }
                                                         }}
@@ -211,7 +218,10 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
 
             {/* Footer */}
             <div className="p-3 bg-gray-50 dark:bg-zinc-900/50 border-t border-gray-100 dark:border-zinc-800 text-center">
-                <button className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <button 
+                    onClick={onViewHistory}
+                    className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
                     Ver historial completo
                 </button>
             </div>

@@ -5,10 +5,63 @@ const Course = require('../models/Course');
 const getUserNotifications = async (req, res) => {
     try {
         const { userId } = req.params;
-        const notifications = await Notification.find({ recipient: userId })
+        const allNotifications = await Notification.find({ recipient: userId })
             .sort({ createdAt: -1 })
-            .limit(20);
-        res.json(notifications);
+            .limit(50); // More items for grouping
+
+        const grouped = [];
+        const seenGroups = new Map(); // key: type + courseId
+
+        for (const notif of allNotifications) {
+            if (notif.read) {
+                grouped.push(notif);
+                continue;
+            }
+
+            const courseId = notif.meta?.courseId || 'no-course';
+            const groupKey = `${notif.type}-${courseId}`;
+
+            // Grouping only unread notifications of specific types
+            const groupableTypes = ['MATERIAL', 'EXAM', 'ANNOUNCEMENT', 'MESSAGE', 'MEET_MESSAGE'];
+            if (!groupableTypes.includes(notif.type)) {
+                grouped.push(notif);
+                continue;
+            }
+
+            if (seenGroups.has(groupKey)) {
+                const groupIdx = seenGroups.get(groupKey);
+                const group = grouped[groupIdx];
+                
+                // Update group metadata
+                if (!group.count) {
+                    group.count = 2;
+                    group.originalContent = group.content;
+                    // Add virtual field for frontend
+                    const jsonGroup = group.toJSON ? group.toJSON() : { ...group };
+                    jsonGroup.count = 2;
+                    jsonGroup.isGrouped = true;
+                    jsonGroup.ids = [group._id, notif._id];
+                    grouped[groupIdx] = jsonGroup;
+                } else {
+                    grouped[groupIdx].count++;
+                    grouped[groupIdx].ids.push(notif._id);
+                }
+                
+                // Update text to reflect grouping
+                const count = grouped[groupIdx].count;
+                const typeLabel = notif.type === 'MATERIAL' ? 'materiales' : 
+                                 notif.type === 'EXAM' ? 'exámenes' : 
+                                 notif.type === 'MESSAGE' ? 'mensajes' : 'avisos';
+                
+                grouped[groupIdx].title = `${count} nuevos ${typeLabel}`;
+                grouped[groupIdx].content = `Tienes ${count} ${typeLabel} pendientes.`;
+            } else {
+                seenGroups.set(groupKey, grouped.length);
+                grouped.push(notif);
+            }
+        }
+
+        res.json(grouped.slice(0, 20)); // Return final 20 items
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching notifications', error: error.message });
     }
@@ -17,6 +70,16 @@ const getUserNotifications = async (req, res) => {
 const markAsRead = async (req, res) => {
     try {
         const { notificationId } = req.params;
+        const { ids } = req.body || {}; // Soporta una lista de IDs para notificaciones agrupadas
+
+        if (ids && Array.isArray(ids)) {
+            await Notification.updateMany(
+                { _id: { $in: ids } },
+                { read: true }
+            );
+            return res.json({ success: true, message: 'Notificaciones marcadas como leídas' });
+        }
+
         const notification = await Notification.findByIdAndUpdate(
             notificationId, 
             { read: true }, 

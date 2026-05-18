@@ -68,7 +68,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
             )}
           </button>
           {showNotifications && (
-            <NotificationPanel onClose={() => setShowNotifications(false)} />
+            <NotificationPanel 
+              onClose={() => setShowNotifications(false)} 
+              onViewHistory={() => {
+                setView(AppView.ACTIVITY_HISTORY);
+                setShowNotifications(false);
+              }}
+            />
           )}
         </div>
 

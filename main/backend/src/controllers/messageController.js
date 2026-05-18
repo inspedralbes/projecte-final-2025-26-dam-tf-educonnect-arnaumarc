@@ -24,8 +24,8 @@ const sendMessage = async (req, res) => {
             recipientModel: receiverModel || 'Alumno', // Dinámico según el rol enviado
             sender,
             senderModel: senderModel || (req.user?.type === 'professor' ? 'Professor' : 'Alumno'),
-            type: 'MESSAGE',
-            title: 'Nuevo Mensaje: ' + title,
+            type: title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'MESSAGE',
+            title: title === 'Mensaje de Meet' ? 'Chat de Meet' : 'Nuevo Mensaje: ' + title,
             content: content,
             link: '/perfil' // O la ruta del chat
         });
