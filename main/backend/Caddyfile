@@ -1,8 +1,16 @@
-http://projecteeduconnect.dam.inspedralbes.cat
+﻿projecteeduconnect.cat
 
 root * /srv
 
 @api path /api/*
 reverse_proxy @api api:3005
 
+@socket path /socket.io/*
+reverse_proxy @socket api:3005
+
+@uploads path /uploads/*
+reverse_proxy @uploads api:3005
+
+# SPA fallback
+try_files {path} /index.html
 file_server

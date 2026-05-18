@@ -1,80 +1,65 @@
-# Guia d'Instal·lació i Desplegament: EduConnect
+﻿# Guia d’instal·lació i desplegament: EduConnect
 
-Aquesta guia detalla els passos necessaris per instal·lar i executar tots els mòduls del projecte EduConnect.
+Aquesta guia detalla com instal·lar i executar els mòduls del projecte EduConnect en desenvolupament i en producció amb domini.
 
-## Requisits Previs
-- **Node.js** (versió 18 o superior)
-- **npm** (inclòs amb Node.js)
-- **MongoDB** (local o via Docker)
-- **Docker & Docker Compose** (opcional, per al backend)
-- **Expo Go** (instal·lat al mòbil per provar l'App nàtiva)
-
----
-
-## 1. Instal·lació Automàtica (Recomanat)
-Hem creat un script que instal·la totes les dependències de tots els mòduls automàticament.
-
-1. Navega a la carpeta principal del codi:
-   ```bash
-   cd main
-   ```
-2. Executa l'instal·lador:
-   ```bash
-   node setup.js
-   ```
-
-Això instal·larà les `node_modules` a `backend`, `frontend`, `expo-mobile` i `bot-discord`.
+## Requisits previs
+- Node.js (18+)
+- npm
+- Docker + Docker Compose (recomanat per producció)
+- MongoDB (si no uses Docker)
+- Expo Go / EAS (si vols provar o compilar l’app mòbil)
 
 ---
 
-## 2. Configuració de Variables d'Entorn (.env)
-Cada mòdul pot necessitar el seu fitxer `.env`. Assegura't de configurar:
+## 1) Instal·lació (dev)
 
-### Backend (`main/backend/.env`)
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/educonnect
-DISCORD_TOKEN=el_teu_token_de_bot
-```
-
-### Discord Bot (`main/bot-discord/.env`)
-```env
-DISCORD_TOKEN=el_teu_token_de_bot
-CLIENT_ID=id_del_teu_bot
-```
-
----
-
-## 3. Execució dels Mòduls
-
-### Backend (API i Sockets)
-Tens dues opcions:
-- **Amb Docker**: `cd main/backend && docker-compose up -d`
-- **Amb Node**: `cd main/backend && npm start`
-
-### Frontend (Web)
 ```bash
-cd main/frontend
-npm run dev
+cd main
+node setup.js
 ```
-La web estarà disponible a `http://localhost:5173`.
 
-### Aplicació Mòbil (Expo)
-```bash
-cd main/expo-mobile
-npx expo start
-```
-Escaneja el codi QR amb l'app **Expo Go** al teu terminal iOS/Android.
+Alternativa:
 
-### Discord Bot
 ```bash
-cd main/bot-discord
-node bot.js
+cd main
+npm run install-all
 ```
 
 ---
 
-## Solució de Problemes
-- **Error de connexió a DB**: Comprova que MongoDB està actiu.
-- **Ports ocupats**: L'API utilitza el 5000 i la Web el 5173. Assegura't que estan lliures.
-- **Dependències**: Si un mòdul falla, prova d'esborrar `node_modules` i tornar a fer `npm install` dins d'aquell directori.
+## 2) Execució (dev)
+
+- Backend (API + sockets):
+  - Docker: `cd main/backend && docker-compose up --build`
+  - Node: `cd main/backend && npm run dev`
+
+- Frontend (web):
+  - `cd main/frontend && npm run dev`
+
+- Mobile (Expo):
+  - `cd main/expo-mobile && npx expo start`
+
+---
+
+## 3) Producció amb domini `https://projecteeduconnect.cat`
+
+### Web + API sota el mateix domini (recomanat)
+- El frontend usa **same-origin** i crida l’API a `/api/...`.
+- El reverse proxy (Caddy) redirigeix `/api`, `/socket.io` i `/uploads` cap al backend.
+
+### Fitxers clau
+- `main/frontend/config.ts`: en producció usa `window.location.origin`.
+- `main/backend/Caddyfile`: domini i reverse proxy.
+- `main/backend/src/index.js`: CORS configurable via `CORS_ORIGINS`.
+
+### Variables d’entorn (backend)
+- `NODE_ENV=production`
+- Opcional: `CORS_ORIGINS=https://projecteeduconnect.cat`
+
+### Variables d’entorn (Expo)
+- `EXPO_PUBLIC_API_BASE_URL=https://projecteeduconnect.cat`
+
+---
+
+## Notes
+- Els fitxers de vídeo i PDFs d’entrega són a `doc/`.

@@ -1,14 +1,23 @@
-import { Platform } from 'react-native';
+﻿import { Platform } from 'react-native';
 
 /**
- * INSTRUCCIONES PARA EL DESARROLLADOR:
- * 
- * 1. Si usas el EMULADOR DE ANDROID: '10.0.2.2' es la IP correcta para acceder al localhost de tu PC.
- * 2. Si usas el EMULADOR DE IOS: 'localhost' suele funcionar.
- * 3. Si usas un DISPOSITIVO FÍSICO (Expo Go): DEBES poner la IP local de tu ordenador (ej: '192.168.1.XX').
- *    Asegúrate de que el móvil y el PC estén en la misma red Wi-Fi.
+ * INSTRUCCIONS (DEV):
+ * - Android Emulator: usa '10.0.2.2' per accedir al localhost del PC.
+ * - iOS Simulator: normalment 'localhost' funciona.
+ * - Dispositiu físic (Expo Go): posa la IP local del teu ordinador (ex: '192.168.1.50') i assegura't que és a la mateixa Wi‑Fi.
+ *
+ * PRODUCCIÓ:
+ * - Per defecte apunta al domini públic.
+ * - Pots sobreescriure-ho amb EXPO_PUBLIC_API_BASE_URL (EAS/Expo).
  */
 
-const SERVER_IP = '46.224.0.230';
+const DEFAULT_PROD_API_BASE_URL = 'https://projecteeduconnect.cat';
 
-export const API_BASE_URL = `http://${SERVER_IP}:3005`;
+// Expo only exposes env vars prefixed with EXPO_PUBLIC_
+const envUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
+
+// If you need local dev without env vars, you can temporarily set this:
+// const DEV_SERVER = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+// export const API_BASE_URL = `http://${DEV_SERVER}:3006`;
+
+export const API_BASE_URL = (envUrl || DEFAULT_PROD_API_BASE_URL).replace(/\/$/, '');

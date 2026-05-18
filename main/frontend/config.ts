@@ -1,10 +1,20 @@
-/// <reference types="vite/client" />
+﻿/// <reference types="vite/client" />
+
+const DEFAULT_PROD_ORIGIN = 'https://projecteeduconnect.cat';
+
 export const getApiUrl = () => {
-    // If we are in production and served by the backend, we use relative paths
+    // Optional override for dev/prod builds
+    const fromEnv = import.meta.env.VITE_API_BASE_URL;
+    if (fromEnv) return String(fromEnv).replace(/\/$/, '');
+
+    // Production: same-origin (recommended behind reverse proxy)
     if (import.meta.env.PROD) {
-        return 'http://46.224.0.230:3005';
+        return (typeof window !== 'undefined' && window.location?.origin)
+            ? window.location.origin
+            : DEFAULT_PROD_ORIGIN;
     }
-    // In development, we use the current hostname to allow local and cross-device testing
+
+    // Development: backend docker-compose exposes the API on 3006 by default
     return `http://${window.location.hostname}:3006`;
 };
 
