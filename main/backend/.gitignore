@@ -1,5 +1,4 @@
-# Entorns
-.env
+/frontend/node_modules
+/backend/node_modules
 
-# Dependències
-node_modules
+.env
