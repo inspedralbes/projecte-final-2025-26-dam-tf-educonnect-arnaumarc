@@ -29,6 +29,7 @@ const io = new Server(server, {
     }
 });
 const port = process.env.PORT || 3001;
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:3006'];
 
 // Map to keep track of connected users (userId -> socketId)
 const connectedUsers = new Map();

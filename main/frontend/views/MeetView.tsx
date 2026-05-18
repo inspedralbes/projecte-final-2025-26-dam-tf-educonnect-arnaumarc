@@ -6,14 +6,6 @@ import toast from 'react-hot-toast';
 import { useSocket } from '../src/context/SocketContext';
 import { ChatPanel } from '../components/ChatPanel';
 
-interface MockUser {
-    id: string;
-    name: string;
-    role: 'Student' | 'Teacher';
-    isOnline: boolean;
-    avatar?: string;
-}
-
 interface MeetViewProps {
     user: User | null;
 }
@@ -35,8 +27,8 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         setIncomingCall
     } = useSocket();
 
-    const [users, setUsers] = useState<MockUser[]>([]);
-    const [activeChatUser, setActiveChatUser] = useState<MockUser | null>(activeCallUser as MockUser | null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [activeChatUser, setActiveChatUser] = useState<User | null>(activeCallUser as User | null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isMuted, setIsMuted] = useState(false);
@@ -133,12 +125,9 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 if (Array.isArray(data)) {
                     const formattedUsers = data
                         .filter(u => u._id !== user?._id)
-                        .map((user: any) => ({
-                            id: user._id,
-                            name: `${user.nombre} ${user.apellidos}`,
-                            role: user.role === 'Student' ? 'Student' : 'Teacher',
-                            isOnline: true,
-                            avatar: user.profileImage
+                        .map((u: any) => ({
+                            ...u,
+                            isOnline: true // Maintain visual online status for UI
                         }));
                     setUsers(formattedUsers);
                 }
@@ -172,16 +161,11 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     // Sync activeChatUser with activeCallUser from context if no chat user is selected
     useEffect(() => {
         if (activeCallUser && !activeChatUser) {
-            const foundUser = users.find(u => u.id === activeCallUser.id);
+            const foundUser = users.find(u => u._id === activeCallUser._id);
             if (foundUser) {
                 setActiveChatUser(foundUser);
             } else {
-                setActiveChatUser({
-                    id: activeCallUser.id,
-                    name: activeCallUser.name,
-                    role: 'Student',
-                    isOnline: true
-                });
+                setActiveChatUser(activeCallUser);
             }
         }
     }, [activeCallUser, users, activeChatUser]);
@@ -213,25 +197,25 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         return pc;
     };
 
-    const startCall = async (targetUser: MockUser) => {
+    const startCall = async (targetUser: User) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setLocalStream(stream);
             localStreamRef.current = stream;
             setActiveChatUser(targetUser);
 
-            const pc = createPeerConnection(targetUser.id);
+            const pc = createPeerConnection(targetUser._id);
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            signalStartCall(targetUser.id, targetUser.name, offer);
+            signalStartCall(targetUser, offer);
         } catch (error) {
             console.error("Error starting call:", error);
             toast.error("No se pudo acceder a la cámara o micrófono");
         }
     };
 
-    const startChat = (targetUser: MockUser) => {
+    const startChat = (targetUser: User) => {
         setActiveChatUser(targetUser);
         setIsChatOpen(true);
         if (window.innerWidth < 1024) {
@@ -247,14 +231,15 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             localStreamRef.current = stream;
             
             // Set active chat user to the caller
-            const caller = users.find(u => u.id === incomingCall.from) || {
-                id: incomingCall.from,
-                name: incomingCall.fromName,
-                role: 'Student' as const,
-                isOnline: true
-            };
+            const caller = users.find(u => u._id === incomingCall.from) || {
+                _id: incomingCall.from,
+                nombre: incomingCall.fromName,
+                apellidos: '',
+                type: 'alumno' as const,
+                email: ''
+            } as User;
             setActiveChatUser(caller);
-            setActiveCallUser({ id: caller.id, name: caller.name });
+            setActiveCallUser(caller);
 
             const pc = createPeerConnection(incomingCall.from);
             await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
@@ -281,7 +266,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
     };
 
     const endCall = () => {
-        const targetId = activeCallUser?.id || incomingCall?.from;
+        const targetId = activeCallUser?._id || incomingCall?.from;
         if (targetId) {
             signalEndCall(targetId);
         }
@@ -346,7 +331,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
                             <Phone className="text-blue-500 animate-pulse" size={32} />
                         </div>
-                        <p className="text-gray-900 dark:text-white font-bold mb-4">Llamando a {activeCallUser?.name}...</p>
+                        <p className="text-gray-900 dark:text-white font-bold mb-4">Llamando a {activeCallUser?.nombre}...</p>
                         <button 
                             onClick={endCall}
                             className="bg-red-500 text-white p-4 rounded-full hover:bg-red-600 transition-all"
@@ -375,33 +360,36 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div className="text-center p-4 text-gray-500 dark:text-gray-400">No hay otros usuarios disponibles.</div>
                     ) : (
                         users.map((u) => {
-                            const isSelectedForChat = u.id === activeChatUser?.id;
-                            const isSelectedForCall = u.id === activeCallUser?.id;
+                            const isSelectedForChat = u._id === activeChatUser?._id;
+                            const isSelectedForCall = u._id === activeCallUser?._id;
                             
                             return (
                                 <div
-                                    key={u.id}
+                                    key={u._id}
                                     className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isSelectedForChat || isSelectedForCall ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-700 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5'}`}
                                 >
                                     <div className="flex items-center space-x-3">
                                         <div className="relative">
-                                            {u.avatar ? (
-                                                <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover bg-gray-200 dark:bg-zinc-700" />
+                                            {u.profileImage ? (
+                                                <img src={u.profileImage} alt={u.nombre} className="w-10 h-10 rounded-full object-cover bg-gray-200 dark:bg-zinc-700" />
                                             ) : (
                                                 <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold">
-                                                    {u.name.charAt(0)}
+                                                    {u.nombre.charAt(0)}
                                                 </div>
                                             )}
-                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${u.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${(u as any).isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-sm text-gray-900 dark:text-white">{u.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{u.role}</p>
+                                            <p className="font-semibold text-sm text-gray-900 dark:text-white">{u.nombre} {u.apellidos}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{u.type === 'professor' ? 'Teacher' : 'Student'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => startChat(u)}
+                                            onClick={() => {
+                                                setActiveChatUser(u);
+                                                setIsChatOpen(true);
+                                            }}
                                             className="p-2.5 rounded-full transition-all bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-800 dark:text-gray-400 dark:hover:bg-zinc-700"
                                             title="Chatear"
                                         >
@@ -442,9 +430,9 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                             ) : (
                                 <div className="text-center flex flex-col items-center animate-in fade-in duration-700">
                                     <div className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center mb-6 text-5xl font-bold text-white shadow-lg ring-4 ring-white/10">
-                                        {activeCallUser.name.charAt(0)}
+                                        {activeCallUser.nombre.charAt(0)}
                                     </div>
-                                    <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">{activeCallUser.name}</h3>
+                                    <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">{activeCallUser.nombre} {activeCallUser.apellidos}</h3>
                                     <p className="text-blue-400 text-sm font-medium flex items-center gap-2">
                                         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                                         Conectando medios...
@@ -454,7 +442,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
 
                             {/* Remote User Label */}
                             <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                                <p className="text-white text-sm font-semibold">{activeCallUser.name}</p>
+                                <p className="text-white text-sm font-semibold">{activeCallUser.nombre} {activeCallUser.apellidos}</p>
                             </div>
 
                             {/* Local Video Picture-in-Picture */}
@@ -484,7 +472,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     className={`p-3 md:p-4 rounded-full transition-all ${isSidebarOpen ? 'bg-blue-500 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                     title="Usuarios"
                                 >
-                                    <UserIcon size={20} md:size={24} />
+                                    <UserIcon size={24} />
                                 </button>
 
                                 <button
@@ -492,7 +480,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     className={`p-3 md:p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                     title={isMuted ? "Activar Micro" : "Mutear"}
                                 >
-                                    {isMuted ? <MicOff size={20} md:size={24} /> : <Mic size={20} md:size={24} />}
+                                    {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
                                 </button>
 
                                 <button
@@ -500,7 +488,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     className={`p-3 md:p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                     title={isVideoOff ? "Activar Cámara" : "Apagar Cámara"}
                                 >
-                                    {isVideoOff ? <VideoOff size={20} md:size={24} /> : <Video size={20} md:size={24} />}
+                                    {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
                                 </button>
 
                                 <button className="p-3 md:p-4 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors hidden md:flex">
@@ -512,7 +500,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     className={`p-3 md:p-4 rounded-full transition-all ${isChatOpen ? 'bg-blue-500 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
                                     title="Chat"
                                 >
-                                    <MessageSquare size={20} md:size={24} />
+                                    <MessageSquare size={24} />
                                 </button>
                             </div>
 
@@ -523,25 +511,25 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 className="p-4 md:p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/40 active:scale-95"
                                 title="Colgar"
                             >
-                                <PhoneOff size={24} md:size={28} />
+                                <PhoneOff size={28} />
                             </button>
                         </div>
                     </div>
                 ) : activeChatUser ? (
                     <div className="text-center space-y-8 animate-in fade-in zoom-in-95 duration-500 max-w-lg w-full p-8 bg-white dark:bg-zinc-800/50 rounded-3xl border border-gray-100 dark:border-zinc-700 shadow-xl">
                         <div className="relative inline-block">
-                            {activeChatUser.avatar ? (
-                                <img src={activeChatUser.avatar} alt={activeChatUser.name} className="w-40 h-40 rounded-full object-cover border-4 border-blue-500/20 shadow-lg" />
+                            {activeChatUser.profileImage ? (
+                                <img src={activeChatUser.profileImage} alt={activeChatUser.nombre} className="w-40 h-40 rounded-full object-cover border-4 border-blue-500/20 shadow-lg" />
                             ) : (
                                 <div className="w-40 h-40 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-5xl font-bold text-blue-600 dark:text-blue-400 border-4 border-blue-500/20 shadow-lg">
-                                    {activeChatUser.name.charAt(0)}
+                                    {activeChatUser.nombre.charAt(0)}
                                 </div>
                             )}
                             <div className="absolute bottom-2 right-2 w-8 h-8 bg-green-500 border-4 border-white dark:border-zinc-800 rounded-full shadow-md" />
                         </div>
                         
                         <div>
-                            <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{activeChatUser.name}</h3>
+                            <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{activeChatUser.nombre} {activeChatUser.apellidos}</h3>
                             <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 font-medium">
                                 <MessageSquare size={18} />
                                 <span>Chateando ahora</span>
@@ -556,7 +544,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 <Video size={22} /> Iniciar Videollamada
                             </button>
                             <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold pt-2">
-                                {activeChatUser.role} • EduConnect Meet
+                                {activeChatUser.type === 'professor' ? 'Teacher' : 'Student'} • EduConnect Meet
                             </p>
                         </div>
                     </div>
@@ -580,7 +568,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 <div className="absolute lg:relative right-0 top-0 bottom-0 z-40 w-full lg:w-80 h-full shadow-2xl">
                     <ChatPanel 
                         currentUser={user} 
-                        targetUser={activeChatUser ? { id: activeChatUser.id, name: activeChatUser.name } : null}
+                        targetUser={activeChatUser}
                         onClose={() => setIsChatOpen(false)}
                     />
                 </div>

@@ -30,6 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
         >
           {user?.type === 'professor' ? 'Panel Docente' : 'Tablón'}
         </button>
+        <button
+          onClick={() => setView(AppView.MEET)}
+          className={getTabClass(AppView.MEET)}
+        >
+          Meet
+        </button>
         {user?.type !== 'professor' && (
           <>
             <button
@@ -37,12 +43,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
               className={getTabClass(AppView.WORKSHOPS)}
             >
               Talleres
-            </button>
-            <button
-              onClick={() => setView(AppView.MEET)}
-              className={getTabClass(AppView.MEET)}
-            >
-              Meet
             </button>
           </>
         )}

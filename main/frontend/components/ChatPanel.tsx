@@ -6,7 +6,7 @@ import { API_BASE_URL } from '../config';
 
 interface ChatPanelProps {
     currentUser: User | null;
-    targetUser?: { id: string, name: string, role?: string } | null;
+    targetUser?: User | null;
     onClose?: () => void;
 }
 
@@ -15,20 +15,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
     const [message, setMessage] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Helper to safely get string ID from various formats
-    const getSafeId = (user: any) => {
-        if (!user) return null;
-        if (typeof user === 'string') return user;
-        return String(user._id || user.id || '');
-    };
-
     // Filter relevant messages for this conversation if targetUser exists
     const relevantMessages = targetUser 
         ? allMessages.filter(m => {
-            const mSenderId = getSafeId(m.sender);
-            const mReceiverId = getSafeId(m.receiver);
-            const currentId = getSafeId(currentUser);
-            const targetId = getSafeId(targetUser);
+            const mSenderId = typeof m.sender === 'string' ? m.sender : m.sender?._id;
+            const mReceiverId = typeof m.receiver === 'string' ? m.receiver : m.receiver?._id;
+            const currentId = currentUser?._id;
+            const targetId = targetUser?._id;
 
             return (
                 (mSenderId === currentId && mReceiverId === targetId) ||
@@ -45,13 +38,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        const targetId = getSafeId(targetUser);
-        const currentId = getSafeId(currentUser);
+        const targetId = targetUser?._id;
+        const currentId = currentUser?._id;
         
         if (!message.trim() || !currentId || !targetId) return;
 
         // Map frontend role to backend model name
-        const receiverModel = targetUser?.role === 'Teacher' ? 'Professor' : 'Alumno';
+        const receiverModel = targetUser?.type === 'professor' ? 'Professor' : 'Alumno';
 
         const messageData = {
             sender: currentId,
@@ -73,9 +66,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             const data = await response.json();
             if (response.ok && data.success && data.message) {
                 setMessage('');
-                // Manually update the messages list with the actual message object from the response
+                // The message is added to state via HTTP response. 
+                // Socket.io event will be ignored in setMessages if _id already exists.
                 setMessages(prev => {
-                    // Check for duplicates just in case (already handled by room sync but good for safety)
                     if (prev.some(m => m._id === data.message._id)) return prev;
                     return [data.message, ...prev];
                 });
@@ -104,7 +97,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             {targetUser && (
                 <div className="px-4 py-2 bg-blue-50/50 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-900/20">
                     <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                        <UserIcon size={10} /> Hablando con {targetUser.name}
+                        <UserIcon size={10} /> Hablando con {(targetUser as any).nombre} {(targetUser as any).apellidos}
                     </p>
                 </div>
             )}
@@ -113,7 +106,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                 {relevantMessages.length > 0 ? (
                     relevantMessages.slice().reverse().map((msg) => {
-                        const isMe = getSafeId(msg.sender) === getSafeId(currentUser);
+                        const mSenderId = typeof msg.sender === 'string' ? msg.sender : msg.sender?._id;
+                        const isMe = mSenderId === currentUser?._id;
                         return (
                             <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                 <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${

@@ -28,8 +28,8 @@ export interface NotificationData {
 
 export interface MessageData {
     _id: string;
-    sender: any;
-    receiver: string;
+    sender: any; // Can be string ID or populated User object
+    receiver: any; // Can be string ID or populated User object
     course?: any;
     title: string;
     content: string;
@@ -40,7 +40,7 @@ export interface MessageData {
 
 export type FeedItem = {
     id: string;
-    type: NotificationData['type'] | 'DIRECT_MESSAGE';
+    type: NotificationData['type'] | 'DIRECT_MESSAGE' | 'MEET_MESSAGE';
     title: string;
     content: string;
     date: string;
@@ -61,14 +61,14 @@ interface SocketContextType {
     unreadCount: number;
     isInCall: boolean;
     isCalling: boolean;
-    activeCallUser: { id: string, name: string } | null;
-    startCall: (targetId: string, targetName: string, offer: any) => void;
+    activeCallUser: User | null;
+    startCall: (target: User, offer: any) => void;
     acceptCall: (fromId: string) => void;
     rejectCall: (fromId: string) => void;
     endCall: (targetId: string) => void;
     setInCall: (value: boolean) => void;
     setCalling: (value: boolean) => void;
-    setActiveCallUser: (user: { id: string, name: string } | null) => void;
+    setActiveCallUser: (user: User | null) => void;
     setIncomingCall: (call: CallData | null) => void;
     setMessages: React.Dispatch<React.SetStateAction<MessageData[]>>;
     markNotificationAsRead: (id: string) => void;
@@ -87,7 +87,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
     const [unreadCount, setUnreadCount] = useState(0);
     const [isInCall, setIsInCall] = useState(false);
     const [isCalling, setIsCalling] = useState(false);
-    const [activeCallUser, setActiveCallUser] = useState<{ id: string, name: string } | null>(null);
+    const [activeCallUser, setActiveCallUser] = useState<User | null>(null);
 
     const socketRef = useRef<Socket | null>(null);
 
@@ -106,7 +106,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         })),
         ...messages.map(m => ({
             id: m._id,
-            type: m.title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'DIRECT_MESSAGE' as const,
+            type: (m.title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'DIRECT_MESSAGE') as 'MEET_MESSAGE' | 'DIRECT_MESSAGE',
             title: m.title,
             content: m.content,
             date: m.date,
@@ -267,14 +267,14 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         }
     };
 
-    const startCall = (targetId: string, targetName: string, offer: any) => {
+    const startCall = (target: User, offer: any) => {
         if (!socketRef.current || !user) return;
 
         setIsCalling(true);
-        setActiveCallUser({ id: targetId, name: targetName });
+        setActiveCallUser(target);
 
         socketRef.current.emit('call_user', {
-            to: targetId,
+            to: target._id,
             offer: offer,
             from: user._id,
             fromName: `${user.nombre} ${user.apellidos}`

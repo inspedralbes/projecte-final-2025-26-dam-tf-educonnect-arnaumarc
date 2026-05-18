@@ -21,9 +21,9 @@ const sendMessage = async (req, res) => {
         // Crear notificación persistente
         const notification = await Notification.create({
             recipient: receiver,
-            recipientModel: 'Alumno', // Simplificado para este flujo
+            recipientModel: receiverModel || 'Alumno', // Dinámico según el rol enviado
             sender,
-            senderModel,
+            senderModel: senderModel || (req.user?.type === 'professor' ? 'Professor' : 'Alumno'),
             type: 'MESSAGE',
             title: 'Nuevo Mensaje: ' + title,
             content: content,
