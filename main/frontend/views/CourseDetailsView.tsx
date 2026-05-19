@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
@@ -26,6 +26,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const currentUserId = (user?._id || (user as any)?.id)?.toString();
     const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
     const [activeTab, setActiveTab] = useState<'info' | 'students' | 'resources'>('info');
+    
     const [students, setStudents] = useState<any[]>([]);
 
     const [showMessageModal, setShowMessageModal] = useState(false);
