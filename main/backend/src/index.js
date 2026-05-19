@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const connectDB = require('./config/db');
 
@@ -28,8 +28,20 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     }
 });
-const port = process.env.PORT || 3001;
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:3006'];
+const port = process.env.PORT || 3005;
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:3006')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+const isDevOriginAllowed = (origin) => {
+    if (!origin) return true;
+    // In local/dev we allow private-network origins for convenience
+    if (process.env.NODE_ENV !== 'production') {
+        return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/i.test(origin);
+    }
+    return false;
+};
 
 // Map to keep track of connected users (userId -> socketId)
 const connectedUsers = new Map();
@@ -158,8 +170,10 @@ io.on('connection', (socket) => {
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (allowedOrigins === '*') return callback(null, true);
-        return callback(null, allowedOrigins.includes(origin));
+        if (allowedOrigins.includes('*')) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (isDevOriginAllowed(origin)) return callback(null, true);
+        return callback(null, false);
     },
     credentials: true
 }));
@@ -242,4 +256,7 @@ const cleanExpiredMeetNotifications = async () => {
 // Ejecutar limpieza inicial y luego cada hora
 cleanExpiredMeetNotifications();
 setInterval(cleanExpiredMeetNotifications, 60 * 60 * 1000);
+
+
+
 
