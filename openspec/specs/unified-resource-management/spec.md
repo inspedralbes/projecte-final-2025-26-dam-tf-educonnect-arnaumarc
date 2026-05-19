@@ -36,8 +36,8 @@ La interfaz de gestión de recursos SHALL presentar etiquetas y controles con or
 - **THEN** todas las etiquetas de los campos (ej. "Título", "Descripción") deben mostrarse con las tildes correctas y sin caracteres extraños.
 
 ### Requirement: Enhanced Resource Notification Metadata
-El sistema SHALL incluir obligatoriamente el `courseId` y el `type` de recurso en los metadatos de la notificación generada al crear un nuevo recurso.
+El sistema SHALL incluir obligatoriamente el `courseId`, el `type` y el `senderModel` en los metadatos de la notificación generada al crear un nuevo recurso o aviso.
 
-#### Scenario: Notifying new material
-- **WHEN** un profesor publica un nuevo material en una asignatura
-- **THEN** el sistema debe emitir una notificación que contenga en su campo `meta` el ID de la asignatura y el tipo `MATERIAL`, permitiendo así su agrupación posterior en el Tablón.
+#### Scenario: Notifying new material vs institutional notice
+- **WHEN** se genera una notificación
+- **THEN** el sistema debe poblar el campo `senderModel` con 'Professor' para avisos académicos o 'System'/'Admin' para institucionales, permitiendo al Tablón distinguir entre "Avisos de Clase" y "Avisos de la Escuela".

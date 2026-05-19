@@ -73,6 +73,10 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         const isProfessorAdvisory = item.type === 'PROFESSOR_ADVISORY';
         const isMeetEvent = item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE';
         
+        // Exclude messages sent by the current user to avoid self-notifications/activity
+        const itemSenderId = typeof item.sender === 'string' ? item.sender : item.sender?._id;
+        if (itemSenderId === user?._id) return false;
+
         return isPersonalType || isPrivateMessage || isProfessorAdvisory || isMeetEvent || (!item.courseId && item.source === 'message');
       });
     } else if (activeTab === 'clase') {
