@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
 import { RichTextEditor } from '../components/RichTextEditor';
+import { CourseCoverEditorModal } from '../components/CourseCoverEditorModal';
 import { SubmissionTracker } from '../components/SubmissionTracker';
 import { useSocket } from '../src/context/SocketContext';
 import {
@@ -21,6 +22,9 @@ interface CourseDetailsViewProps {
 export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: initialCourse, userRole, user, onBack }) => {
     const [course, setCourse] = useState(initialCourse);
     const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
     const [activeTab, setActiveTab] = useState<'info' | 'students' | 'resources'>('info');
     const [students, setStudents] = useState<any[]>([]);
 
@@ -30,6 +34,8 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [messageContent, setMessageContent] = useState('');
 
     const [loadingStudents, setLoadingStudents] = useState(false);
+
+    const [isCoverEditorOpen, setIsCoverEditorOpen] = useState(false);
 
     // Invite students (teachers only)
     const [isInviteStudentModalOpen, setIsInviteStudentModalOpen] = useState(false);
@@ -95,6 +101,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const fetchSubmissions = async () => {
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/submissions/course/${courseId}`);
             const data = await response.json();
             if (Array.isArray(data)) {
@@ -112,6 +121,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
         socket.on('submission_updated', (data: any) => {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             if (String(data.courseId) === String(courseId)) {
                 // Actualizar la lista de entregas localmente
                 setSubmissions(prev => {
@@ -129,11 +141,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         };
     }, [socket, course]);
 
-    const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+    const DAYS = ['Lunes', 'Martes', 'MiÃ©rcoles', 'Jueves', 'Viernes'];
 
     const fetchTopics = async () => {
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/topics`);
             const data = await response.json();
             if (Array.isArray(data)) {
@@ -150,6 +165,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const fetchEvents = async () => {
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/events`);
             const data = await response.json();
             if (Array.isArray(data)) {
@@ -184,6 +202,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const fetchCourseSchedule = async () => {
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             setLoadingSchedule(true);
             const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/schedule`);
             const data = await response.json();
@@ -197,6 +218,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         } catch (error) {
             console.error('Error fetching schedule:', error);
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const mockData = MOCK_SCHEDULE.filter(s => String(s.courseId) === String(courseId));
             setCourseSchedule(mockData);
         } finally {
@@ -249,7 +273,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
     const handleUnenroll = async () => {
         if (!user?._id) return;
-        if (!window.confirm(`¿Estás seguro de que quieres desapuntarte de ${course.title}?`)) {
+        if (!window.confirm(`Â¿EstÃ¡s seguro de que quieres desapuntarte de ${course.title}?`)) {
             return;
         }
 
@@ -275,6 +299,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
     const fetchAvailableStudents = async () => {
         const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
         if (!courseId) return;
 
         setLoadingAvailableStudents(true);
@@ -293,6 +320,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
     const handleInviteStudent = async (studentId: string) => {
         const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
         const professorId = user?._id || (user as any)?.id;
         if (!courseId || !professorId) return;
 
@@ -313,7 +343,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             // Invitation is pending: do NOT enroll the student here.
             setAvailableStudents(prev => prev.filter(s => String(s._id || s.id) !== String(studentId)));
-            setInviteStatus({ type: 'success', message: data?.message || 'Invitación enviada' });
+            setInviteStatus({ type: 'success', message: data?.message || 'InvitaciÃ³n enviada' });
         } catch (error) {
             console.error('Error inviting student:', error);
             setInviteStatus({ type: 'error', message: 'Error invitando alumno' });
@@ -326,6 +356,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         e.preventDefault();
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/topics`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -366,9 +399,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         e.preventDefault();
         if (!selectedTopicId) return;
 
-        // Validación: al menos un campo debe tener contenido
+        // ValidaciÃ³n: al menos un campo debe tener contenido
         if (!newResource.title && !newResource.content && !newResource.link && !newResource.url) {
-            alert('Por favor, rellena al menos un campo (título, descripción, enlace o archivo).');
+            alert('Por favor, rellena al menos un campo (tÃ­tulo, descripciÃ³n, enlace o archivo).');
             return;
         }
 
@@ -406,6 +439,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         e.preventDefault();
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -451,7 +487,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         if (e) e.preventDefault();
         if (!selectedActivity) return;
 
-        // Tarea 6.4: Verificar si ya existe entrega para pedir confirmación
+        // Tarea 6.4: Verificar si ya existe entrega para pedir confirmaciÃ³n
         const existing = getSubmissionForActivity(selectedActivity.id);
         if (existing && !showConfirmOverwrite) {
             setShowConfirmOverwrite(true);
@@ -461,6 +497,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         setIsSubmitting(true);
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const formData = new FormData();
             formData.append('studentId', user?._id || user?.id || '');
             formData.append('activityId', selectedActivity.id);
@@ -495,7 +534,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteTopic = async (topicId: string) => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
+        if (!window.confirm('Â¿EstÃ¡s seguro de que quieres eliminar este tema y todos sus recursos?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -505,7 +544,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteResource = async (topicId: string, resourceId: string) => {
-        if (!resourceId || !window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) return;
+        if (!resourceId || !window.confirm('Â¿EstÃ¡s seguro de que quieres eliminar este recurso?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -515,7 +554,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteEvent = async (eventId: string) => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar este hito de la agenda? Esta acción es definitiva.')) return;
+        if (!window.confirm('Â¿EstÃ¡s seguro de que quieres eliminar este hito de la agenda? Esta acciÃ³n es definitiva.')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
             if (response.ok) fetchEvents();
@@ -571,6 +610,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
         try {
             const courseId = course._id || course.id;
+    const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
+    const currentUserId = (user?._id || (user as any)?.id)?.toString();
+    const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
             const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}/notify-all`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -583,7 +625,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             const data = await response.json();
             if (response.ok && data.success) {
-                setNotifyStatus({ type: 'success', message: data.message || 'Notificación enviada correctamente.' });
+                setNotifyStatus({ type: 'success', message: data.message || 'NotificaciÃ³n enviada correctamente.' });
                 setTimeout(() => {
                     setIsNotifyClassModalOpen(false);
                     setNotifyTitle('');
@@ -591,10 +633,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     setNotifyStatus(null);
                 }, 2000);
             } else {
-                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificación.' });
+                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificaciÃ³n.' });
             }
         } catch (error) {
-            setNotifyStatus({ type: 'error', message: 'Error de conexión del servidor.' });
+            setNotifyStatus({ type: 'error', message: 'Error de conexiÃ³n del servidor.' });
         } finally {
             setIsSubmittingNotify(false);
         }
@@ -627,6 +669,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             {/* Header */}
             <div className="relative h-64 w-full overflow-hidden rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none group mb-8 border border-gray-200 dark:border-zinc-800">
+                {isCourseOwnerTeacher && (
+                    <button
+                        onClick={() => setIsCoverEditorOpen(true)}
+                        className="absolute top-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-gray-900 border border-white/40 shadow-md backdrop-blur-md transition-colors font-bold"
+                        title="Cambiar portada"
+                    >
+                        <Pencil size={16} />
+                        Cambiar portada
+                    </button>
+                )}
                 <img src={course.image} alt={course.title} className="w-full h-full object-cover filter brightness-50 group-hover:brightness-75 transition-all duration-700 scale-100 group-hover:scale-105" />
                 <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-2 drop-shadow-lg">
@@ -638,6 +690,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             </div>
 
+            <CourseCoverEditorModal
+                open={isCoverEditorOpen}
+                onClose={() => setIsCoverEditorOpen(false)}
+                apiBaseUrl={API_BASE_URL}
+                courseId={courseId}
+                professorId={currentUserId || ''}
+                currentImage={course.image}
+                onUpdated={(updatedCourse) => setCourse((prev: any) => ({ ...prev, ...updatedCourse }))}
+            />
+
             {/* Navigation Tabs */}
             <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 rounded-t-3xl overflow-hidden">
                 <button
@@ -646,7 +708,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             ${activeTab === 'info' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
                     <FileText size={18} className={activeTab === 'info' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                    Información
+                    InformaciÃ³n
                     {activeTab === 'info' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
                 <button
@@ -677,7 +739,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <FileText className="text-blue-500" size={24} />
-                                Descripción del Curso
+                                DescripciÃ³n del Curso
                             </h2>
                             <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-4xl">
                                 {course.description}
@@ -741,12 +803,12 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <BookOpen className="text-blue-500" size={18} />
-                                    Información del Docente
+                                    InformaciÃ³n del Docente
                                 </h3>
                                 <div className="space-y-2">
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                         <span className="font-bold text-gray-900 dark:text-white mr-2">Especialidad:</span>
-                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en Educación'}
+                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en EducaciÃ³n'}
                                     </p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                         <span className="font-bold text-gray-900 dark:text-white mr-2">Contacto:</span>
@@ -770,15 +832,15 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Calendar className="text-indigo-500" size={18} />
-                                    Carga Académica
+                                    Carga AcadÃ©mica
                                 </h3>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between bg-white dark:bg-zinc-800 p-3 rounded-xl border border-indigo-50 dark:border-zinc-700">
-                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Dedicación Semanal</span>
+                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">DedicaciÃ³n Semanal</span>
                                         <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{course.totalWeeklyHours || 4}h</span>
                                     </div>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autónomo.
+                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autÃ³nomo.
                                     </p>
                                 </div>
                             </div>
@@ -857,7 +919,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <BookOpen className="text-blue-500" size={24} />
-                                Planificación Temática
+                                PlanificaciÃ³n TemÃ¡tica
                             </h2>
                             {userRole === 'TEACHER' && (
                                 <div className="flex gap-2">
@@ -866,13 +928,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                                     >
                                         <Plus size={18} />
-                                        Añadir Tema
+                                        AÃ±adir Tema
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Eventos sin clasificar (Migración/Generales) */}
+                        {/* Eventos sin clasificar (MigraciÃ³n/Generales) */}
                 {getUnassignedEvents().length > 0 && (
                     <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
                         <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -961,14 +1023,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                         <button
                                                             onClick={() => { setSelectedTopicId(topic._id); setShowAddResourceModal(true); }}
                                                             className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all"
-                                                            title="Añadir recurso"
+                                                            title="AÃ±adir recurso"
                                                         >
                                                             <Plus size={20} />
                                                         </button>
                                                         <button
                                                             onClick={() => { setNewEvent({ ...newEvent, topicId: topic._id }); setShowAddEventModal(true); }}
                                                             className="p-2 text-pink-600 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-xl transition-all"
-                                                            title="Añadir hito (Examen/Entrega)"
+                                                            title="AÃ±adir hito (Examen/Entrega)"
                                                         >
                                                             <Calendar size={20} />
                                                         </button>
@@ -994,7 +1056,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         {expandedTopics[topic._id] && (
                                             <div className="p-6 space-y-8 bg-white dark:bg-zinc-900/20 border-t border-gray-100 dark:border-zinc-800">
                                                 
-                                                {/* Sección de Recursos del Tema */}
+                                                {/* SecciÃ³n de Recursos del Tema */}
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <FileText size={14} />
@@ -1014,7 +1076,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                 <div className="min-w-0 flex-1">
                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                         <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">
-                                                                                            {resource.title || 'Recurso sin título'}
+                                                                                            {resource.title || 'Recurso sin tÃ­tulo'}
                                                                                         </h4>
                                                                                         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase ${resource.type === 'task' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
                                                                                             {resource.type === 'task' ? 'Tarea' : 'Material'}
@@ -1131,11 +1193,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                     </div>
                                                 </div>
 
-                                                {/* Sección de Hitos (Agenda) del Tema */}
+                                                {/* SecciÃ³n de Hitos (Agenda) del Tema */}
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <Calendar size={14} />
-                                                        Hitos y Evaluación
+                                                        Hitos y EvaluaciÃ³n
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {getTopicEvents(topic._id).length > 0 ? (
@@ -1267,7 +1329,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             {/* Modals */}
 
-            {/* Modal Añadir Tema */}
+            {/* Modal AÃ±adir Tema */}
             {showAddTopicModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1278,23 +1340,23 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             </h2>
                             <form onSubmit={handleCreateTopic} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título del Tema</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo del Tema</label>
                                     <input
                                         type="text"
                                         required
                                         value={newTopicTitle}
                                         onChange={(e) => setNewTopicTitle(e.target.value)}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                                        placeholder="Ej: Tema 1: Introducción a la algoritmia"
+                                        placeholder="Ej: Tema 1: IntroducciÃ³n a la algoritmia"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción (Opcional)</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">DescripciÃ³n (Opcional)</label>
                                     <textarea
                                         value={newTopicDesc}
                                         onChange={(e) => setNewTopicDesc(e.target.value)}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-24 resize-none outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                                        placeholder="Breve resumen de lo que se verá en este bloque..."
+                                        placeholder="Breve resumen de lo que se verÃ¡ en este bloque..."
                                     ></textarea>
                                 </div>
                                 <div className="flex gap-4">
@@ -1318,7 +1380,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Añadir Recurso */}
+            {/* Modal AÃ±adir Recurso */}
             {showAddResourceModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1335,7 +1397,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'material' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <BookOpen className={newResource.type === 'material' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Material / Teoría</span>
+                                        <span className="text-xs font-bold uppercase">Material / TeorÃ­a</span>
                                     </button>
                                     <button
                                         type="button"
@@ -1349,22 +1411,22 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título (Opcional)</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo (Opcional)</label>
                                         <input
                                             type="text"
                                             value={newResource.title}
                                             onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Ej: Introducción a los bucles"
+                                            placeholder="Ej: IntroducciÃ³n a los bucles"
                                         />
                                     </div>
                                     
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Detalles</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">DescripciÃ³n / Detalles</label>
                                         <RichTextEditor
                                             content={newResource.content}
                                             onChange={(html) => setNewResource({ ...newResource, content: html })}
-                                            placeholder="Instrucciones o apuntes rápidos..."
+                                            placeholder="Instrucciones o apuntes rÃ¡pidos..."
                                         />
                                     </div>
 
@@ -1395,7 +1457,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                     <Clock size={14} className="text-pink-500" />
-                                                    Configuración de Entrega
+                                                    ConfiguraciÃ³n de Entrega
                                                 </label>
                                                 <div className="grid grid-cols-3 gap-3">
                                                     <button
@@ -1425,7 +1487,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                     <Clock size={14} className="text-pink-500" />
-                                                    Fecha Límite de Entrega (Opcional)
+                                                    Fecha LÃ­mite de Entrega (Opcional)
                                                 </label>
                                                 <input
                                                     type="date"
@@ -1473,14 +1535,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             </p>
                             <form onSubmit={handleSendMessage} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Título</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">TÃ­tulo</label>
                                     <input
                                         type="text"
                                         required
                                         value={messageTitle}
                                         onChange={(e) => setMessageTitle(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe un título..."
+                                        placeholder="Escribe un tÃ­tulo..."
                                     />
                                 </div>
                                 <div>
@@ -1490,7 +1552,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={messageContent}
                                         onChange={(e) => setMessageContent(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe tu mensaje aquí..."
+                                        placeholder="Escribe tu mensaje aquÃ­..."
                                     ></textarea>
                                 </div>
                                 <div className="flex gap-3 pt-2">
@@ -1526,7 +1588,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         Invitar nuevo Alumno
                                     </h2>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Solo aparecen alumnos que no están inscritos en esta asignatura.
+                                        Solo aparecen alumnos que no estÃ¡n inscritos en esta asignatura.
                                     </p>
                                 </div>
                                 <button
@@ -1602,7 +1664,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     <div className="py-14 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/20">
                                         <Users size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
                                         <p className="text-gray-700 dark:text-gray-200 font-semibold">No hay alumnos disponibles para invitar.</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Todos los alumnos ya están inscritos o no hay alumnos en la base de datos.</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Todos los alumnos ya estÃ¡n inscritos o no hay alumnos en la base de datos.</p>
                                     </div>
                                 )}
                             </div>
@@ -1611,14 +1673,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal de Notificación Masiva */}
+            {/* Modal de NotificaciÃ³n Masiva */}
             {isNotifyClassModalOpen && (
                 <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <Send size={24} className="text-blue-600 dark:text-blue-400" />
-                                Nueva notificación a la clase
+                                Nueva notificaciÃ³n a la clase
                             </h2>
                             <button
                                 onClick={() => setIsNotifyClassModalOpen(false)}
@@ -1650,7 +1712,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    Título
+                                    TÃ­tulo
                                 </label>
                                 <input
                                     type="text"
@@ -1669,7 +1731,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <RichTextEditor
                                     content={notifyContent}
                                     onChange={(html) => setNotifyContent(html)}
-                                    placeholder="Escribe el mensaje para toda la clase aquí..."
+                                    placeholder="Escribe el mensaje para toda la clase aquÃ­..."
                                 />
                             </div>
 
@@ -1697,7 +1759,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Añadir Evento de Agenda */}
+            {/* Modal AÃ±adir Evento de Agenda */}
             {showAddEventModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1731,7 +1793,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
                                             <option value="digital">Digital</option>
-                                            <option value="paper">Papel / Físico</option>
+                                            <option value="paper">Papel / FÃ­sico</option>
                                         </select>
                                     </div>
 
@@ -1739,7 +1801,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <div className="col-span-2">
                                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                 <Clock size={14} className="text-pink-500" />
-                                                Configuración de Entrega
+                                                ConfiguraciÃ³n de Entrega
                                             </label>
                                             <div className="grid grid-cols-3 gap-3">
                                                 <button
@@ -1768,14 +1830,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     )}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">TÃ­tulo</label>
                                     <input
                                         type="text"
                                         required
                                         value={newEvent.title}
                                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                                        placeholder="Ej: Entrega Práctica Temas 1 y 2"
+                                        placeholder="Ej: Entrega PrÃ¡ctica Temas 1 y 2"
                                     />
                                 </div>
                                 <div>
@@ -1789,7 +1851,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Descripción / Instrucciones</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">DescripciÃ³n / Instrucciones</label>
                                     <RichTextEditor
                                         content={newEvent.description}
                                         onChange={(html) => setNewEvent({ ...newEvent, description: html })}
@@ -1860,13 +1922,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                                 {selectedActivity.submissionType === 'comment' && (
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Comentario de Confirmación</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Comentario de ConfirmaciÃ³n</label>
                                         <textarea
                                             required
                                             value={submissionContent}
                                             onChange={(e) => setSubmissionContent(e.target.value)}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Escribe aquí tu respuesta o confirmación..."
+                                            placeholder="Escribe aquÃ­ tu respuesta o confirmaciÃ³n..."
                                         ></textarea>
                                     </div>
                                 )}
@@ -1874,7 +1936,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 {selectedActivity.submissionType === 'done' && (
                                     <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                                         <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                                            Esta actividad solo requiere que confirmes que la has completado. Pulsa el botón de abajo para finalizar.
+                                            Esta actividad solo requiere que confirmes que la has completado. Pulsa el botÃ³n de abajo para finalizar.
                                         </p>
                                     </div>
                                 )}
@@ -1901,7 +1963,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal de Confirmación de Re-entrega */}
+            {/* Modal de ConfirmaciÃ³n de Re-entrega */}
             {showConfirmOverwrite && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
@@ -1909,16 +1971,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">¿Sobrescribir Entrega?</h2>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Â¿Sobrescribir Entrega?</h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                                Ya has realizado una entrega para esta actividad. Al enviar una nueva, la anterior será reemplazada permanentemente.
+                                Ya has realizado una entrega para esta actividad. Al enviar una nueva, la anterior serÃ¡ reemplazada permanentemente.
                             </p>
                             <div className="flex flex-col gap-3">
                                 <button
                                     onClick={() => handleSubmission()}
                                     className="w-full py-4 font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-2xl shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-1"
                                 >
-                                    SÍ, SOBRESCRIBIR
+                                    SÃ, SOBRESCRIBIR
                                 </button>
                                 <button
                                     onClick={() => setShowConfirmOverwrite(false)}
@@ -1934,3 +1996,5 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         </div>
     );
 };
+
+
