@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
-
-import { API_BASE_URL } from '../config';
+import { getApiCandidates } from '../config';
 
 interface LoginProps {
   onLogin: (userData: any) => void;
@@ -11,8 +10,6 @@ interface LoginProps {
 export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,20 +19,42 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login`, { // /api
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const candidates = getApiCandidates();
+      let lastError: unknown = null;
+      let handled = false;
 
-      const data = await response.json();
+      for (const baseUrl of candidates) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 8000);
 
-      if (data.success) {
-        onLogin({ ...data.user, type: data.type });
-      } else {
-        setError(data.message || 'Email o contraseña incorrectos');
+        try {
+          const response = await fetch(`${baseUrl}/api/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            signal: controller.signal,
+          });
+
+          const data = await response.json();
+          handled = true;
+
+          if (data.success) {
+            onLogin({ ...data.user, type: data.type });
+          } else {
+            setError(data.message || 'Email o contraseña incorrectos');
+          }
+          break;
+        } catch (requestError) {
+          lastError = requestError;
+        } finally {
+          window.clearTimeout(timeout);
+        }
+      }
+
+      if (!handled) {
+        throw lastError || new Error('No backend candidate responded');
       }
     } catch (err) {
       setError('Error al conectar con el servidor');
@@ -48,7 +67,6 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 border-8 border-black p-4">
       <div className="bg-white p-8 border-2 border-black w-full max-w-md shadow-lg">
-        {/* Logo Simulation */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center space-x-2 mb-2">
             <div className="flex space-x-1">
@@ -99,8 +117,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
           <button
             type="submit"
             className="w-full bg-black text-white p-3 font-bold hover:bg-gray-800 transition-colors"
+            disabled={loading}
           >
-            ENTRAR
+            {loading ? 'CARGANDO...' : 'ENTRAR'}
           </button>
         </form>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_BASE_URL } from '../config';
+import { getApiCandidates } from '../config';
 
 interface RegisterProps {
     onRegisterSuccess: () => void;
@@ -33,23 +33,45 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+            const candidates = getApiCandidates();
+            let lastError: unknown = null;
+            let handled = false;
 
-            const data = await response.json();
+            for (const baseUrl of candidates) {
+                const controller = new AbortController();
+                const timeout = window.setTimeout(() => controller.abort(), 8000);
 
-            if (data.success) {
-                setSuccess('¡Registro completado! Redirigiendo al login...');
-                setTimeout(() => {
-                    onNavigateToLogin();
-                }, 2000);
-            } else {
-                setError(data.message || 'Error en el registro');
+                try {
+                    const response = await fetch(`${baseUrl}/api/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData),
+                        signal: controller.signal,
+                    });
+
+                    const data = await response.json();
+                    handled = true;
+
+                    if (data.success) {
+                        setSuccess('¡Registro completado! Redirigiendo al login...');
+                        setTimeout(() => {
+                            onNavigateToLogin();
+                        }, 2000);
+                    } else {
+                        setError(data.message || 'Error en el registro');
+                    }
+                    break;
+                } catch (requestError) {
+                    lastError = requestError;
+                } finally {
+                    window.clearTimeout(timeout);
+                }
+            }
+
+            if (!handled) {
+                throw lastError || new Error('No backend candidate responded');
             }
         } catch (err) {
             setError('Error al conectar con el servidor');
@@ -62,7 +84,6 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 border-8 border-black p-4">
             <div className="bg-white p-8 border-2 border-black w-full max-w-md shadow-lg">
-                {/* Logo Simulation */}
                 <div className="flex flex-col items-center mb-8">
                     <div className="flex items-center space-x-2 mb-2">
                         <div className="flex space-x-1">

@@ -22,17 +22,23 @@ const Notification = require('./models/Notification');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: '*', // Adjust to your frontend URL in production
-        methods: ['GET', 'POST']
-    }
-});
 const port = process.env.PORT || 3005;
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:3006')
+const defaultAllowedOrigins = 'https://projecteeduconnect.cat,http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:3006';
+const originsFromEnv = process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || defaultAllowedOrigins;
+const allowedOrigins = originsFromEnv
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
+
+const normalizeOrigin = (origin) => {
+    try {
+        return new URL(origin).origin;
+    } catch {
+        return origin;
+    }
+};
+
+const allowedOriginsSet = new Set(allowedOrigins.map(normalizeOrigin));
 
 const isDevOriginAllowed = (origin) => {
     if (!origin) return true;
@@ -42,6 +48,26 @@ const isDevOriginAllowed = (origin) => {
     }
     return false;
 };
+
+const isOriginAllowed = (origin) => {
+    if (!origin) return true;
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (allowedOriginsSet.has('*')) return true;
+    if (allowedOriginsSet.has(normalizedOrigin)) return true;
+    if (isDevOriginAllowed(normalizedOrigin)) return true;
+    return false;
+};
+
+const io = new Server(server, {
+    cors: {
+        origin: (origin, callback) => {
+            if (isOriginAllowed(origin)) return callback(null, true);
+            return callback(new Error(`CORS blocked for socket origin: ${origin}`));
+        },
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
 
 // Map to keep track of connected users (userId -> socketId)
 const connectedUsers = new Map();
@@ -169,11 +195,8 @@ io.on('connection', (socket) => {
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes('*')) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        if (isDevOriginAllowed(origin)) return callback(null, true);
-        return callback(null, false);
+        if (isOriginAllowed(origin)) return callback(null, true);
+        return callback(new Error(`CORS blocked for HTTP origin: ${origin}`));
     },
     credentials: true
 }));

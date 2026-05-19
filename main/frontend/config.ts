@@ -19,3 +19,24 @@ export const getApiUrl = () => {
 };
 
 export const API_BASE_URL = getApiUrl();
+
+const withPort = (host: string, port: number) => `http://${host}:${port}`;
+
+export const getApiCandidates = () => {
+    if (import.meta.env.PROD) {
+        return [API_BASE_URL];
+    }
+
+    const host = window.location.hostname;
+    const candidates = [
+        API_BASE_URL,
+        withPort(host, 3005),
+        withPort(host, 3001),
+        withPort('localhost', 3005),
+        withPort('127.0.0.1', 3005),
+        withPort('localhost', 3001),
+        withPort('127.0.0.1', 3001),
+    ];
+
+    return [...new Set(candidates.map((url) => String(url).replace(/\/$/, '')))];
+};

@@ -5,8 +5,8 @@
 
 ## CORS (producció)
 - Per defecte (NODE_ENV=production) només s’accepta l’origen `https://projecteeduconnect.cat`.
-- Per permetre més orígens, defineix `CORS_ORIGINS` (separat per comes), per exemple:
-  - `CORS_ORIGINS=https://projecteeduconnect.cat,http://localhost:3000`
+- Per permetre més orígens, defineix `ALLOWED_ORIGINS` (o `CORS_ORIGINS` per compatibilitat), separat per comes, per exemple:
+  - `ALLOWED_ORIGINS=https://projecteeduconnect.cat,http://localhost:3000`
 
 ## Desplegament (SSH)
 1. Copia el projecte al servidor.
