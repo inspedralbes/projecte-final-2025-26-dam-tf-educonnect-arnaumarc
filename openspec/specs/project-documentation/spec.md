@@ -19,7 +19,7 @@ The documentation SHALL include an activity diagram specifically for the real-ti
 
 #### Scenario: Trace notification logic
 - **WHEN** the user follows the activity diagram for notifications
-- **THEN** they can clearly identify the path from the sender's action to the final delivery on Web, Mobile, and Discord.
+- **THEN** they can clearly identify the path from the sender's action to the final delivery on Web and Discord.
 
 ### Requirement: Screen Flow Documentation
 The documentation SHALL include a diagram showing the navigation flow between the main application screens for both Alumno and Professor roles.

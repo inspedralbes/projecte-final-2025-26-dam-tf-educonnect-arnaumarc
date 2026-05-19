@@ -1,4 +1,4 @@
-﻿# Guia d’instal·lació i desplegament: EduConnect
+# Guia d’instal·lació i desplegament: EduConnect
 
 Aquesta guia detalla com instal·lar i executar els mòduls del projecte EduConnect en desenvolupament i en producció amb domini.
 
@@ -7,7 +7,6 @@ Aquesta guia detalla com instal·lar i executar els mòduls del projecte EduConn
 - npm
 - Docker + Docker Compose (recomanat per producció)
 - MongoDB (si no uses Docker)
-- Expo Go / EAS (si vols provar o compilar l’app mòbil)
 
 ---
 
@@ -36,9 +35,6 @@ npm run install-all
 - Frontend (web):
   - `cd main/frontend && npm run dev`
 
-- Mobile (Expo):
-  - `cd main/expo-mobile && npx expo start`
-
 ---
 
 ## 3) Producció amb domini `https://projecteeduconnect.cat`
@@ -55,9 +51,6 @@ npm run install-all
 ### Variables d’entorn (backend)
 - `NODE_ENV=production`
 - Opcional: `CORS_ORIGINS=https://projecteeduconnect.cat`
-
-### Variables d’entorn (Expo)
-- `EXPO_PUBLIC_API_BASE_URL=https://projecteeduconnect.cat`
 
 ---
 

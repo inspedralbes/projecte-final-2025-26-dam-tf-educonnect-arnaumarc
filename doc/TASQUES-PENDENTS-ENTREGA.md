@@ -1,6 +1,6 @@
 # Tasques pendents (entrega) — EduConnect
 
-Basat en l’estat actual del repositori i els requisits A–J, aquestes són les tasques que (probablement) falten o estan a mig fer.
+Basat en l’estat actual del repositori i els requisits A–J, aquestes són les tasques que (probablemente) falten o estan a mig fer.
 
 ## Prioritat 0 — Requisits mínims a `doc/` (fitxers finals)
 
@@ -23,10 +23,10 @@ Basat en l’estat actual del repositori i els requisits A–J, aquestes són le
 
 Font actual: `doc/A-Resum/resum.md` (té diversos TODO).
 
-- [ ] Diapo 1: completar frase descriptiva, curs/cicle, i afegir logo escola.
+- [ ] Diapo 1: completar frase descriptiva, curs/cicle, i afegir logo escuela.
 - [ ] Diapo 2: afegir **captura significativa** del projecte.
 - [ ] Diapo 3: escriure **abstract** (màx. 10 línies).
-- [ ] Diapo 4: afegir **logos tecnologies** (web, mòbil, backend, BD, discord, etc.).
+- [ ] Diapo 4: afegir **logos tecnologies** (web, backend, BD, discord, etc.).
 - [ ] Afegir 4–8 captures d’ús de l’app (flux principal) amb peu de foto.
 - [ ] Generar el PDF final i substituir `doc/resum_2425_EduConnect.pdf`.
 
@@ -44,7 +44,7 @@ Ja existeix i té contingut, però cal revisió de qualitat.
 Hi ha fitxers: `Screen-Flow.md`, `ER-Diagram.md`, `Class-Diagram.md`, `Activity-Diagram.md`.
 
 - [ ] Corregir encoding a UTF-8 en els documents.
-- [ ] Verificar que el **flux de pantalles** cobreix tot el recorregut i coincideix amb l’app real.
+- [ ] Verificar que el **flux de pantalles** cobreix tot el recorregut i coincideix amb la web real.
 - [ ] Verificar que els diagrames (UML/E-R) són **coherents amb el codi** actual (models, relacions, endpoints, etc.).
 - [ ] (Opcional) Exportar diagrames a imatge/PDF si el tribunal no renderitza Mermaid.
 
@@ -53,11 +53,10 @@ Hi ha fitxers: `Screen-Flow.md`, `ER-Diagram.md`, `Class-Diagram.md`, `Activity-
 Hi ha guia: `doc/D-CodiFont/INSTALL.md` i el codi a `main/`.
 
 - [ ] Verificar que `doc/D-CodiFont/INSTALL.md` permet muntar el projecte des de zero (dev i prod).
-- [ ] Afegir `*.env.example` (si no existeix) per backend/frontend/mobile/bot i documentar-lo.
+- [ ] Afegir `*.env.example` (si no existeix) per backend/frontend/bot i documentar-lo.
 - [ ] Documentar instal·ladors/compilació:
   - [ ] Web (build + deploy)
   - [ ] Backend (docker-compose/pm2/etc.)
-  - [ ] Mobile (EAS build / APK / instal·lació)
   - [ ] Bot (execució i permisos)
 - [ ] Revisar que el repo conté tot el necessari per desplegar (scripts, Caddyfile, etc.) i que està referenciat.
 
@@ -66,12 +65,11 @@ Hi ha guia: `doc/D-CodiFont/INSTALL.md` i el codi a `main/`.
 Actualment conté molts TODO.
 
 - [ ] Completar “Configuració (env)” (BD, secrets, ports, variables).
-- [ ] Escriure l’**arquitectura** (auth/rols, realtime socket.io, notificacions omnicanal).
+- [ ] Escriure l’**arquitectura** (auth/rols, realtime socket.io, notificacions omnicanal Discord + Web).
 - [ ] Documentar l’API: endpoints clau + exemples request/response.
 - [ ] Indicar “on tocar codi primer”: fitxers d’entrada reals per:
   - [ ] backend
   - [ ] frontend
-  - [ ] mobile
   - [ ] bot
 - [ ] (Si és possible) Generar docs automàtiques (Swagger/OpenAPI, etc.) i enllaçar-les des d’aquí i des del `README.md` arrel.
 
@@ -80,17 +78,17 @@ Actualment conté molts TODO.
 Font actual: `doc/F-Comercial/comercial.md` (quasi tot és TODO).
 
 - [ ] Definir objectius i abast (incloent “fora d’abast”).
-- [ ] Llistar funcionalitats (per rol/plataforma) amb captures.
+- [ ] Llistar funcionalitats (per rol/plataforma Web + Bot) amb captures.
 - [ ] Estudi de competència (alternatives i comparativa).
 - [ ] Costos/requeriments: mà d’obra, infra, manteniment, costos inicials.
-- [ ] Roadmap i proposta de valor.
+- [ ] Roadmap i propuesta de valor.
 - [ ] Generar el PDF final i substituir `doc/comercial_2425_EduConnect.pdf`.
 
 ## G — Demo (vídeo) (`demo_2425_EduConnect.mp4`)
 
 Guia: `doc/G-Demo/README.md`.
 
-- [ ] Gravar demo completa (login → dashboard → horaris → recursos → notificacions → discord → mòbil).
+- [ ] Gravar demo completa (login → dashboard → horaris → recursos → notificacions → discord → responsivitat web).
 - [ ] Verificar àudio/qualitat i que s’entén sense context.
 - [ ] Exportar a MP4 i substituir `doc/demo_2425_EduConnect.mp4`.
 
@@ -109,7 +107,7 @@ Té contingut, però cal revisió de qualitat.
 
 - [ ] Corregir encoding a UTF-8 (actualment es veu “AcadÃ¨mica”, etc.).
 - [ ] Afegir captures reals (pas a pas) i rutes exactes de navegació.
-- [ ] Separar instruccions per rol (alumne/professor) i per plataforma (web/mòbil).
+- [ ] Separar instruccions per rol (alumne/professor) i explicar la responsivitat per a l'ús des de dispositius mòbils.
 - [ ] Afegir secció de FAQ i resolució de problemes comuns (login, notificacions, permisos, etc.).
 
 ## J — Pitch (1 minut) (`pitch_2425_EduConnect.mp4`)
@@ -128,4 +126,3 @@ Guia: `doc/J-Pitch/README.md`.
 - [ ] Vídeos: funcionen a VLC, sense dependències, i amb noms exactes.
 - [ ] No hi ha caràcters corruptes (encoding) a la documentació.
 - [ ] El `README.md` de l’arrel apunta correctament a la documentació tècnica (E) i a la guia d’instal·lació (D).
-

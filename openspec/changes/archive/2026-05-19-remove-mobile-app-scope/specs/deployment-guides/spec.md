@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Unified Deployment Manual
 The system SHALL provide a single, comprehensive `INSTALL.md` file that guides the user through the setup of all project modules.
@@ -13,10 +13,3 @@ The project SHALL include a root-level script (e.g., `setup.js` or `setup.sh`) t
 #### Scenario: Rapid environment preparation
 - **WHEN** the user runs the setup script from the root directory
 - **THEN** all dependencies for all modules (Backend, Frontend, Bot) are installed and any missing `.env` files are reported.
-
-### Requirement: Docker Deployment Guide
-The documentation SHALL specify how to use the existing Docker configuration for the backend and database.
-
-#### Scenario: Containerized deployment
-- **WHEN** the user runs `docker-compose up` following the guide
-- **THEN** the backend and MongoDB containers start correctly and are interconnected.

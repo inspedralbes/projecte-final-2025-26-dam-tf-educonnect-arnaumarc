@@ -1,11 +1,10 @@
-﻿# E — Documentació tècnica (punt d’entrada)
+# E — Documentació tècnica (punt d’entrada)
 
 Aquest document és el punt d’entrada per a qualsevol persona que vulgui entendre el projecte i ajudar-hi.
 
 ## 1) Estructura del repositori
 - `main/backend`: API i lògica de negoci (Node/Express)
 - `main/frontend`: aplicació web (React/Vite)
-- `main/expo-mobile`: aplicació mòbil (Expo)
 - `main/bot-discord`: bot (Discord.js)
 
 ## 2) Com començar (dev)
@@ -20,7 +19,7 @@ Aquest document és el punt d’entrada per a qualsevol persona que vulgui enten
 ## 4) Arquitectura (visió ràpida)
 - Autenticació i rols: (TODO)
 - Realtime (Socket.io): (TODO)
-- Notificacions omnicanal (Discord + app/web): (TODO)
+- Notificacions omnicanal (Discord + web): (TODO)
 
 ## 5) API
 - Endpoints principals: (TODO)
@@ -29,6 +28,5 @@ Aquest document és el punt d’entrada per a qualsevol persona que vulgui enten
 ## 6) On tocar codi primer
 - Backend: (TODO indicar el fitxer d’entrada)
 - Frontend: (TODO indicar el fitxer d’entrada)
-- Mobile: (TODO indicar el fitxer d’entrada)
 - Bot: (TODO indicar el fitxer d’entrada)
 

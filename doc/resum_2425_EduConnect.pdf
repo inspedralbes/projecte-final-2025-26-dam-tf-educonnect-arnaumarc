@@ -59,7 +59,7 @@ endobj
 << /Type /Page /Parent 12 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
 endobj
 8 0 obj
-<< /Length 204 >>
+<< /Length 177 >>
 stream
 BT
 /F1 28 Tf
@@ -71,7 +71,6 @@ BT
 72 484 Td
 (Backend: Node/Express/Mongo/Socket.io) Tj
 0 -22 Td (Frontend: React/Vite) Tj
-0 -22 Td (Mobile: Expo) Tj
 0 -22 Td (Bot: Discord.js) Tj
 ET
 endstream
@@ -114,13 +113,13 @@ xref
 0000000745 00000 n 
 0000000888 00000 n 
 0000001015 00000 n 
-0000001269 00000 n 
-0000001396 00000 n 
-0000001574 00000 n 
-0000001703 00000 n 
-0000001788 00000 n 
+0000001242 00000 n 
+0000001369 00000 n 
+0000001547 00000 n 
+0000001676 00000 n 
+0000001761 00000 n 
 trailer
 << /Size 14 /Root 13 0 R >>
 startxref
-1839
+1812
 %%EOF

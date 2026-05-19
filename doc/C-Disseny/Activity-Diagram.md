@@ -10,13 +10,11 @@ activityDiagram
     if (És vàlid?) then (sí)
         :Backend guarda notificació a DB;
         fork
-            :Emissió via Socket.io (Web/Mòbil);
+            :Emissió via Socket.io (Web);
             :Usuari rep Toast instantani;
         fork again
             :Notificació via Discord Bot;
             :Enviament missatge al canal de classe;
-        fork again
-            :Cua de notificacions per l'App mòbil;
         end fork
     else (no)
         :Retorna error 400;
@@ -34,10 +32,8 @@ graph TD
     B -- No --> C[Error 400]
     B -- Sí --> D[Guardar en MongoDB]
     D --> E[Sistema de Notificació Omnicanal]
-    E --> F[Socket.io: Toast Web/Mòbil]
+    E --> F[Socket.io: Toast Web]
     E --> G[Discord Bot: Missatge Canal]
-    E --> H[Mobile App: View Update]
     F --> I[Fi: Alumne informat]
     G --> I
-    H --> I
 ```

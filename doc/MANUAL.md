@@ -48,7 +48,7 @@ graph TD
 Sabem que portar l'horari al cap és impossible. Deixa que EduConnect ho faci per tu.
 
 ### El teu Calendari
-A la dreta de la pantalla tens el teu mapa mensual. Els punts vermells són els exàmens i els blaus són les activitats. Així pots veure de cop d'ull si la setmana serà relaxada o intensa.
+A la dreta de la pantalla tens el teu mapa mensual. Els punts vermells són els exàmens i los blaus són les activitats. Així pots veure de cop d'ull si la setmana serà relaxada o intensa.
 
 ### El teu Horari (Sense pèrdues)
 Has de canviar de classe i no saps on anar? Consulta l'horari setmanal. T'indicarà l'assignatura, l'aula exacta i el profe que t'espera. Tot actualitzat al minut.
@@ -60,7 +60,7 @@ Hola, profe! Hem dissenyat eines perquè la teva gestió sigui un passeig, no un
 
 *   **Schedule Editor**: Canviar una classe d'hora ara és tan fàcil com arrossegar un bloc de color.
 *   **Adéu a les col·lisions**: Si intentes posar dues classes a la mateixa hora o en una aula ocupada, el sistema et dirà "Eh, un moment!" abans que es creï un embolic. 
-*   **Notifica ràpid**: Vols avisar a tots els teus alumnes d'un canvi? Envia un avís des del teu dashboard i els arribarà al mòbil i al Discord al mateix segon.
+*   **Notifica ràpid**: Vols avisar a tots els teus alumnes d'un canvi? Envia un avís des del teu dashboard i els arribarà a la web i al Discord al mateix segon.
 
 ---
 
@@ -76,7 +76,7 @@ Oblida't de buscar apunts perduts per grups de WhatsApp. A la secció d'Asignatu
 ## 6. Més enllà de la plataforma: Meet i Discord
 EduConnect viu on tu vius.
 
-*   **Al teu mòbil**: Descarrega l'app (Expo) i rebràs notificacions push. Perfecte per quan el profe avisa que arriba 5 minuts tard!
+*   **Responsivitat**: Pots accedir des de qualsevol dispositiu. La web s'adapta al teu mòbil o tablet perquè tinguis tota la informació a la butxaca.
 *   **Discord**: Si et passes el dia a Discord, l'EduBot et parlarà per allà. Notificacions de classe directament al teu servidor preferit.
 *   **Videollamades (Meet)**: No busquis més enllaços a correus antics. Entra a l'assignatura, clica el botó de Meet i ja estàs a dins de la classe virtual. Fàcil, oi?
 

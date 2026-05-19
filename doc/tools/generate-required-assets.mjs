@@ -136,7 +136,7 @@ writePdf(`resum_2425_${projectName}.pdf`, {
     { heading: "EduConnect — Resum", lines: ["Integrants: Arnau Perera Ganuza, Marc Cara Montes", "Cicle/Curs: TODO", "Escola: TODO"] },
     { heading: "Captura significativa", lines: ["TODO: afegir captura real al PDF final"] },
     { heading: "Abstract (max 10 linies)", lines: ["TODO"] },
-    { heading: "Tecnologies", lines: ["Backend: Node/Express/Mongo/Socket.io", "Frontend: React/Vite", "Mobile: Expo", "Bot: Discord.js"] },
+    { heading: "Tecnologies", lines: ["Backend: Node/Express/Mongo/Socket.io", "Frontend: React/Vite", "Bot: Discord.js"] },
     { heading: "Us de l'aplicacio", lines: ["TODO: afegir captures i flux d'ús al PDF final"] },
   ],
 });
@@ -145,7 +145,7 @@ writePdf(`comercial_2425_${projectName}.pdf`, {
   title: "Comercial",
   pages: [
     { heading: "EduConnect — Presentacio comercial", lines: ["Objectius i abast: TODO"] },
-    { heading: "Funcionalitats", lines: ["Web", "Mobile", "Discord", "Temps real"] },
+    { heading: "Funcionalitats", lines: ["Web", "Discord", "Temps real"] },
     { heading: "Competencia", lines: ["TODO"] },
     { heading: "Costos i requeriments", lines: ["Infraestructura: TODO", "Manteniment: TODO"] },
   ],

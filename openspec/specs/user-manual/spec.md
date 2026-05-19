@@ -15,7 +15,7 @@ The manual MUST provide distinct sections or clear indicators for functionalitie
 - **THEN** they SHALL find a dedicated section explaining the Teacher Dashboard and schedule management tools.
 
 ### Requirement: Integration Documentation
-The manual SHALL document the interactions with external and cross-platform modules, including Discord, Meet, and the Mobile App.
+The manual SHALL document the interactions with external and cross-platform modules, including Discord and Meet.
 
 #### Scenario: Discord Bot usage
 - **WHEN** a user wants to understand how to receive notifications on Discord

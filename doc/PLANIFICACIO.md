@@ -104,7 +104,7 @@ Es van realitzar sessions de prova amb usuaris externs per validar la usabilitat
 | Tipus de Test | Freqüència | Descripció |
 | :--- | :--- | :--- |
 | **Unitari (Backend)** | Continu | Validació de rutes d'API i controladors amb dades reals. |
-| **Integració** | Final d'Sprint | Comprovació que el Frontend (React/Expo) rep les dades del Backend. |
+| **Integració** | Final d'Sprint | Comprovació que el Frontend (React) rep les dades del Backend. |
 | **Simulació de Rol** | Setmanal | Marc (Alumne) i Arnau (Professor) intercanvien rols de test. |
 | **Seguretat (Fail2Ban)** | Final | Proves d'accés no autoritzat per validar el bloqueig d'IPs. |
 
