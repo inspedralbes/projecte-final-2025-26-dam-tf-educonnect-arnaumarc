@@ -1,4 +1,4 @@
-# Flux de Pantalles (UX Flow)
+﻿# Flux de Pantalles (UX Flow)
 
 Aquest document detalla la navegació de l'aplicació per als dos rols principals: Alumne i Professor.
 

@@ -1,4 +1,4 @@
-# Diagrama d'Activitats: Flux de Notificacions
+﻿# Diagrama d'Activitats: Flux de Notificacions
 
 Aquest diagrama descriu el procés des que un professor crea una notificació fins que arriba a l'alumne per múltiples canals.
 

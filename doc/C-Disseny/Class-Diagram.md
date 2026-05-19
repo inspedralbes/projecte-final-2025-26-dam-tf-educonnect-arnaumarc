@@ -1,4 +1,4 @@
-# Diagrama de Classes (Backend)
+﻿# Diagrama de Classes (Backend)
 
 Aquest diagrama representa l'estructura del backend de l'aplicació, incloent els controladors, models i rutes.
 

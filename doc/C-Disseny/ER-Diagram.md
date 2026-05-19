@@ -1,4 +1,4 @@
-# Diagrama Entitat-Relació (E/R)
+﻿# Diagrama Entitat-Relació (E/R)
 
 Aquest diagrama mostra l'estructura de dades d'EduConnect, representant les col·leccions de MongoDB i les seves relacions lògiques.
 
