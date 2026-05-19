@@ -1,61 +1,83 @@
 # Guia d’instal·lació i desplegament: EduConnect
 
-Aquesta guia detalla com instal·lar i executar els mòduls del projecte EduConnect en desenvolupament i en producció amb domini.
+Aquesta guia detalla com instal·lar i executar els mòduls del projecte EduConnect tant en entorns de desenvolupament com en producció sota un domini real.
 
 ## Requisits previs
-- Node.js (18+)
-- npm
-- Docker + Docker Compose (recomanat per producció)
-- MongoDB (si no uses Docker)
+- **Node.js**: Versió 18 o superior.
+- **npm**: Gestor de paquets de Node.
+- **MongoDB**: Instància local o en el núvol (Atlas).
+- **Docker + Docker Compose**: Recomanat per a l'aïllament del backend i la base de dades.
 
 ---
 
-## 1) Instal·lació (dev)
+## 1) Configuració de Variables d'Entorn
 
+Abans d'executar res, has de crear els fitxers `.env` basant-te en els exemples:
+
+### Backend (`main/backend/.env`)
+```env
+PORT=3001
+MONGO_URI=mongodb://localhost:27017/educonnect
+JWT_SECRET=la_teva_clau_secreta
+DISCORD_TOKEN=token_del_teu_bot
+DISCORD_CLIENT_ID=id_del_bot
+DISCORD_GUILD_ID=id_del_servidor_discord
+```
+
+---
+
+## 2) Instal·lació i Execució (Desenvolupament)
+
+### Pas ràpid (recomanat)
 ```bash
 cd main
 node setup.js
 ```
 
-Alternativa:
-
-```bash
-cd main
-npm run install-all
-```
-
----
-
-## 2) Execució (dev)
-
-- Backend (API + sockets):
-  - Docker: `cd main/backend && docker-compose up --build`
-  - Node: `cd main/backend && npm run dev`
-
-- Frontend (web):
-  - `cd main/frontend && npm run dev`
-
-- Tot junt:
-  - `cd main && npm start`
-
----
-
-## 3) Producció amb domini `https://projecteeduconnect.cat`
-
-### Web + API sota el mateix domini (recomanat)
-- El frontend usa **same-origin** i crida l’API a `/api/...`.
-- El reverse proxy (Caddy) redirigeix `/api`, `/socket.io` i `/uploads` cap al backend.
-
-### Fitxers clau
-- `main/frontend/config.ts`: en producció usa `window.location.origin`.
-- `main/backend/Caddyfile`: domini i reverse proxy.
-- `main/backend/src/index.js`: CORS configurable via `CORS_ORIGINS`.
-
-### Variables d’entorn (backend)
-- `NODE_ENV=production`
-- Opcional: `CORS_ORIGINS=https://projecteeduconnect.cat`
+### Manualment
+1. **Backend**:
+   ```bash
+   cd main/backend
+   npm install
+   npm run dev
+   ```
+2. **Frontend**:
+   ```bash
+   cd main/frontend
+   npm install
+   npm run dev
+   ```
+3. **Bot de Discord**:
+   ```bash
+   cd main/bot-discord
+   npm install
+   node bot.js
+   ```
 
 ---
 
-## Notes
-- Els fitxers de vídeo i PDFs d’entrega són a `doc/`.
+## 3) Desplegament en Producció (`https://projecteeduconnect.cat`)
+
+L'aplicació està dissenyada per funcionar darrere d'un reverse proxy (Caddy recomanat).
+
+### Arquitectura de producció
+- El **Frontend** es compila (`npm run build`) i es serveix com a fitxers estàtics.
+- El **Backend** corre sota PM2 o Docker i gestiona l'API, WebSockets i fitxers pujats.
+- El reverse proxy redirigeix el trànsit:
+  - `/api/*` -> Backend
+  - `/socket.io/*` -> Backend
+  - `/uploads/*` -> Backend
+  - `/*` -> Frontend (Index.html)
+
+### Fitxers de configuració clau
+- `main/backend/Caddyfile`: Conté la definició del domini i les rutes de proxy.
+- `main/backend/docker-compose.yml`: Per aixecar tota la pila (Backend + Mongo + Fail2Ban) fàcilment.
+
+---
+
+## 4) Seguretat i Manteniment
+- **Fail2Ban**: S'inclou un contenidor a Docker per protegir l'API contra atacs de força bruta.
+- **Logs**: Revisa els logs de Docker o PM2 per a depuració en viu.
+
+---
+*Per a qualsevol dubte, consulteu el README principal del projecte.*

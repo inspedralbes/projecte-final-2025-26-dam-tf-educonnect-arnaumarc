@@ -1,4 +1,4 @@
-﻿# B Planificació
+# B Planificació
 
 Aquest document detalla l'evolució del projecte **EduConnect**, organitzat en Sprints seguint una metodologia àgil i el marc de treball **OpenSpec** (Specification Driven Development). La planificació s'ha basat en la construcció iterativa de funcionalitats, validant cada etapa abans de passar a la següent.
 

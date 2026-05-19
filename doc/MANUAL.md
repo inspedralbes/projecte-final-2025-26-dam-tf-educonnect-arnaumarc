@@ -1,4 +1,4 @@
-﻿# Manual de benvinguda a la teva nova vida acadèmica amb EduConnect
+# Manual de benvinguda a la teva nova vida acadèmica amb EduConnect
 
 Hola! Si estàs llegint això, és perquè ja formes part d'EduConnect. Sabem que la vida al centre pot ser intensa: exàmens, entregues, canvis d'última hora... Per això hem creat aquesta plataforma. No és només una web; és el teu nou "company de classe" que t'ajudarà a tenir-ho tot sota control sense estrès.
 
@@ -22,11 +22,15 @@ Pensa en el Tauló com la porta de la teva nevera, però plena de coses útils. 
 *   **La teva Classe**: El dia a dia. Si hi ha un examen a la vista o el profe ha penjat exercicis nous, ho veuràs aquí abans que ningú.
 *   **El Centre**: Avisos importants per a tothom. Festius, vagues o esdeveniments especials.
 
+> **[Captura 1: Vista general del Tauló de l'alumne]**
+
 ### Coneix a l'EduBot
 L'EduBot és el nostre assistent virtual. Mai dorm i t'avisarà al moment perquè no se't passi res. Fixa't en els colors, són com un semàfor:
 - **Vermell (Compte!)**: Exàmens o entregues urgents.
 - **Blau (Informa't)**: Avisos generals de classe.
 - **Gris/Verd (Tot OK)**: Notificacions de sistema o recordatoris tranquils.
+
+> **[Captura 2: Detall de l'EduBot amb notificacions actives]**
 
 ### Vista del Tauló i l'EduBot
 L'EduBot t'ajudarà a prioritzar la teva feina. Aquesta és la jerarquia d'avisos que veuràs:
@@ -48,40 +52,53 @@ graph TD
 Sabem que portar l'horari al cap és impossible. Deixa que EduConnect ho faci per tu.
 
 ### El teu Calendari
-A la dreta de la pantalla tens el teu mapa mensual. Els punts vermells són els exàmens i los blaus són les activitats. Així pots veure de cop d'ull si la setmana serà relaxada o intensa.
+Al lateral del Tauló tens el teu calendari mensual. Els punts de colors t'indiquen què passa cada dia:
+- 📝 **Blau**: Activitats i entregues.
+- 🎯 **Vermell**: Exàmens (prepara els colzes!).
+- 📢 **Groc**: Esdeveniments i avisos.
 
-### El teu Horari (Sense pèrdues)
-Has de canviar de classe i no saps on anar? Consulta l'horari setmanal. T'indicarà l'assignatura, l'aula exacta i el profe que t'espera. Tot actualitzat al minut.
+### Horari Setmanal
+A la secció d'Agenda podràs veure el teu horari setmanal. Cada assignatura té el seu color i podràs veure a quina aula t'has de dirigir.
+
+> **[Captura 3: Horari setmanal amb classes programades]**
 
 ---
 
-## 4. Ets Professor? Aquí tens el teu super-tauler
-Hola, profe! Hem dissenyat eines perquè la teva gestió sigui un passeig, no una muntanya de feina extra.
+## 4. Ets Professor? Aquí tens el teu súper tauler
+Si ets docent, EduConnect et dóna superpoders per gestionar les teves classes en pocs clics.
 
-*   **Schedule Editor**: Canviar una classe d'hora ara és tan fàcil com arrossegar un bloc de color.
-*   **Adéu a les col·lisions**: Si intentes posar dues classes a la mateixa hora o en una aula ocupada, el sistema et dirà "Eh, un moment!" abans que es creï un embolic. 
-*   **Notifica ràpid**: Vols avisar a tots els teus alumnes d'un canvi? Envia un avís des del teu dashboard i els arribarà a la web i al Discord al mateix segon.
+### Editor d'Horaris
+Pots modificar l'horari de les teves assignatures simplement arrossegant i deixant anar. El sistema et dirà si t'estàs passant de les hores setmanals permeses.
+
+### Seguiment de Tasques
+Saps qui ha entregat la feina i qui no d'un sol cop d'ull. Pots enviar recordatoris massius a aquells que s'han despistat amb un sol botó.
+
+> **[Captura 4: Panell de seguiment d'entregues amb botó de recordatori]**
 
 ---
 
 ## 5. Tot el que necessites per estudiar: Recursos
-Oblida't de buscar apunts perduts per grups de WhatsApp. A la secció d'Asignaturas ho tens tot organitzat:
+Dins de cada assignatura trobaràs el "Temari". Aquí els profes aniran penjant:
+- Documents PDF i enllaços.
+- Tasques que has d'entregar.
+- Avisos específics de la matèria.
 
-*   **Materials**: PDFs, esquemes, fotos... tot llest per descarregar.
-*   **Enllaços útils**: Vídeos de YouTube, wikis o eines que el profe ha seleccionat per a tu.
-*   **Tasques**: Amb instruccions clares i la data límit ben visible.
+**Com entregar una tasca?**
+1. Entra a l'assignatura.
+2. Busca la tasca (té una icona de llista 📝).
+3. Prem "Pujar Entrega" i tria el teu fitxer o escriu el teu comentari.
 
 ---
 
 ## 6. Més enllà de la plataforma: Meet i Discord
-EduConnect viu on tu vius.
 
-*   **Responsivitat**: Pots accedir des de qualsevol dispositiu. La web s'adapta al teu mòbil o tablet perquè tinguis tota la informació a la butxaca.
-*   **Discord**: Si et passes el dia a Discord, l'EduBot et parlarà per allà. Notificacions de classe directament al teu servidor preferit.
-*   **Videollamades (Meet)**: No busquis més enllaços a correus antics. Entra a l'assignatura, clica el botó de Meet i ja estàs a dins de la classe virtual. Fàcil, oi?
+### Meet: Videollamades directes
+No necessites enllaços externs. Si el profe obre una sessió de Meet, t'apareixerà un avís i podràs entrar directament per parlar cara a cara.
+
+> **[Captura 5: Interfície de Meet dins de l'app]**
+
+### Discord Bot
+Si ets més de Discord, el nostre Bot enviarà els avisos més importants al servidor del centre perquè no hagis d'estar tota lona pendent de la web.
 
 ---
-
-**Pro-tip**: Personalitza el teu perfil amb una foto que t'agradi perquè tothom et pugui reconèixer fàcilment a la comunitat.
-
-Esperem que gaudeixis d'EduConnect. Si tens qualsevol dubte, el teu professor o l'equip de suport estarem encantats d'ajudar-te. Bon curs!
+*EduConnect: Connectant el futur de l'educació.*
