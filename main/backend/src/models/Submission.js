@@ -9,7 +9,9 @@ const submissionSchema = new mongoose.Schema({
     content: { type: String }, // URL del archivo o texto del comentario
     originalFilename: { type: String }, // Nombre original del archivo subido
     submittedAt: { type: Date, default: Date.now },
-    status: { type: String, enum: ['A TIEMPO', 'TARDE'], required: true }
+    status: { type: String, enum: ['A TIEMPO', 'TARDE'], required: true },
+    grade: { type: Number, min: 0, max: 10 },
+    feedback: { type: String }
 }, { timestamps: true });
 
 // Índice para búsquedas rápidas de seguimiento

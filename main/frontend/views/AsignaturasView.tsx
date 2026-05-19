@@ -45,26 +45,34 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       }));
   }, [courses, realCoursesIds]);
 
-  // Restore selected course from localStorage ONLY ONCE on mount
+  // Restore selected course from localStorage and listen for changes
   useEffect(() => {
-    if (!hasRestored.current && enrolledCoursesList.length > 0) {
+    const checkLocalStorage = () => {
       const savedCourseId = localStorage.getItem('selectedCourse');
-      if (savedCourseId) {
+      if (savedCourseId && (!selectedCourse || selectedCourse.id !== savedCourseId)) {
         const course = enrolledCoursesList.find(c => c.id === savedCourseId);
         if (course) {
           setSelectedCourse(course);
         }
+      } else if (!savedCourseId && selectedCourse) {
+          setSelectedCourse(null);
       }
-      hasRestored.current = true;
+    };
+
+    // Initial check
+    if (enrolledCoursesList.length > 0) {
+        checkLocalStorage();
     }
-  }, [enrolledCoursesList]);
+
+    // Periodically check for changes (e.g. from notification click)
+    const interval = setInterval(checkLocalStorage, 500);
+    return () => clearInterval(interval);
+  }, [enrolledCoursesList, selectedCourse]);
 
   // Save selected course to localStorage
   useEffect(() => {
     if (selectedCourse) {
       localStorage.setItem('selectedCourse', selectedCourse.id);
-    } else {
-      localStorage.removeItem('selectedCourse');
     }
   }, [selectedCourse]);
 

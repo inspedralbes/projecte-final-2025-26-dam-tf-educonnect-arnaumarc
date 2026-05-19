@@ -74,6 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
                 setView(AppView.ACTIVITY_HISTORY);
                 setShowNotifications(false);
               }}
+              setView={setView}
             />
           )}
         </div>

@@ -1,4 +1,4 @@
-﻿/// <reference types="vite/client" />
+/// <reference types="vite/client" />
 
 const DEFAULT_PROD_ORIGIN = 'https://projecteeduconnect.cat';
 
@@ -14,8 +14,8 @@ export const getApiUrl = () => {
             : DEFAULT_PROD_ORIGIN;
     }
 
-    // Development: backend docker-compose exposes the API on 3006 by default
-    return `http://${window.location.hostname}:3006`;
+    // Development: local backend on 3005 (docker on 3006)
+    return `http://${window.location.hostname}:3005`;
 };
 
 export const API_BASE_URL = getApiUrl();

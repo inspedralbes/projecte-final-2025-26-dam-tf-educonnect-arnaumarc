@@ -15,11 +15,15 @@ El sistema DEBE permitir a los alumnos realizar entregas de tres tipos diferente
 - **THEN** el sistema guarda el texto y marca la tarea como entregada.
 
 ### Requirement: Submission persistence
-El sistema DEBE garantizar que cada entrega quede vinculada de forma única al alumno, la actividad y el curso correspondientes, manteniendo una marca de tiempo inalterable.
+El sistema DEBE garantizar que cada entrega quede vinculada de forma única al alumno, la actividad y el curso correspondientes, manteniendo una marca de tiempo inalterable y permitiendo el almacenamiento opcional de una calificación (nota) y comentarios de retroalimentación (feedback).
 
 #### Scenario: Verify submission data
 - **WHEN** se consulta una entrega realizada
 - **THEN** el sistema DEBE mostrar el ID del alumno, el ID de la actividad, el contenido de la entrega y la fecha exacta en la que se realizó.
+
+#### Scenario: Verify submission evaluation data
+- **WHEN** se consulta una entrega evaluada
+- **THEN** el sistema DEBE mostrar la nota asignada, el feedback del profesor, además del ID del alumno, la actividad y la fecha de entrega.
 
 ### Requirement: Secure Identity Validation
 El sistema DEBE validar que el alumno que realiza la entrega es realmente quien dice ser, comparando su ID con el del token de sesión.

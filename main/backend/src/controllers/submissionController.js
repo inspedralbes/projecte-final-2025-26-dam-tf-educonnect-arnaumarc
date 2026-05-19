@@ -4,6 +4,73 @@ const Event = require('../models/Event');
 const Alumno = require('../models/Alumno');
 const path = require('path');
 const fs = require('fs');
+const { notifyCourseStudents } = require('./notificationHelper');
+const Notification = require('../models/Notification');
+
+const gradeSubmission = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { grade, feedback, teacherId } = req.body;
+        const { io, connectedUsers } = req;
+
+        const submission = await Submission.findById(id);
+        if (!submission) {
+            return res.status(404).json({ error: 'Entrega no encontrada' });
+        }
+
+        submission.grade = grade;
+        submission.feedback = feedback;
+        await submission.save();
+
+        // Obtener información de la actividad para la notificación
+        let activityTitle = 'actividad';
+        if (submission.activityType === 'resource') {
+            // Buscamos en los subdocumentos de Topic
+            const Topic = require('../models/Topic');
+            const topic = await Topic.findOne({ "resources._id": submission.activityId });
+            if (topic) {
+                const resource = topic.resources.id(submission.activityId);
+                if (resource) activityTitle = resource.title;
+            }
+        } else {
+            const event = await Event.findById(submission.activityId);
+            if (event) activityTitle = event.title;
+        }
+
+        // Crear notificación para el alumno
+        const notification = new Notification({
+            recipient: submission.studentId,
+            recipientModel: 'Alumno',
+            sender: teacherId,
+            senderModel: 'Professor',
+            type: 'GRADE',
+            title: 'Tarea Evaluada',
+            content: `Has rebut una nota de ${grade}/10 a l'activitat "${activityTitle}".`,
+            sourceId: submission.activityId,
+            meta: { courseId: submission.courseId }
+        });
+
+        await notification.save();
+
+        // Notificación en tiempo real si el alumno está conectado
+        const socketId = connectedUsers?.get(String(submission.studentId));
+        if (socketId && io) {
+            io.to(socketId).emit('new_notification', notification);
+            // También podemos avisar de que la entrega ha sido actualizada
+            io.to(socketId).emit('submission_evaluated', {
+                submissionId: id,
+                grade,
+                feedback,
+                activityId: submission.activityId
+            });
+        }
+
+        res.json({ message: 'Entrega calificada correctamente', submission });
+    } catch (error) {
+        console.error('Error grading submission:', error);
+        res.status(500).json({ error: 'Error al calificar la entrega' });
+    }
+};
 
 const createSubmission = async (req, res) => {
     try {
@@ -143,5 +210,6 @@ module.exports = {
     createSubmission,
     getCourseSubmissions,
     getActivitySubmissions,
-    sendBulkReminders
+    sendBulkReminders,
+    gradeSubmission
 };

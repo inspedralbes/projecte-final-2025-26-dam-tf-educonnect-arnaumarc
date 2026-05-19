@@ -75,7 +75,7 @@ exports.deleteTopic = async (req, res) => {
 exports.addResource = async (req, res) => {
     try {
         const { topicId } = req.params;
-        const { type, title, url, content, link, dueDate } = req.body;
+        const { type, title, url, content, link, dueDate, requiresSubmission, submissionType } = req.body;
 
         const topic = await Topic.findById(topicId);
         if (!topic) return res.status(404).json({ message: 'Topic not found' });
@@ -87,7 +87,9 @@ exports.addResource = async (req, res) => {
             url: url || undefined,
             content: content || undefined,
             link: link || undefined,
-            dueDate: (dueDate && dueDate !== '') ? new Date(dueDate) : undefined
+            dueDate: (dueDate && dueDate !== '') ? new Date(dueDate) : undefined,
+            requiresSubmission,
+            submissionType
         };
 
         topic.resources.push(resourceData);
@@ -100,13 +102,15 @@ exports.addResource = async (req, res) => {
         const label = typeLabels[type] || 'recurso';
         const displayTitle = title || 'sense títol';
 
+        const deepLink = `/asignaturas?courseId=${topic.courseId}&topicId=${topic._id}&resourceId=${newResource._id}`;
+
         notifyCourseStudents(
             req, 
             topic.courseId, 
             `Nou ${label}: ` + displayTitle, 
             `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${displayTitle}`,
             'MATERIAL',
-            '',
+            deepLink,
             newResource._id
         );
 
@@ -124,7 +128,7 @@ exports.addResource = async (req, res) => {
 exports.updateResource = async (req, res) => {
     try {
         const { topicId, resourceId } = req.params;
-        const { type, title, url, content, link, dueDate } = req.body;
+        const { type, title, url, content, link, dueDate, requiresSubmission, submissionType } = req.body;
 
         const topic = await Topic.findById(topicId);
         if (!topic) return res.status(404).json({ message: 'Topic not found' });
@@ -139,6 +143,8 @@ exports.updateResource = async (req, res) => {
         resource.content = content || undefined;
         resource.link = link || undefined;
         resource.dueDate = (dueDate && dueDate !== '') ? new Date(dueDate) : undefined;
+        if (requiresSubmission !== undefined) resource.requiresSubmission = requiresSubmission;
+        if (submissionType !== undefined) resource.submissionType = submissionType;
 
         await topic.save();
 

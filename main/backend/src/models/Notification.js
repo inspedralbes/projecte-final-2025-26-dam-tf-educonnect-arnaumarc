@@ -22,7 +22,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: { 
         type: String, 
-        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'COURSE_INVITE', 'SYSTEM', 'MEET_CALL', 'MEET_MESSAGE', 'PROFESSOR_ADVISORY'],
+        enum: ['EXAM', 'MATERIAL', 'MESSAGE', 'ANNOUNCEMENT', 'COURSE_INVITE', 'SYSTEM', 'MEET_CALL', 'MEET_MESSAGE', 'PROFESSOR_ADVISORY', 'GRADE'],
         default: 'SYSTEM'
     },
     title: { type: String, required: true },

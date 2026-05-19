@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const topicController = require('../controllers/topicController');
 
+router.get('/debug/topics', async (req, res) => {
+    const Topic = require('../models/Topic');
+    const topics = await Topic.find({});
+    res.json(topics);
+});
 router.get('/courses/:courseId/topics', topicController.getTopicsByCourse);
 router.post('/courses/:courseId/topics', topicController.createTopic);
 router.put('/topics/:topicId', topicController.updateTopic);

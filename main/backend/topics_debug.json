@@ -1,0 +1,117 @@
+[
+  {
+    "_id": "69fc956724659705b1435e67",
+    "courseId": "69fc7ad6b515d7ba417f9436",
+    "title": "Introduccion",
+    "description": "",
+    "resources": [],
+    "order": 0,
+    "createdAt": "2026-05-07T13:36:39.925Z",
+    "updatedAt": "2026-05-07T13:36:39.925Z",
+    "__v": 0
+  },
+  {
+    "_id": "69fc95c524659705b1435ed5",
+    "courseId": "69fc86a024659705b1435de9",
+    "title": "iNTRA",
+    "description": "",
+    "resources": [],
+    "order": 0,
+    "createdAt": "2026-05-07T13:38:13.669Z",
+    "updatedAt": "2026-05-07T13:38:13.669Z",
+    "__v": 0
+  },
+  {
+    "_id": "69fc960824659705b1435ef5",
+    "courseId": "69fc86a024659705b1435deb",
+    "title": "Tema1",
+    "description": "",
+    "resources": [],
+    "order": 0,
+    "createdAt": "2026-05-07T13:39:20.524Z",
+    "updatedAt": "2026-05-07T14:40:54.741Z",
+    "__v": 2
+  },
+  {
+    "_id": "69fcaefaf722857b86a3b288",
+    "courseId": "69fcaedaf722857b86a3b209",
+    "title": "Tema 1",
+    "description": "",
+    "resources": [
+      {
+        "type": "material",
+        "title": "Hola",
+        "content": "Hola muy buenas ",
+        "visible": true,
+        "_id": "69fcaf0ef722857b86a3b291"
+      }
+    ],
+    "order": 0,
+    "createdAt": "2026-05-07T15:25:46.785Z",
+    "updatedAt": "2026-05-07T15:26:10.021Z",
+    "__v": 1
+  },
+  {
+    "_id": "69fd8484bc53604329cb9bb8",
+    "courseId": "69fd8224bc53604329cb9b07",
+    "title": "Tam 1",
+    "description": "",
+    "resources": [],
+    "order": 0,
+    "createdAt": "2026-05-08T06:36:52.171Z",
+    "updatedAt": "2026-05-08T06:37:27.325Z",
+    "__v": 2
+  },
+  {
+    "_id": "6a0587c2b34362920cd836e3",
+    "courseId": "6a0586f0b34362920cd8366c",
+    "title": "Tema 1",
+    "description": "Hola",
+    "resources": [],
+    "order": 0,
+    "createdAt": "2026-05-14T08:28:50.649Z",
+    "updatedAt": "2026-05-14T08:28:50.649Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a06bce8113bc27787b06b21",
+    "courseId": "6a06bcc9113bc27787b06ab2",
+    "title": "Tema Prueba",
+    "description": "Hola esta es una prueba\n",
+    "resources": [
+      {
+        "type": "task",
+        "title": "Hola esto es una prueba",
+        "content": "<p>Prueba <strong>prueba </strong><em>prueba</em></p><ul><li><p>prueba</p></li><li><p>prueba</p></li></ul><p></p><ol><li><p>prueba </p></li><li><p>prueba</p></li></ol><p></p><p></p><table style=\"min-width: 75px;\"><colgroup><col style=\"width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"></colgroup><tbody><tr><th colspan=\"1\" rowspan=\"1\" colwidth=\"25\"><p>Hola</p></th><th colspan=\"1\" rowspan=\"1\"><p>Hola</p></th><th colspan=\"1\" rowspan=\"1\"><p>Hola</p></th></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"25\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"25\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr></tbody></table><p></p>",
+        "visible": true,
+        "requiresSubmission": false,
+        "submissionType": "done",
+        "_id": "6a06bd2f113bc27787b06b2a"
+      }
+    ],
+    "order": 0,
+    "createdAt": "2026-05-15T06:27:52.145Z",
+    "updatedAt": "2026-05-15T06:29:03.413Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a0c72095d5c53e74585509d",
+    "courseId": "6a0c2f3daf5b6f04d5a31bd4",
+    "title": "Tema 1 de prueba",
+    "description": "Una bonita prueba de funcionamiento\n",
+    "resources": [
+      {
+        "type": "task",
+        "title": "Pruebq",
+        "visible": true,
+        "requiresSubmission": false,
+        "submissionType": "done",
+        "_id": "6a0c73885d5c53e745855175"
+      }
+    ],
+    "order": 0,
+    "createdAt": "2026-05-19T14:22:01.343Z",
+    "updatedAt": "2026-05-19T14:28:24.276Z",
+    "__v": 5
+  }
+]

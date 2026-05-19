@@ -55,3 +55,17 @@ El sistema SHALL asegurar que los avisos enviados masivamente a toda la clase de
 #### Scenario: Sending class announcement
 - **WHEN** un profesor usa la función "Aviso a toda la clase" desde el detalle de la asignatura
 - **THEN** la notificación resultante debe llevar el `courseId` poblado para que aparezca correctamente en la pestaña "Clase" del Tablón del alumno.
+
+### Requirement: Robust Submission Button Visibility
+El sistema SHALL mostrar el botón "Realizar Entrega" a los alumnos para cualquier recurso que sea de tipo "Tarea" (type: 'task'), incluso si el campo `requiresSubmission` en la base de datos es `false` (para compatibilidad con datos heredados).
+
+#### Scenario: Student views a legacy task
+- **WHEN** un alumno visualiza una asignatura que tiene una tarea antigua con `requiresSubmission: false`
+- **THEN** el sistema debe mostrar igualmente el botón "Realizar Entrega".
+
+### Requirement: Automated Submission Flag Enforcement
+El frontend SHALL asegurar que al enviar el formulario de creación de recurso o evento, el flag `requiresSubmission` se envíe como `true` si el tipo es una tarea o actividad digital.
+
+#### Scenario: Submitting the resource creation form
+- **WHEN** el profesor pulsa "Guardar" en el modal de nuevo recurso
+- **THEN** la petición enviada a la API debe incluir `requiresSubmission: true` si el `type` es `'task'`.

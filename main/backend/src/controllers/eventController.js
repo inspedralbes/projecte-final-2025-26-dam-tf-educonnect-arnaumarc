@@ -13,7 +13,7 @@ const getEvents = async (req, res) => {
 
 const createEvent = async (req, res) => {
     try {
-        const { type, title, date, courseId, topicId, modality, status } = req.body;
+        const { type, title, date, courseId, topicId, modality, status, requiresSubmission, submissionType } = req.body;
         const newEvent = new Event({ 
             type, 
             title, 
@@ -21,18 +21,22 @@ const createEvent = async (req, res) => {
             courseId, 
             topicId, 
             modality: modality || 'digital', 
-            status: status || 'scheduled' 
+            status: status || 'scheduled',
+            requiresSubmission,
+            submissionType
         });
         await newEvent.save();
 
         if (courseId) {
+            const deepLink = `/asignaturas?courseId=${courseId}&eventId=${newEvent._id}`;
+
             notifyCourseStudents(
                 req, 
                 courseId, 
                 'Nou Esdeveniment/Examen: ' + title, 
                 'S\'ha afegit una nova fita a l\'agenda: ' + title,
                 type === 'exam' ? 'EXAM' : 'ANNOUNCEMENT',
-                '',
+                deepLink,
                 newEvent._id
             );
         }

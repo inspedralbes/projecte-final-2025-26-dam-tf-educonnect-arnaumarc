@@ -10,8 +10,8 @@ El sistema SHALL garantizar el registro en la base de datos de eventos críticos
 - **THEN** el evento se guarda en la base de datos con los metadatos necesarios para su limpieza futura y se muestra como notificación o evento en el historial cuando el usuario se vuelve a conectar.
 
 ### Requirement: Resource Reference in Notifications
-El esquema de notificaciones SHALL incluir un campo opcional `sourceId` para vincular avisos a recursos académicos específicos (Topic, Resource, Exam).
+El esquema de notificaciones SHALL incluir un campo opcional `sourceId` para vincular avisos a recursos académicos específicos (Topic, Resource, Exam) y un campo `link` para permitir la navegación directa (deep linking).
 
 #### Scenario: Notification linking to exam
 - **WHEN** se crea una notificación de tipo EXAM
-- **THEN** el sistema debe almacenar el ID del examen en el campo `sourceId` para permitir futuras operaciones de borrado sincronizado.
+- **THEN** el sistema debe almacenar el ID del examen en el campo `sourceId` para permitir futuras operaciones de borrado sincronizado y generar una URL de navegación en el campo `link`.

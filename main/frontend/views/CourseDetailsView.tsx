@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
@@ -82,7 +82,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         topicId: '',
         modality: 'digital' as 'paper' | 'digital',
         status: 'scheduled' as 'scheduled' | 'done' | 'graded',
-        requiresSubmission: false,
+        requiresSubmission: true,
         submissionType: 'done' as 'file' | 'comment' | 'done'
     });
     const [courseEvents, setCourseEvents] = useState<any[]>([]);
@@ -98,6 +98,42 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [submissionContent, setSubmissionContent] = useState('');
     const [submissionFile, setSubmissionFile] = useState<File | null>(null);
     const [showConfirmOverwrite, setShowConfirmOverwrite] = useState(false);
+
+    // Refs for scrolling to resources
+    const resourcesRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    // Parse deep links from localStorage
+    useEffect(() => {
+        const savedDeepLink = localStorage.getItem('deepLinkData');
+        if (!savedDeepLink || topics.length === 0) return;
+
+        try {
+            const { topicId, resourceId, eventId } = JSON.parse(savedDeepLink);
+            
+            setActiveTab('resources');
+            if (topicId) {
+                setExpandedTopics(prev => ({ ...prev, [topicId]: true }));
+            }
+            
+            // Wait for render
+            setTimeout(() => {
+                const targetId = resourceId || eventId || topicId;
+                if (targetId && resourcesRefs.current[targetId]) {
+                    resourcesRefs.current[targetId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    const el = resourcesRefs.current[targetId];
+                    if (el) {
+                        el.classList.add('ring-2', 'ring-blue-500', 'ring-offset-4', 'dark:ring-offset-zinc-900');
+                        setTimeout(() => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-4', 'dark:ring-offset-zinc-900'), 3000);
+                    }
+                    // Clear deep link after use
+                    localStorage.removeItem('deepLinkData');
+                }
+            }, 800);
+        } catch (e) {
+            console.error('Error parsing deep link data', e);
+        }
+    }, [topics]);
 
     const fetchSubmissions = async () => {
         try {
@@ -137,8 +173,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             }
         });
 
+        socket.on('submission_evaluated', (data: any) => {
+            fetchSubmissions();
+        });
+
         return () => {
             socket.off('submission_updated');
+            socket.off('submission_evaluated');
         };
     }, [socket, course]);
 
@@ -409,6 +450,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         try {
             const resourceData = {
                 ...newResource,
+                requiresSubmission: newResource.type === 'task' ? true : newResource.requiresSubmission,
                 dueDate: newResource.type === 'task' ? newResource.dueDate : undefined,
                 senderId: user?._id || user?.id
             };
@@ -443,11 +485,15 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const courseProfessorId = (course?.professor?._id || course?.professor)?.toString();
     const currentUserId = (user?._id || (user as any)?.id)?.toString();
     const isCourseOwnerTeacher = userRole === 'TEACHER' && !!currentUserId && !!courseProfessorId && courseProfessorId === currentUserId;
+            
+            const isDigitalActivity = (newEvent.type === 'activity' || newEvent.type === 'exam') && newEvent.modality === 'digital';
+            
             const response = await fetch(`${API_BASE_URL}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...newEvent,
+                    requiresSubmission: isDigitalActivity ? true : newEvent.requiresSubmission,
                     courseId,
                     senderId: user?._id || user?.id
                 })
@@ -944,7 +990,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {getUnassignedEvents().map(event => (
-                                <div key={event._id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                                <div 
+                                    key={event._id} 
+                                    ref={el => resourcesRefs.current[event._id] = el}
+                                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
                                     event.status === 'done' || event.status === 'graded' 
                                     ? 'bg-green-50/30 border-green-100 dark:bg-green-900/10 dark:border-green-900/20' 
                                     : 'bg-white border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-800'
@@ -1012,7 +1061,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="space-y-4">
                             {topics.length > 0 ? (
                                 topics.map((topic) => (
-                                    <div key={topic._id} className="border border-gray-200 dark:border-zinc-800 rounded-3xl overflow-hidden bg-white dark:bg-zinc-900/40 shadow-sm transition-all border-l-4 border-l-blue-500">
+                                    <div 
+                                        key={topic._id} 
+                                        ref={el => { resourcesRefs.current[topic._id] = el; }}
+                                        className="border border-gray-200 dark:border-zinc-800 rounded-3xl overflow-hidden bg-white dark:bg-zinc-900/40 shadow-sm transition-all border-l-4 border-l-blue-500"
+                                    >
                                         <div className="p-6 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
                                             <div className="flex-1">
                                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{topic.title}</h3>
@@ -1068,7 +1121,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                             topic.resources
                                                                 .filter(r => userRole === 'TEACHER' || r.visible)
                                                                 .map((resource, idx) => (
-                                                                    <div key={resource._id || idx} className={`p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all group ${!resource.visible ? 'opacity-50 grayscale' : ''}`}>
+                                                                    <div 
+                                                                        key={resource._id || idx} 
+                                                                        ref={el => { if (resource._id) resourcesRefs.current[resource._id] = el; }}
+                                                                        className={`p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all group ${!resource.visible ? 'opacity-50 grayscale' : ''}`}
+                                                                    >
                                                                         <div className="flex items-start justify-between gap-4">
                                                                             <div className="flex items-start gap-4 flex-1">
                                                                                 <div className={`p-3 rounded-2xl shrink-0 ${getResourceColor(resource.type)} shadow-sm`}>
@@ -1109,37 +1166,52 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                     </div>
 
                                                                                     {/* Estado de entrega para Alumnos */}
-                                                                                    {userRole === 'STUDENT' && resource.requiresSubmission && (
-                                                                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-                                                                                            {getSubmissionForActivity(resource._id!) ? (
-                                                                                                <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">
-                                                                                                    <CheckCircle2 size={16} />
-                                                                                                    Tarea Entregada {getSubmissionForActivity(resource._id!)?.status === 'TARDE' && (
-                                                                                                        <span className="text-orange-500">(FUERA DE PLAZO)</span>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            ) : (
-                                                                                                <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-wider">
-                                                                                                    <AlertCircle size={16} />
-                                                                                                    Pendiente de entrega
-                                                                                                </div>
-                                                                                            )}
+                                                                                    {userRole === 'STUDENT' && (resource.requiresSubmission || resource.type === 'task') && (
+                                                                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 space-y-3">                                                                                            <div className="flex items-center justify-between">
+                                                                                                {getSubmissionForActivity(resource._id!) ? (
+                                                                                                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">
+                                                                                                        <CheckCircle2 size={16} />
+                                                                                                        Tarea Entregada {getSubmissionForActivity(resource._id!)?.status === 'TARDE' && (
+                                                                                                            <span className="text-orange-500">(FUERA DE PLAZO)</span>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                ) : (
+                                                                                                    <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-wider">
+                                                                                                        <AlertCircle size={16} />
+                                                                                                        Pendiente de entrega
+                                                                                                    </div>
+                                                                                                )}
 
-                                                                                            {!getSubmissionForActivity(resource._id!) && (
-                                                                                                <button
-                                                                                                    onClick={() => {
-                                                                                                        setSelectedActivity({
-                                                                                                            id: resource._id!,
-                                                                                                            type: 'resource',
-                                                                                                            title: resource.title || 'Tarea',
-                                                                                                            submissionType: resource.submissionType || 'done'
-                                                                                                        });
-                                                                                                        setShowSubmissionModal(true);
-                                                                                                    }}
-                                                                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm transition-all hover:scale-105 active:scale-95"
-                                                                                                >
-                                                                                                    REALIZAR ENTREGA
-                                                                                                </button>
+                                                                                                {getSubmissionForActivity(resource._id!)?.grade !== undefined && (
+                                                                                                    <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                                                                                                        <Award size={14} className="text-emerald-600 dark:text-emerald-400" />
+                                                                                                        <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 uppercase tracking-tight">Nota: {getSubmissionForActivity(resource._id!)?.grade}/10</span>
+                                                                                                    </div>
+                                                                                                )}
+
+                                                                                                {!getSubmissionForActivity(resource._id!) && (
+                                                                                                    <button
+                                                                                                        onClick={() => {
+                                                                                                            setSelectedActivity({
+                                                                                                                id: resource._id!,
+                                                                                                                type: 'resource',
+                                                                                                                title: resource.title || 'Tarea',
+                                                                                                                submissionType: resource.submissionType || 'done'
+                                                                                                            });
+                                                                                                            setShowSubmissionModal(true);
+                                                                                                        }}
+                                                                                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm transition-all hover:scale-105 active:scale-95"
+                                                                                                    >
+                                                                                                        REALIZAR ENTREGA
+                                                                                                    </button>
+                                                                                                )}
+                                                                                            </div>
+
+                                                                                            {getSubmissionForActivity(resource._id!)?.feedback && (
+                                                                                                <div className="bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100 dark:border-blue-900/20 flex gap-2">
+                                                                                                    <MessageCircle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                                                                                                    <p className="text-xs text-blue-800 dark:text-blue-300 italic">"{getSubmissionForActivity(resource._id!)?.feedback}"</p>
+                                                                                                </div>
                                                                                             )}
                                                                                         </div>
                                                                                     )}
@@ -1203,7 +1275,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {getTopicEvents(topic._id).length > 0 ? (
                                                             getTopicEvents(topic._id).map(event => (
-                                                                <div key={event._id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                                                                <div 
+                                                                    key={event._id} 
+                                                                    ref={el => resourcesRefs.current[event._id] = el}
+                                                                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
                                                                     event.status === 'done' || event.status === 'graded' 
                                                                     ? 'bg-green-50/30 border-green-100 dark:bg-green-900/10 dark:border-green-900/20' 
                                                                     : 'bg-pink-50/30 border-pink-100 dark:bg-pink-900/10 dark:border-pink-900/20'
@@ -1234,9 +1309,8 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                         )}
 
                                                                         {/* Estado de entrega para Alumnos en Eventos */}
-                                                                        {userRole === 'STUDENT' && event.requiresSubmission && (
-                                                                            <div className="mt-3 pt-3 border-t border-pink-100 dark:border-pink-900/30 flex items-center justify-between gap-4">
-                                                                                {getSubmissionForActivity(event._id!) ? (
+                                                                        {userRole === 'STUDENT' && (event.requiresSubmission || event.type === 'activity' || event.type === 'exam') && (
+                                                                            <div className="mt-3 pt-3 border-t border-pink-100 dark:border-pink-900/30 flex items-center justify-between gap-4">                                                                                {getSubmissionForActivity(event._id!) ? (
                                                                                     <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-bold text-[10px] uppercase">
                                                                                         <CheckCircle2 size={14} />
                                                                                         Entregado
@@ -1394,7 +1468,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         type="button"
-                                        onClick={() => setNewResource({ ...newResource, type: 'material' })}
+                                        onClick={() => setNewResource({ ...newResource, type: 'material', requiresSubmission: false })}
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'material' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <BookOpen className={newResource.type === 'material' ? 'text-blue-500' : 'text-gray-400'} />
@@ -1402,7 +1476,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setNewResource({ ...newResource, type: 'task' })}
+                                        onClick={() => setNewResource({ ...newResource, type: 'task', requiresSubmission: true })}
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'task' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <ClipboardList className={newResource.type === 'task' ? 'text-blue-500' : 'text-gray-400'} />
@@ -1778,7 +1852,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Tipo</label>
                                         <select
                                             value={newEvent.type}
-                                            onChange={(e: any) => setNewEvent({ ...newEvent, type: e.target.value })}
+                                            onChange={(e: any) => {
+                                                const val = e.target.value;
+                                                const requiresSub = (val === 'activity' || val === 'exam') && newEvent.modality === 'digital';
+                                                setNewEvent({ ...newEvent, type: val, requiresSubmission: requiresSub });
+                                            }}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
                                             <option value="activity">Actividad</option>
@@ -1790,7 +1868,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Modalidad</label>
                                         <select
                                             value={newEvent.modality}
-                                            onChange={(e: any) => setNewEvent({ ...newEvent, modality: e.target.value })}
+                                            onChange={(e: any) => {
+                                                const val = e.target.value;
+                                                const requiresSub = (newEvent.type === 'activity' || newEvent.type === 'exam') && val === 'digital';
+                                                setNewEvent({ ...newEvent, modality: val, requiresSubmission: requiresSub });
+                                            }}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
                                             <option value="digital">Digital</option>

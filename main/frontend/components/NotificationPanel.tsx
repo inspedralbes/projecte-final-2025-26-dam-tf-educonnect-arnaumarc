@@ -1,15 +1,40 @@
-import React from 'react';
-import { useSocket, NotificationData } from '../src/context/SocketContext';
-import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2 } from 'lucide-react';
+import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { AppView, NotificationData } from '../types';
+import { useSocket } from '../src/context/SocketContext';
 
 interface NotificationPanelProps {
     onClose: () => void;
     onViewHistory?: () => void;
+    setView?: (view: AppView) => void;
 }
 
-export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, onViewHistory }) => {
+export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, onViewHistory, setView }) => {
     const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead, deleteNotification } = useSocket();
+
+    const handleNotificationClick = (notif: any) => {
+        if (!notif.read) {
+            markNotificationAsRead(notif._id);
+        }
+        
+        if (notif.link && setView) {
+            // Parse link: /asignaturas?courseId=ID&topicId=ID&resourceId=ID
+            const url = new URL(notif.link, window.location.origin);
+            const courseId = url.searchParams.get('courseId');
+            const topicId = url.searchParams.get('topicId');
+            const resourceId = url.searchParams.get('resourceId');
+            const eventId = url.searchParams.get('eventId');
+
+            if (courseId) {
+                localStorage.setItem('selectedCourse', courseId);
+                if (topicId || resourceId || eventId) {
+                    localStorage.setItem('deepLinkData', JSON.stringify({ topicId, resourceId, eventId }));
+                }
+                setView(AppView.ASIGNATURAS);
+            }
+            onClose();
+        }
+    };
 
     const getTypeDetails = (notif: NotificationData) => {
         const { type } = notif;
@@ -62,6 +87,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                 color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
                 border: 'border-indigo-600'
             };
+            case 'GRADE': return {
+                icon: <Award size={18} className="text-emerald-500" />,
+                label: 'Nota',
+                color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+                border: 'border-emerald-500'
+            };
             case 'SYSTEM':
             default: return { 
                 icon: <Bell size={18} className="text-gray-500" />, 
@@ -107,7 +138,8 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                             return (
                                 <div 
                                     key={notif._id} 
-                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors relative group ${!notif.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
+                                    onClick={() => handleNotificationClick(notif)}
+                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors relative group cursor-pointer ${!notif.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
                                 >
                                     {/* Lateral bar for color coding */}
                                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${details.border} border-l-4 opacity-70`} />
@@ -136,7 +168,10 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                 <div className="flex flex-col items-end gap-2">
                                                     {!notif.read && (
                                                         <button 
-                                                            onClick={() => markNotificationAsRead(notif._id)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                markNotificationAsRead(notif._id);
+                                                            }}
                                                             className="w-2 h-2 rounded-full bg-blue-600 animate-pulse flex-shrink-0 mt-1"
                                                         />
                                                     )}
@@ -157,7 +192,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                             </p>
 
                                             {notif.type === 'COURSE_INVITE' && !notif.read && user && (
-                                                <div className="flex gap-2 mb-2">
+                                                <div className="flex gap-2 mb-2" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={async () => {
                                                             try {
@@ -207,7 +242,13 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                     {new Date(notif.createdAt).toLocaleDateString()}
                                                 </div>
                                                 {notif.link && (
-                                                    <button className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:underline">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleNotificationClick(notif);
+                                                        }}
+                                                        className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:underline"
+                                                    >
                                                         Ir <ExternalLink size={10} />
                                                     </button>
                                                 )}
