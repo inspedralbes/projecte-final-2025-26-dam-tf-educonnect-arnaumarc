@@ -71,22 +71,27 @@ const markAsRead = async (req, res) => {
     try {
         const { notificationId } = req.params;
         const { ids } = req.body || {}; // Soporta una lista de IDs para notificaciones agrupadas
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+        }
 
         if (ids && Array.isArray(ids)) {
             await Notification.updateMany(
-                { _id: { $in: ids } },
+                { _id: { $in: ids }, recipient: userId },
                 { read: true }
             );
             return res.json({ success: true, message: 'Notificaciones marcadas como leídas' });
         }
 
-        const notification = await Notification.findByIdAndUpdate(
-            notificationId, 
+        const notification = await Notification.findOneAndUpdate(
+            { _id: notificationId, recipient: userId }, 
             { read: true }, 
             { new: true }
         );
         if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notification not found' });
+            return res.status(404).json({ success: false, message: 'Notification not found or access denied' });
         }
         res.json({ success: true, notification });
     } catch (error) {
@@ -97,6 +102,12 @@ const markAsRead = async (req, res) => {
 const markAllAsRead = async (req, res) => {
     try {
         const { userId } = req.params;
+        const authenticatedUserId = req.user?._id;
+
+        if (!authenticatedUserId || String(authenticatedUserId) !== String(userId)) {
+            return res.status(403).json({ success: false, message: 'No autorizado para realizar esta acción' });
+        }
+
         await Notification.updateMany(
             { recipient: userId, read: false },
             { read: true }
@@ -107,10 +118,53 @@ const markAllAsRead = async (req, res) => {
     }
 };
 
+const deleteNotification = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+        const { ids } = req.body || {}; // Soporta una lista de IDs para notificaciones agrupadas
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+        }
+
+        if (ids && Array.isArray(ids)) {
+            await Notification.deleteMany({ _id: { $in: ids }, recipient: userId });
+            return res.json({ success: true, message: 'Notificaciones eliminadas' });
+        }
+
+        const notification = await Notification.findOneAndDelete({ _id: notificationId, recipient: userId });
+        if (!notification) {
+            return res.status(404).json({ success: false, message: 'Notification not found or access denied' });
+        }
+        res.json({ success: true, message: 'Notificación eliminada' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error deleting notification', error: error.message });
+    }
+};
+
+const deleteAllReadNotifications = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const authenticatedUserId = req.user?._id;
+
+        if (!authenticatedUserId || String(authenticatedUserId) !== String(userId)) {
+            return res.status(403).json({ success: false, message: 'No autorizado para realizar esta acción' });
+        }
+
+        await Notification.deleteMany({ recipient: userId, read: true });
+        res.json({ success: true, message: 'All read notifications deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error deleting notifications', error: error.message });
+    }
+};
+
 module.exports = {
     getUserNotifications,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
+    deleteAllReadNotifications,
     respondCourseInvite: async (req, res) => {
         try {
             const { notificationId } = req.params;

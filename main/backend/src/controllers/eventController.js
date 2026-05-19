@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const Notification = require('../models/Notification');
 const { notifyCourseStudents } = require('./notificationHelper');
 
 const getEvents = async (req, res) => {
@@ -30,7 +31,9 @@ const createEvent = async (req, res) => {
                 courseId, 
                 'Nou Esdeveniment/Examen: ' + title, 
                 'S\'ha afegit una nova fita a l\'agenda: ' + title,
-                type === 'exam' ? 'EXAM' : 'ANNOUNCEMENT'
+                type === 'exam' ? 'EXAM' : 'ANNOUNCEMENT',
+                '',
+                newEvent._id
             );
         }
 
@@ -64,6 +67,9 @@ const deleteEvent = async (req, res) => {
         if (!deletedEvent) {
             return res.status(404).json({ message: 'Event not found' });
         }
+
+        // Eliminar notificaciones asociadas al evento
+        await Notification.deleteMany({ sourceId: id });
 
         res.json({ message: 'Event deleted successfully' });
     } catch (error) {

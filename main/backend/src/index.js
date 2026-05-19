@@ -218,3 +218,28 @@ server.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
 
+// --- Automatización de Limpieza de Notificaciones ---
+
+/**
+ * Elimina notificaciones de Meet (llamadas y mensajes) con más de 24 horas.
+ * Se ejecuta cada hora.
+ */
+const cleanExpiredMeetNotifications = async () => {
+    try {
+        const expirationLimit = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const result = await Notification.deleteMany({
+            type: { $in: ['MEET_CALL', 'MEET_MESSAGE'] },
+            createdAt: { $lt: expirationLimit }
+        });
+        if (result.deletedCount > 0) {
+            console.log(`[Cleanup] Eliminadas ${result.deletedCount} notificaciones de Meet expiradas.`);
+        }
+    } catch (error) {
+        console.error('[Cleanup] Error limpiando notificaciones de Meet:', error);
+    }
+};
+
+// Ejecutar limpieza inicial y luego cada hora
+cleanExpiredMeetNotifications();
+setInterval(cleanExpiredMeetNotifications, 60 * 60 * 1000);
+
