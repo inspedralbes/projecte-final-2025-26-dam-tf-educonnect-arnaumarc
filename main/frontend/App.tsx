@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
@@ -172,7 +172,7 @@ function App() {
       case AppView.WORKSHOPS:
         return (
           <div className="flex items-center justify-center h-[calc(100vh-60px)]">
-            <h2 className="text-2xl text-gray-500 font-bold">SecciÃ³n de Talleres en construcciÃ³n</h2>
+            <h2 className="text-2xl text-gray-500 font-bold">Sección de Talleres en construcción</h2>
           </div>
         );
       default:

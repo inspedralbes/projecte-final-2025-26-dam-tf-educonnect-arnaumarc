@@ -45,36 +45,46 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       }));
   }, [courses, realCoursesIds]);
 
-  // Restore selected course from localStorage and listen for changes
+  // Restore selected course once (or when opened via notification link)
   useEffect(() => {
-    const checkLocalStorage = () => {
+    const restoreFromStorage = () => {
       const savedCourseId = localStorage.getItem('selectedCourse');
-      if (savedCourseId && (!selectedCourse || selectedCourse.id !== savedCourseId)) {
+      if (savedCourseId && (!selectedCourse || String(selectedCourse.id) !== String(savedCourseId))) {
         const course = enrolledCoursesList.find(c => c.id === savedCourseId);
         if (course) {
           setSelectedCourse(course);
         }
-      } else if (!savedCourseId && selectedCourse) {
-          setSelectedCourse(null);
       }
     };
 
-    // Initial check
-    if (enrolledCoursesList.length > 0) {
-        checkLocalStorage();
+    if (enrolledCoursesList.length > 0 && !hasRestored.current) {
+      hasRestored.current = true;
+      restoreFromStorage();
     }
 
-    // Periodically check for changes (e.g. from notification click)
-    const interval = setInterval(checkLocalStorage, 500);
-    return () => clearInterval(interval);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === 'selectedCourse') {
+        restoreFromStorage();
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, [enrolledCoursesList, selectedCourse]);
 
-  // Save selected course to localStorage
+  // Sync selected course with localStorage
   useEffect(() => {
     if (selectedCourse) {
       localStorage.setItem('selectedCourse', selectedCourse.id);
+    } else {
+      localStorage.removeItem('selectedCourse');
+      localStorage.removeItem('deepLinkData');
     }
   }, [selectedCourse]);
+
+  const handleBackToAsignaturas = () => {
+    setSelectedCourse(null);
+  };
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/schedule`)
@@ -110,7 +120,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
         course={selectedCourse}
         user={user}
         userRole={user?.type === 'professor' ? 'TEACHER' : 'STUDENT'}
-        onBack={() => setSelectedCourse(null)}
+        onBack={handleBackToAsignaturas}
       />
     );
   }
