@@ -43,7 +43,9 @@ const requireCourseOwner = async ({ courseId, professorId }) => {
 
 const getCourses = async (req, res) => {
     try {
-        const courses = await Course.find().populate('professor').lean();\n        const normalized = courses.map(c => ({ ...c, image: normalizeImageUrl(req, c.image) }));\n        res.json(normalized);
+        const courses = await Course.find().populate('professor').lean();
+        const normalized = courses.map(c => ({ ...c, image: normalizeImageUrl(req, c.image) }));
+        res.json(normalized);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching courses' });
     }
@@ -327,4 +329,5 @@ module.exports = {
     updateCourseCoverPreset,
     updateCourseCoverUpload
 };
+
 
