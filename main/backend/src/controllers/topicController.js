@@ -1,4 +1,5 @@
 const Topic = require('../models/Topic');
+const Notification = require('../models/Notification');
 const { notifyCourseStudents } = require('./notificationHelper');
 
 exports.getTopicsByCourse = async (req, res) => {
@@ -36,7 +37,9 @@ exports.createTopic = async (req, res) => {
             courseId, 
             'Nou Temari: ' + title, 
             'El professor ha afegit un nou tema al curs: ' + title,
-            'MATERIAL'
+            'MATERIAL',
+            '',
+            newTopic._id
         );
 
         res.status(201).json(newTopic);
@@ -59,6 +62,10 @@ exports.deleteTopic = async (req, res) => {
     try {
         const { topicId } = req.params;
         await Topic.findByIdAndDelete(topicId);
+        
+        // Eliminar notificaciones asociadas al tema
+        await Notification.deleteMany({ sourceId: topicId });
+        
         res.json({ message: 'Topic deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting topic', error });
@@ -86,6 +93,8 @@ exports.addResource = async (req, res) => {
         topic.resources.push(resourceData);
         await topic.save();
 
+        const newResource = topic.resources[topic.resources.length - 1];
+
         // Notify students
         const typeLabels = { material: 'Material', note: 'Apunte', file: 'Archivo', link: 'Enlace', task: 'Tarea' };
         const label = typeLabels[type] || 'recurso';
@@ -96,7 +105,9 @@ exports.addResource = async (req, res) => {
             topic.courseId, 
             `Nou ${label}: ` + displayTitle, 
             `El professor ha publicat un ${label.toLowerCase()} al tema ${topic.title}: ${displayTitle}`,
-            'MATERIAL'
+            'MATERIAL',
+            '',
+            newResource._id
         );
 
         res.status(201).json(topic);
@@ -149,6 +160,9 @@ exports.deleteResource = async (req, res) => {
 
         topic.resources = topic.resources.filter(r => r._id.toString() !== resourceId);
         await topic.save();
+
+        // Eliminar notificaciones asociadas al recurso específico
+        await Notification.deleteMany({ sourceId: resourceId });
 
         res.json(topic);
     } catch (error) {

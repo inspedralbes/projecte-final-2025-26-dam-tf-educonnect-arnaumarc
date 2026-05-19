@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
 import { User } from '../types';
-import { Bell, Search, Filter, Clock, CheckCircle2, AlertCircle, MessageSquare, Phone, BookOpen, Calendar, Info } from 'lucide-react';
+import { Bell, Search, Filter, Clock, CheckCircle2, AlertCircle, MessageSquare, Phone, BookOpen, Calendar, Info, Trash2, XCircle } from 'lucide-react';
 
 interface ActivityHistoryViewProps {
     user: User | null;
 }
 
 export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }) => {
-    const { notifications, markNotificationAsRead, markAllNotificationsAsRead } = useSocket();
+    const { notifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, deleteAllReadNotifications, unreadCount } = useSocket();
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'ACADEMIC' | 'MEET'>('ALL');
 
@@ -38,25 +38,44 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
         }
     };
 
+    const hasReadNotifications = notifications.some(n => n.read);
+
     return (
-        <div className="flex-1 bg-gray-50 dark:bg-zinc-950 p-4 md:p-8 overflow-y-auto no-scrollbar">
+        <div className="flex-1 bg-gray-50 dark:bg-zinc-950 p-4 md:p-8 overflow-y-auto no-scrollbar pt-20">
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 uppercase">
                             <Clock className="text-blue-600" size={32} />
-                            Historial de Actividad
+                            Historial
                         </h1>
                         <p className="text-gray-500 dark:text-zinc-400 font-medium">Gestiona todos tus avisos y eventos recientes.</p>
                     </div>
-                    <button 
-                        onClick={markAllNotificationsAsRead}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 w-fit"
-                    >
-                        <CheckCircle2 size={20} />
-                        Marcar todo como leído
-                    </button>
+                    <div className="flex gap-2">
+                        {unreadCount > 0 && (
+                            <button 
+                                onClick={markAllNotificationsAsRead}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                            >
+                                <CheckCircle2 size={20} />
+                                Leer todo
+                            </button>
+                        )}
+                        {hasReadNotifications && (
+                            <button 
+                                onClick={() => {
+                                    if (window.confirm('¿Eliminar todas las notificaciones leídas?')) {
+                                        deleteAllReadNotifications();
+                                    }
+                                }}
+                                className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2"
+                            >
+                                <Trash2 size={20} />
+                                Limpiar leídos
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Filters & Search */}
@@ -120,14 +139,23 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                                     <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
                                         {new Date(notif.createdAt).toLocaleDateString()}
                                     </span>
-                                    {!notif.read && (
+                                    <div className="flex items-center gap-3">
                                         <button 
-                                            onClick={() => markNotificationAsRead(notif._id)}
-                                            className="text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest hover:underline"
+                                            onClick={() => deleteNotification(notif._id)}
+                                            className="text-gray-400 hover:text-red-500 transition-colors"
+                                            title="Eliminar permanentemente"
                                         >
-                                            Leer
+                                            <Trash2 size={16} />
                                         </button>
-                                    )}
+                                        {!notif.read && (
+                                            <button 
+                                                onClick={() => markNotificationAsRead(notif._id)}
+                                                className="text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest hover:underline"
+                                            >
+                                                Leer
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))

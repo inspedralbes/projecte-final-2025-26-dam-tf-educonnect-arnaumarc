@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
-import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap } from 'lucide-react';
+import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 interface NotificationPanelProps {
@@ -9,7 +9,7 @@ interface NotificationPanelProps {
 }
 
 export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, onViewHistory }) => {
-    const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead } = useSocket();
+    const { user, notifications, unreadCount, markNotificationAsRead, markNotificationAsReadLocal, markAllNotificationsAsRead, deleteNotification } = useSocket();
 
     const getTypeDetails = (notif: NotificationData) => {
         const { type } = notif;
@@ -133,12 +133,24 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                         )}
                                                     </div>
                                                 </div>
-                                                {!notif.read && (
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {!notif.read && (
+                                                        <button 
+                                                            onClick={() => markNotificationAsRead(notif._id)}
+                                                            className="w-2 h-2 rounded-full bg-blue-600 animate-pulse flex-shrink-0 mt-1"
+                                                        />
+                                                    )}
                                                     <button 
-                                                        onClick={() => markNotificationAsRead(notif._id)}
-                                                        className="w-2 h-2 rounded-full bg-blue-600 animate-pulse flex-shrink-0 mt-1"
-                                                    />
-                                                )}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteNotification(notif._id);
+                                                        }}
+                                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Eliminar notificación"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-2">
                                                 {notif.content}

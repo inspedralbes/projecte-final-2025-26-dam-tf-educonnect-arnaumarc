@@ -18,25 +18,37 @@ const sendMessage = async (req, res) => {
         // Populate sender info for immediate UI update
         message = await Message.findById(message._id).populate('sender', 'nombre apellidos profileImage');
 
-        // Crear notificación persistente
-        const notification = await Notification.create({
-            recipient: receiver,
-            recipientModel: receiverModel || 'Alumno', // Dinámico según el rol enviado
-            sender,
-            senderModel: senderModel || (req.user?.type === 'professor' ? 'Professor' : 'Alumno'),
-            type: title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'MESSAGE',
-            title: title === 'Mensaje de Meet' ? 'Chat de Meet' : 'Nuevo Mensaje: ' + title,
-            content: content,
-            link: '/perfil' // O la ruta del chat
-        });
+        // Crear notificación persistente (solo si no es para uno mismo)
+        let notification = null;
+        if (String(sender) !== String(receiver)) {
+            notification = await Notification.create({
+                recipient: receiver,
+                recipientModel: receiverModel || 'Alumno', 
+                sender,
+                senderModel: senderModel || (req.user?.type === 'professor' ? 'Professor' : 'Alumno'),
+                type: title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'MESSAGE',
+                title: title === 'Mensaje de Meet' ? 'Chat de Meet' : 'Nuevo Mensaje: ' + title,
+                content: content,
+                link: '/perfil',
+                sourceId: message._id // Vincular notificación al mensaje
+            });
+        }
 
-        // Emit real-time notification and message to the receiver room
+        // Emit real-time notification and message
         if (req.io) {
-            req.io.to(String(receiver)).emit('new_notification', notification);
+            // Emit notification only to receiver if it's not the sender
+            if (notification) {
+                req.io.to(String(receiver)).emit('new_notification', notification);
+            }
+            
+            // Emit message to receiver
             req.io.to(String(receiver)).emit('new_message', message);
             
             // Also emit to the sender room (to sync other devices/tabs)
-            req.io.to(String(sender)).emit('new_message', message);
+            // Only if sender is not the receiver, to avoid duplicate emissions
+            if (String(sender) !== String(receiver)) {
+                req.io.to(String(sender)).emit('new_message', message);
+            }
         }
 
         res.json({ success: true, message });
@@ -65,10 +77,15 @@ const getMessagesByUser = async (req, res) => {
 
 const deleteMessage = async (req, res) => {
     try {
-        const deletedMessage = await Message.findByIdAndDelete(req.params.messageId);
+        const { messageId } = req.params;
+        const deletedMessage = await Message.findByIdAndDelete(messageId);
         if (!deletedMessage) {
             return res.status(404).json({ success: false, message: 'Mensaje no encontrado' });
         }
+
+        // Eliminar notificación vinculada
+        await Notification.deleteMany({ sourceId: messageId });
+
         res.json({ success: true, message: 'Mensaje eliminado' });
     } catch (error) {
         console.error('Error deleting message:', error);

@@ -11,7 +11,7 @@ interface TablonViewProps {
 }
 
 export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
-  const { feed, deleteMessage } = useSocket();
+  const { feed, deleteMessage, deleteNotification } = useSocket();
   const [activeTab, setActiveTab] = useState<'personal' | 'clase' | 'general'>(() => {
     return (localStorage.getItem('tablonActiveTab') as 'personal' | 'clase' | 'general') || 'personal';
   });
@@ -174,9 +174,13 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     setExpandedGroups(newSet);
   };
 
-  const handleDeleteMessage = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteItem = async (item: FeedItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    await deleteMessage(id);
+    if (item.source === 'message') {
+        await deleteMessage(item.id);
+    } else {
+        await deleteNotification(item.id);
+    }
   };
 
   const renderFeedItem = (item: FeedItem, isInsideGroup = false) => {
@@ -234,15 +238,13 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
             )}
           </div>
         </div>
-        {item.source === 'message' && (
-          <button
-            onClick={(e) => handleDeleteMessage(item.id, e)}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
-            title="Eliminar mensaje"
-          >
-            <Trash2 size={18} />
-          </button>
-        )}
+        <button
+          onClick={(e) => handleDeleteItem(item, e)}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+          title={item.source === 'message' ? 'Eliminar mensaje' : 'Eliminar notificación'}
+        >
+          <Trash2 size={18} />
+        </button>
       </li>
     );
   };

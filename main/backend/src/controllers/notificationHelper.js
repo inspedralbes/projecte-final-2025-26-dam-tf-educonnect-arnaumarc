@@ -1,7 +1,7 @@
 const Alumno = require('../models/Alumno');
 const Notification = require('../models/Notification');
 
-const notifyCourseStudents = async (req, courseId, title, content, type = 'ANNOUNCEMENT', link = '') => {
+const notifyCourseStudents = async (req, courseId, title, content, type = 'ANNOUNCEMENT', link = '', sourceId = null) => {
     try {
         const { io, connectedUsers } = req;
 
@@ -27,6 +27,7 @@ const notifyCourseStudents = async (req, courseId, title, content, type = 'ANNOU
             title,
             content,
             link,
+            sourceId: sourceId,
             meta: { courseId }
         }));
 

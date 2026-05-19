@@ -38,6 +38,9 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         enum: ['LOW', 'HIGH'],
         default: 'LOW'
+    },
+    sourceId: { 
+        type: mongoose.Schema.Types.ObjectId 
     }
 }, { timestamps: true });
 

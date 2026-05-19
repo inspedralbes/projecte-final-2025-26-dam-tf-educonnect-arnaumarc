@@ -16,6 +16,7 @@ export interface NotificationData {
     type: 'EXAM' | 'MATERIAL' | 'MESSAGE' | 'ANNOUNCEMENT' | 'COURSE_INVITE' | 'SYSTEM' | 'MEET_CALL' | 'MEET_MESSAGE' | 'PROFESSOR_ADVISORY';
     title: string;
     content: string;
+    sender?: string;
     link?: string;
     meta?: {
         courseId?: string;
@@ -80,6 +81,8 @@ interface SocketContextType {
     markNotificationAsRead: (id: string) => void;
     markNotificationAsReadLocal: (id: string) => void;
     markAllNotificationsAsRead: () => void;
+    deleteNotification: (id: string) => Promise<void>;
+    deleteAllReadNotifications: () => Promise<void>;
     deleteMessage: (id: string) => Promise<boolean>;
 }
 
@@ -232,6 +235,9 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         });
 
         newSocket.on('new_notification', (data: NotificationData) => {
+            // Ignore notifications sent by current user
+            if (data.sender === user._id) return;
+
             setNotifications(prev => [data, ...prev]);
             setUnreadCount(prev => prev + 1);
             
@@ -330,6 +336,71 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         setIncomingCall(null);
     };
 
+    const deleteNotification = async (id: string) => {
+        // Manejar notificaciones temporales (locales)
+        if (id.startsWith('temp-')) {
+            setNotifications(prev => prev.filter(n => n._id !== id));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+            return;
+        }
+
+        const notif = notifications.find(n => n._id === id);
+        const ids = notif?.isGrouped ? notif.ids : [id];
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids })
+            });
+
+            if (response.ok) {
+                setNotifications(prev => {
+                    if (notif?.isGrouped && ids) {
+                        return prev.filter(n => !ids.includes(n._id));
+                    }
+                    return prev.filter(n => n._id !== id);
+                });
+
+                // Actualizar contador de no leídos
+                if (notif?.isGrouped && ids) {
+                    const deletedUnreadCount = notifications.filter(n => ids.includes(n._id) && !n.read).length;
+                    setUnreadCount(prev => Math.max(0, prev - deletedUnreadCount));
+                } else if (notif && !notif.read) {
+                    setUnreadCount(prev => Math.max(0, prev - 1));
+                }
+                
+                toast.success('Notificación eliminada');
+            } else {
+                // Si la API falla (ej. 404), eliminamos de todos modos localmente para limpiar la UI
+                setNotifications(prev => prev.filter(n => n._id !== id));
+                toast.success('Notificación eliminada');
+            }
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+            // Cleanup local state anyway on error to maintain UI flow
+            setNotifications(prev => prev.filter(n => n._id !== id));
+            toast.success('Notificación eliminada');
+        }
+    };
+
+    const deleteAllReadNotifications = async () => {
+        if (!user) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/notifications/user/${user._id}/read`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                setNotifications(prev => prev.filter(n => !n.read));
+                toast.success('Historial de leídos limpiado');
+            }
+        } catch (error) {
+            console.error('Error clearing read notifications:', error);
+            toast.error('Error al limpiar el historial');
+        }
+    };
+
     return (
         <SocketContext.Provider value={{
             socket,
@@ -354,6 +425,8 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             markNotificationAsRead,
             markNotificationAsReadLocal,
             markAllNotificationsAsRead,
+            deleteNotification,
+            deleteAllReadNotifications,
             deleteMessage
         }}>
             {children}
