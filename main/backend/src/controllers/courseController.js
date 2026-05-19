@@ -1,13 +1,49 @@
-const Course = require('../models/Course');
+﻿const Course = require('../models/Course');
 const Alumno = require('../models/Alumno');
 const Message = require('../models/Message');
 const Notification = require('../models/Notification');
 const Schedule = require('../models/Schedule');
 
+const COVER_PRESETS = [
+    { id: 'preset-blue', url: '/course-covers/preset-blue.svg' },
+    { id: 'preset-purple', url: '/course-covers/preset-purple.svg' },
+    { id: 'preset-green', url: '/course-covers/preset-green.svg' },
+    { id: 'preset-orange', url: '/course-covers/preset-orange.svg' }
+];
+
+const normalizeImageUrl = (req, urlOrPath) => {
+    if (!urlOrPath) return urlOrPath;
+    if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
+    const base = `${req.protocol}://${req.get('host')}`;
+    return `${base}${urlOrPath.startsWith('/') ? '' : '/'}${urlOrPath}`;
+};
+
+const requireCourseOwner = async ({ courseId, professorId }) => {
+    if (!professorId) {
+        const err = new Error('professorId es obligatorio');
+        err.status = 400;
+        throw err;
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+        const err = new Error('Asignatura no encontrada');
+        err.status = 404;
+        throw err;
+    }
+
+    if (String(course.professor) !== String(professorId)) {
+        const err = new Error('No autorizado para modificar esta asignatura');
+        err.status = 403;
+        throw err;
+    }
+
+    return course;
+};
+
 const getCourses = async (req, res) => {
     try {
-        const courses = await Course.find().populate('professor');
-        res.json(courses);
+        const courses = await Course.find().populate('professor').lean();\n        const normalized = courses.map(c => ({ ...c, image: normalizeImageUrl(req, c.image) }));\n        res.json(normalized);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching courses' });
     }
@@ -54,7 +90,7 @@ const getAvailableStudentsByCourse = async (req, res) => {
         const { courseId } = req.params;
         // Buscamos alumnos que NO tengan este curso en su lista de inscritos
         let students = await Alumno.find({ enrolledCourses: { $ne: courseId } });
-        
+
         // Fallback para modo demo: si no hay alumnos en la base de datos, devolvemos una lista mock
         if (students.length === 0) {
             const count = await Alumno.countDocuments();
@@ -67,7 +103,7 @@ const getAvailableStudentsByCourse = async (req, res) => {
                 ];
             }
         }
-        
+
         res.json(students);
     } catch (error) {
         console.error('Error in available students route:', error);
@@ -102,32 +138,22 @@ const inviteStudentToCourse = async (req, res) => {
 
         // If already enrolled, don't create a new invite
         const alreadyEnrolled = Array.isArray(student.enrolledCourses)
-            && student.enrolledCourses.some((c) => String(c) === String(courseId));
+            ? student.enrolledCourses.some(c => String(c) === String(courseId))
+            : false;
+
         if (alreadyEnrolled) {
             return res.json({ success: true, message: 'El alumno ya está inscrito en esta asignatura' });
         }
 
-        // Avoid duplicate pending invites (same student/course) by reusing unread invites
-        const existingInvite = await Notification.findOne({
-            recipient: studentId,
-            recipientModel: 'Alumno',
-            type: 'COURSE_INVITE',
-            read: false,
-            'meta.courseId': String(courseId)
-        }).lean();
-
-        if (existingInvite) {
-            return res.json({ success: true, message: 'Ya existe una invitación pendiente para este alumno' });
-        }
-
+        // Create a persistent notification as an invitation
         const inviteNotification = await Notification.create({
-            recipient: studentId,
+            recipient: student._id,
             recipientModel: 'Alumno',
             sender: professorId,
             senderModel: 'Professor',
             type: 'COURSE_INVITE',
-            title: `Invitación a ${course.title}`,
-            content: `Has sido invitado a unirte a la asignatura \"${course.title}\".`,
+            title: 'Invitación a asignatura',
+            content: `Has sido invitado a unirte a la asignatura "${course.title}".`,
             link: '/asignaturas',
             meta: {
                 courseId: String(courseId),
@@ -193,7 +219,7 @@ const notifyAllStudents = async (req, res) => {
             type: 'ANNOUNCEMENT',
             title: 'Aviso de Clase: ' + title,
             content: content,
-            link: '/asignaturas', // O la ruta del curso
+            link: '/asignaturas',
             meta: { courseId: req.params.courseId }
         }));
 
@@ -242,6 +268,53 @@ const unenrollStudent = async (req, res) => {
     }
 };
 
+const getCourseCoverPresets = async (req, res) => {
+    res.json({ presets: COVER_PRESETS.map(p => ({ ...p, url: normalizeImageUrl(req, p.url) })) });
+};
+
+const updateCourseCoverPreset = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { professorId, presetId } = req.body || {};
+
+        if (!presetId) {
+            return res.status(400).json({ success: false, message: 'presetId es obligatorio' });
+        }
+
+        const preset = COVER_PRESETS.find(p => p.id === presetId);
+        if (!preset) {
+            return res.status(400).json({ success: false, message: 'presetId no válido' });
+        }
+
+        const course = await requireCourseOwner({ courseId, professorId });
+        course.image = preset.url;
+        await course.save();
+
+        res.json({ success: true, course: { ...course.toObject(), image: normalizeImageUrl(req, course.image) } });
+    } catch (error) {
+        res.status(error.status || 500).json({ success: false, message: error.message || 'Error actualizando portada' });
+    }
+};
+
+const updateCourseCoverUpload = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const professorId = req.body?.professorId;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Falta el archivo (campo "cover")' });
+        }
+
+        const course = await requireCourseOwner({ courseId, professorId });
+        course.image = `/uploads/course-covers/${req.file.filename}`;
+        await course.save();
+
+        res.json({ success: true, course: { ...course.toObject(), image: normalizeImageUrl(req, course.image) } });
+    } catch (error) {
+        res.status(error.status || 500).json({ success: false, message: error.message || 'Error subiendo portada' });
+    }
+};
+
 module.exports = {
     getCourses,
     getStudentsByCourse,
@@ -249,5 +322,9 @@ module.exports = {
     inviteStudentToCourse,
     notifyAllStudents,
     getCourseSchedule,
-    unenrollStudent
+    unenrollStudent,
+    getCourseCoverPresets,
+    updateCourseCoverPreset,
+    updateCourseCoverUpload
 };
+

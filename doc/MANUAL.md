@@ -1,4 +1,4 @@
-# Manual de benvinguda a la teva nova vida acadèmica amb EduConnect
+﻿# Manual de benvinguda a la teva nova vida acadèmica amb EduConnect
 
 Hola! Si estàs llegint això, és perquè ja formes part d'EduConnect. Sabem que la vida al centre pot ser intensa: exàmens, entregues, canvis d'última hora... Per això hem creat aquesta plataforma. No és només una web; és el teu nou "company de classe" que t'ajudarà a tenir-ho tot sota control sense estrès.
 

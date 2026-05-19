@@ -35,6 +35,9 @@ npm run install-all
 - Frontend (web):
   - `cd main/frontend && npm run dev`
 
+- Tot junt:
+  - `cd main && npm start`
+
 ---
 
 ## 3) Producció amb domini `https://projecteeduconnect.cat`
