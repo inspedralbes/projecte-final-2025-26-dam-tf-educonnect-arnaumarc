@@ -1,4 +1,4 @@
-const Alumno = require('../models/Alumno');
+﻿const Alumno = require('../models/Alumno');
 const Professor = require('../models/Professor');
 const Course = require('../models/Course');
 
@@ -50,15 +50,22 @@ const getUser = async (req, res) => {
                 // Return only courses where this user is the professor
                 const courses = await Course.find({ professor: req.params.id }).populate('professor');
                 professor.enrolledCourses = courses;
+                professor.type = 'professor';
                 return res.json(professor);
             }
         }
-        res.json(user);
+
+        if (user) {
+            const u = user.toObject ? user.toObject() : user;
+            u.type = u.type || 'alumno';
+            return res.json(u);
+        }
+
+        return res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user info' });
     }
 };
-
 const updateUserSettings = async (req, res) => {
     const { profileImage, theme } = req.body;
     try {
@@ -93,7 +100,10 @@ const updateUserSettings = async (req, res) => {
             populatedUser = professorData;
         }
 
-        res.json({ success: true, user: populatedUser || user });
+        const out = populatedUser || user;
+        const outObj = out && out.toObject ? out.toObject() : out;
+        if (outObj) outObj.type = outObj.type || (isAlumno ? 'alumno' : 'professor');
+        res.json({ success: true, user: outObj });
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ success: false, message: 'Error al actualizar ajustes' });
@@ -101,3 +111,6 @@ const updateUserSettings = async (req, res) => {
 };
 
 module.exports = { getAllStudents, getAllUsers, getUser, updateUserSettings };
+
+
+

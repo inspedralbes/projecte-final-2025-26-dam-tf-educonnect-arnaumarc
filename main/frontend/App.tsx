@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Navbar } from './components/Navbar';
@@ -97,8 +97,12 @@ function App() {
   }, [currentView, isLoggedIn]);
 
   const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser((prev) => {
+      // Preserve locally-known fields (e.g. `type`) if backend doesn't return them
+      const merged = { ...(prev || {}), ...(updatedUser || {}) } as User;
+      localStorage.setItem('user', JSON.stringify(merged));
+      return merged;
+    });
   };
 
   const handleLogin = async (userData: User) => {
@@ -168,7 +172,7 @@ function App() {
       case AppView.WORKSHOPS:
         return (
           <div className="flex items-center justify-center h-[calc(100vh-60px)]">
-            <h2 className="text-2xl text-gray-500 font-bold">Sección de Talleres en construcción</h2>
+            <h2 className="text-2xl text-gray-500 font-bold">SecciÃ³n de Talleres en construcciÃ³n</h2>
           </div>
         );
       default:
