@@ -9,9 +9,7 @@ const fs = require('fs');
 
 const modules = [
     'backend',
-    'frontend',
-    'expo-mobile',
-    'bot-discord'
+    'frontend'
 ];
 
 console.log('🚀 Iniciant la configuració d\'EduConnect...\n');

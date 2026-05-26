@@ -31,26 +31,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
           {user?.type === 'professor' ? 'Panel Docente' : 'Tablón'}
         </button>
         <button
-          onClick={() => setView(AppView.MEET)}
-          className={getTabClass(AppView.MEET)}
-        >
-          Meet
-        </button>
-        {user?.type !== 'professor' && (
-          <>
-            <button
-              onClick={() => setView(AppView.WORKSHOPS)}
-              className={getTabClass(AppView.WORKSHOPS)}
-            >
-              Talleres
-            </button>
-          </>
-        )}
-        <button
           onClick={() => setView(AppView.ASIGNATURAS)}
           className={getTabClass(AppView.ASIGNATURAS)}
         >
           Asignaturas
+        </button>
+        <button
+          onClick={() => setView(AppView.MEET)}
+          className={getTabClass(AppView.MEET)}
+        >
+          Meet
         </button>
       </div>
       <div className="px-4 flex items-center space-x-3">

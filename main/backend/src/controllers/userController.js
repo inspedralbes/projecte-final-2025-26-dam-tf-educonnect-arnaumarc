@@ -1,6 +1,8 @@
 ﻿const Alumno = require('../models/Alumno');
 const Professor = require('../models/Professor');
 const Course = require('../models/Course');
+const Submission = require('../models/Submission');
+const Message = require('../models/Message');
 
 const getAllStudents = async (req, res) => {
     try {
@@ -44,6 +46,12 @@ const getUser = async (req, res) => {
             path: 'enrolledCourses',
             populate: { path: 'professor' }
         });
+
+        const submissionsCount = await Submission.countDocuments({ studentId: req.params.id });
+        const messagesCount = await Message.countDocuments({ 
+            $or: [{ sender: req.params.id }, { receiver: req.params.id }] 
+        });
+
         if (!user) {
             const professor = await Professor.findById(req.params.id).lean();
             if (professor) {
@@ -51,6 +59,10 @@ const getUser = async (req, res) => {
                 const courses = await Course.find({ professor: req.params.id }).populate('professor');
                 professor.enrolledCourses = courses;
                 professor.type = 'professor';
+                professor.stats = {
+                    submissionsCount: 0, // Professors don't submit, but maybe they receive?
+                    activityCount: messagesCount
+                };
                 return res.json(professor);
             }
         }
@@ -58,11 +70,16 @@ const getUser = async (req, res) => {
         if (user) {
             const u = user.toObject ? user.toObject() : user;
             u.type = u.type || 'alumno';
+            u.stats = {
+                submissionsCount: submissionsCount,
+                activityCount: messagesCount
+            };
             return res.json(u);
         }
 
         return res.json(user);
     } catch (error) {
+        console.error('Error fetching user info:', error);
         res.status(500).json({ error: 'Error fetching user info' });
     }
 };
@@ -85,13 +102,20 @@ const updateUserSettings = async (req, res) => {
         if (theme !== undefined) user.theme = theme;
 
         await user.save();
+
+        const messagesCount = await Message.countDocuments({ 
+            $or: [{ sender: req.params.id }, { receiver: req.params.id }] 
+        });
         
         let populatedUser;
+        let stats = { activityCount: messagesCount, submissionsCount: 0 };
+
         if (isAlumno) {
             populatedUser = await Alumno.findById(user._id).populate({ 
                 path: 'enrolledCourses', 
                 populate: { path: 'professor' } 
             });
+            stats.submissionsCount = await Submission.countDocuments({ studentId: user._id });
         } else {
             // Para profesores, cargamos sus cursos y los inyectamos como enrolledCourses
             const professorData = await Professor.findById(user._id).lean();
@@ -102,7 +126,10 @@ const updateUserSettings = async (req, res) => {
 
         const out = populatedUser || user;
         const outObj = out && out.toObject ? out.toObject() : out;
-        if (outObj) outObj.type = outObj.type || (isAlumno ? 'alumno' : 'professor');
+        if (outObj) {
+            outObj.type = outObj.type || (isAlumno ? 'alumno' : 'professor');
+            outObj.stats = stats;
+        }
         res.json({ success: true, user: outObj });
     } catch (error) {
         console.error('Error updating settings:', error);

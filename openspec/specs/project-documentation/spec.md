@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Database E/R Diagram
 The system documentation SHALL include a complete Entity-Relationship diagram showing all models (Alumno, Professor, Course, Schedule, Notification, etc.) and their relations.
@@ -15,15 +15,15 @@ The documentation SHALL include a class diagram representing the backend structu
 - **THEN** they see a class diagram showing the hierarchy and interaction of the system components.
 
 ### Requirement: Notification Flow Activity Diagram
-The documentation SHALL include an activity diagram specifically for the real-time notification system (Socket.io + Discord).
+The documentation SHALL include an activity diagram specifically for the real-time notification system (Socket.io).
 
 #### Scenario: Trace notification logic
 - **WHEN** the user follows the activity diagram for notifications
-- **THEN** they can clearly identify the path from the sender's action to the final delivery on Web and Discord.
+- **THEN** they can clearly identify the path from the sender's action to the final delivery on Web.
 
 ### Requirement: Screen Flow Documentation
-The documentation SHALL include a diagram showing the navigation flow between the main application screens for both Alumno and Professor roles.
+The documentation SHALL include a diagram showing the navigation flow between the main application screens for both Alumno and Professor roles, explicitly excluding screens from the decommissioned mobile application.
 
 #### Scenario: Navigation audit
 - **WHEN** the user checks the screen flow diagram
-- **THEN** they can trace the user journey from Login to any functional view (Schedule, Courses, etc.).
+- **THEN** they can trace the user journey from Login to any functional view (Schedule, Courses, etc.) on the Web platform exclusively.

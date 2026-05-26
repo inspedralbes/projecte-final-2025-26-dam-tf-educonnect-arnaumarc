@@ -52,6 +52,7 @@ out/
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+topics_debug.json
 
 # Runtime data
 pids
@@ -65,7 +66,3 @@ pids
 # OS metadata
 .DS_Store
 Thumbs.db
-
-# Bot Discord
-main/discord-bot/node_modules
-main/discord-bot/.env

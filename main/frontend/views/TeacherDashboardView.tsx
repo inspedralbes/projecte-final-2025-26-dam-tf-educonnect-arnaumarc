@@ -274,8 +274,11 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                     </li>
                                 )) : (
                                     <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
-                                        <Building className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay avisos generales de la escuela actualmente.</p>
+                                        <div className="w-16 h-16 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 rounded-full flex items-center justify-center mb-4">
+                                            <Building size={32} />
+                                        </div>
+                                        <p className="text-gray-900 dark:text-white font-bold text-lg mb-1">Sin avisos institucionales</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-xs">No hay comunicados oficiales de la dirección o secretaría en este momento.</p>
                                     </li>
                                 )}
                             </ul>

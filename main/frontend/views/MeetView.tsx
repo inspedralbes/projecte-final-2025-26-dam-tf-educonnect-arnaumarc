@@ -17,6 +17,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         isInCall, 
         isCalling, 
         activeCallUser,
+        userStates,
         startCall: signalStartCall,
         acceptCall: signalAcceptCall,
         rejectCall: signalRejectCall,
@@ -123,12 +124,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 const data = await response.json();
                 
                 if (Array.isArray(data)) {
-                    const formattedUsers = data
-                        .filter(u => u._id !== user?._id)
-                        .map((u: any) => ({
-                            ...u,
-                            isOnline: true // Maintain visual online status for UI
-                        }));
+                    const formattedUsers = data.filter(u => u._id !== user?._id);
                     setUsers(formattedUsers);
                 }
             } catch (error) {
@@ -347,7 +343,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 <div className="p-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <UserIcon className="text-blue-500" size={20} />
-                        Usuarios Conectados
+                        Usuarios
                     </h2>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-400">
                         <X size={20} />
@@ -362,6 +358,10 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         users.map((u) => {
                             const isSelectedForChat = u._id === activeChatUser?._id;
                             const isSelectedForCall = u._id === activeCallUser?._id;
+                            const state = userStates[u._id] || 'OFFLINE';
+                            const stateColor = state === 'ONLINE' ? 'bg-green-500' : state === 'BUSY' ? 'bg-rose-500' : 'bg-zinc-400';
+                            const isBusy = state === 'BUSY';
+                            const isOffline = state === 'OFFLINE';
                             
                             return (
                                 <div
@@ -377,11 +377,11 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                                     {u.nombre.charAt(0)}
                                                 </div>
                                             )}
-                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${(u as any).isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-800 ${stateColor}`} title={state} />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-sm text-gray-900 dark:text-white">{u.nombre} {u.apellidos}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{u.type === 'professor' ? 'Teacher' : 'Student'}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{u.type === 'professor' ? 'Teacher' : 'Student'} • {state.toLowerCase()}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -397,12 +397,12 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                         </button>
                                         <button
                                             onClick={() => startCall(u)}
-                                            disabled={isInCall || isCalling || !!incomingCall}
-                                            className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !incomingCall
+                                            disabled={isInCall || isCalling || !!incomingCall || isBusy || isOffline}
+                                            className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !incomingCall && !isBusy && !isOffline
                                                 ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
                                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
                                                 }`}
-                                            title="Llamada de video"
+                                            title={isBusy ? "Ocupado" : isOffline ? "Desconectado" : "Llamada de video"}
                                         >
                                             <Video size={16} />
                                         </button>
@@ -525,7 +525,10 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     {activeChatUser.nombre.charAt(0)}
                                 </div>
                             )}
-                            <div className="absolute bottom-2 right-2 w-8 h-8 bg-green-500 border-4 border-white dark:border-zinc-800 rounded-full shadow-md" />
+                            <div className={`absolute bottom-2 right-2 w-8 h-8 border-4 border-white dark:border-zinc-800 rounded-full shadow-md ${
+                                (userStates[activeChatUser._id] || 'OFFLINE') === 'ONLINE' ? 'bg-green-500' : 
+                                (userStates[activeChatUser._id] || 'OFFLINE') === 'BUSY' ? 'bg-rose-500' : 'bg-zinc-400'
+                            }`} />
                         </div>
                         
                         <div>
@@ -539,12 +542,17 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div className="flex flex-col gap-3">
                             <button 
                                 onClick={() => startCall(activeChatUser)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95"
+                                disabled={(userStates[activeChatUser._id] || 'OFFLINE') !== 'ONLINE'}
+                                className={`w-full py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 ${
+                                    (userStates[activeChatUser._id] || 'OFFLINE') === 'ONLINE' 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20' 
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600 shadow-none'
+                                }`}
                             >
                                 <Video size={22} /> Iniciar Videollamada
                             </button>
                             <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold pt-2">
-                                {activeChatUser.type === 'professor' ? 'Teacher' : 'Student'} • EduConnect Meet
+                                {activeChatUser.type === 'professor' ? 'Teacher' : 'Student'} • {userStates[activeChatUser._id] || 'OFFLINE'}
                             </p>
                         </div>
                     </div>

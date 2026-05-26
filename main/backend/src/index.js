@@ -71,6 +71,12 @@ const io = new Server(server, {
 
 // Map to keep track of connected users (userId -> socketId)
 const connectedUsers = new Map();
+// Map to keep track of user states (userId -> state: 'ONLINE' | 'BUSY' | 'OFFLINE')
+const userStates = new Map();
+
+const broadcastUserState = (userId, state) => {
+    io.emit('user_state_changed', { userId, state });
+};
 
 io.on('connection', (socket) => {
     console.log(`Usuario conectado al socket: ${socket.id}`);
@@ -80,7 +86,13 @@ io.on('connection', (socket) => {
         if (userId) {
             socket.join(String(userId));
             connectedUsers.set(String(userId), socket.id);
+            userStates.set(String(userId), 'ONLINE');
+            broadcastUserState(String(userId), 'ONLINE');
             console.log(`Usuario registrado en sala: ${userId} (socket: ${socket.id})`);
+
+            // Enviar estados actuales al nuevo usuario
+            const currentStates = Object.fromEntries(userStates);
+            socket.emit('sync_user_states', currentStates);
 
             // Sincronizar notificaciones no leÃ­das al conectar
             try {
@@ -104,6 +116,8 @@ io.on('connection', (socket) => {
         for (const [userId, socketId] of connectedUsers.entries()) {
             if (socketId === socket.id) {
                 connectedUsers.delete(userId);
+                userStates.delete(userId);
+                broadcastUserState(userId, 'OFFLINE');
                 break;
             }
         }
@@ -115,44 +129,77 @@ io.on('connection', (socket) => {
     socket.on('call_user', async (data) => {
         const { to, offer, from, fromName } = data;
         const targetSocket = connectedUsers.get(String(to));
+        const targetState = userStates.get(String(to));
+
+        if (targetState === 'BUSY') {
+            return socket.emit('call_failed', { reason: 'User is busy' });
+        }
+
+        // Mark caller as busy
+        userStates.set(String(from), 'BUSY');
+        broadcastUserState(String(from), 'BUSY');
 
         // Persist call event as notification
         try {
+            const Alumno = require('./models/Alumno');
+            const Professor = require('./models/Professor');
+
+            const [targetIsAlumno, senderIsProfessor] = await Promise.all([
+                Alumno.exists({ _id: to }),
+                Professor.exists({ _id: from })
+            ]);
+
             const notification = await Notification.create({
                 recipient: to,
-                recipientModel: 'Alumno', // Calls are currently student-target based in design, but polymorphic-safe refs are used
+                recipientModel: targetIsAlumno ? 'Alumno' : 'Professor',
                 sender: from,
-                senderModel: 'Professor', // Typically professors start calls in this flow
+                senderModel: senderIsProfessor ? 'Professor' : 'Alumno',
                 type: 'MEET_CALL',
                 title: 'Llamada de Meet',
                 content: `${fromName} te está llamando...`,
                 link: '/meet'
             });
 
+            console.log(`[Backend] Persisted call notification: ${notification._id}`);
+
             if (targetSocket) {
+                // First inform about the persistent notification
                 io.to(targetSocket).emit('new_notification', notification);
+                
+                // Then trigger the WebRTC signaling
+                console.log(`Forwarding offer from ${from} to ${to}`);
+                io.to(targetSocket).emit('incoming_call', {
+                    from,
+                    fromName,
+                    offer
+                });
+            } else {
+                console.log(`Call target ${to} not connected`);
+                // Reset caller state if target not online
+                userStates.set(String(from), 'ONLINE');
+                broadcastUserState(String(from), 'ONLINE');
+                socket.emit('call_failed', { reason: 'User not online' });
             }
         } catch (err) {
             console.error('Error creating call notification:', err);
-        }
-
-        if (targetSocket) {
-            console.log(`Forwarding offer from ${from} to ${to}`);
-            io.to(targetSocket).emit('incoming_call', {
-                from,
-                fromName,
-                offer
-            });
-        } else {
-            console.log(`Call target ${to} not connected`);
-            socket.emit('call_failed', { reason: 'User not online' });
+            // Reset caller state on error
+            userStates.set(String(from), 'ONLINE');
+            broadcastUserState(String(from), 'ONLINE');
+            socket.emit('call_failed', { reason: 'Internal server error during call initialization' });
         }
     });
 
     // When a user answers a call
     socket.on('answer_call', (data) => {
-        const { to, answer } = data;
+        const { to, answer, from } = data;
         const targetSocket = connectedUsers.get(String(to));
+        
+        // Both participants are now officially busy
+        userStates.set(String(from), 'BUSY');
+        broadcastUserState(String(from), 'BUSY');
+        userStates.set(String(to), 'BUSY');
+        broadcastUserState(String(to), 'BUSY');
+
         if (targetSocket) {
             console.log(`Forwarding answer to ${to}`);
             io.to(targetSocket).emit('call_answered', {
@@ -176,7 +223,13 @@ io.on('connection', (socket) => {
 
     // Reject a call
     socket.on('reject_call', (data) => {
-        const { to } = data;
+        const { to, from } = data;
+        
+        userStates.set(String(from), 'ONLINE');
+        broadcastUserState(String(from), 'ONLINE');
+        userStates.set(String(to), 'ONLINE');
+        broadcastUserState(String(to), 'ONLINE');
+
         const targetSocket = connectedUsers.get(String(to));
         if (targetSocket) {
             io.to(targetSocket).emit('call_rejected', { from: data.from });
@@ -185,7 +238,13 @@ io.on('connection', (socket) => {
 
     // Hang up or cancel a call
     socket.on('end_call', (data) => {
-        const { to } = data;
+        const { to, from } = data;
+
+        userStates.set(String(from), 'ONLINE');
+        broadcastUserState(String(from), 'ONLINE');
+        userStates.set(String(to), 'ONLINE');
+        broadcastUserState(String(to), 'ONLINE');
+
         const targetSocket = connectedUsers.get(String(to));
         if (targetSocket) {
             io.to(targetSocket).emit('call_ended', { from: data.from });

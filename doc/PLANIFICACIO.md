@@ -62,10 +62,9 @@ Un cop validada la base, ens vam centrar en la integració de recursos, la flexi
 
 | ID | Tasca | Descripció Detallada | Responsable |
 | :--- | :--- | :--- | :--- |
-| T3.1 | **Integració Discord** | Connexió amb servidor extern per a la comunitat escolar. | Arnau Pericas |
-| T3.2 | **Gestor de Recursos** | Sistema de pujada de teoria, enllaços (URLs) i multimèdia. | Marc Armon |
-| T3.3 | **Horaris Dinàmics** | Eina de modificació d'horaris en temps real amb validació de col·lisions. | Marc Armon |
-| T3.4 | **Unificació de Dades** | Centralització de professors (MongoDB IDs) i neteja d'entorn. | Marc Armon |
+| T3.1 | **Gestor de Recursos** | Sistema de pujada de teoria, enllaços (URLs) i multimèdia. | Marc Armon |
+| T3.2 | **Horaris Dinàmics** | Eina de modificació d'horaris en temps real amb validació de col·lisions. | Marc Armon |
+| T3.3 | **Unificació de Dades** | Centralització de professors (MongoDB IDs) i neteja d'entorn. | Marc Armon |
 
 ### SPRINT 4: Identitat i Videoconferència
 **Objectiu:** Personalització de l'experiència i eines de vídeo per a reunions virtuals.

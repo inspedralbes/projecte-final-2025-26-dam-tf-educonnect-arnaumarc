@@ -65,6 +65,7 @@ interface SocketContextType {
     notifications: NotificationData[];
     messages: MessageData[];
     feed: FeedItem[];
+    userStates: Record<string, string>;
     unreadCount: number;
     isInCall: boolean;
     isCalling: boolean;
@@ -93,6 +94,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
     const [incomingCall, setIncomingCall] = useState<CallData | null>(null);
     const [notifications, setNotifications] = useState<NotificationData[]>([]);
     const [messages, setMessages] = useState<MessageData[]>([]);
+    const [userStates, setUserStates] = useState<Record<string, string>>({});
     const [unreadCount, setUnreadCount] = useState(0);
     const [isInCall, setIsInCall] = useState(false);
     const [isCalling, setIsCalling] = useState(false);
@@ -219,19 +221,19 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             newSocket.emit('register_user', user._id);
         });
 
+        newSocket.on('sync_user_states', (states: Record<string, string>) => {
+            setUserStates(states);
+        });
+
+        newSocket.on('user_state_changed', (data: { userId: string, state: string }) => {
+            setUserStates(prev => ({
+                ...prev,
+                [data.userId]: data.state
+            }));
+        });
+
         newSocket.on('incoming_call', (data: CallData) => {
             setIncomingCall(data);
-            // Add a local notification for the feed
-            const meetNotif: NotificationData = {
-                _id: `temp-${Date.now()}`,
-                type: 'MEET_CALL',
-                title: 'Llamada de Meet entrante',
-                content: `Llamada de ${data.fromName}`,
-                read: false,
-                createdAt: new Date().toISOString(),
-                senderModel: 'Professor' // Assuming professor initiated
-            };
-            setNotifications(prev => [meetNotif, ...prev]);
         });
 
         newSocket.on('new_notification', (data: NotificationData) => {
@@ -409,6 +411,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             notifications,
             messages,
             feed,
+            userStates,
             unreadCount,
             isInCall,
             isCalling,

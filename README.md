@@ -1,13 +1,13 @@
-﻿# EduConnect
+# EduConnect
 
-EduConnect és una solució integral 360º de connectivitat educativa que uneix **web**, **mòbil** i **Discord** en un sol ecosistema en temps real.
+EduConnect és una solució integral de connectivitat educativa que ofereix una plataforma web robusta i unificada per a la gestió acadèmica en temps real.
 
 ## Integrants
 - Arnau Perera Ganuza
 - Marc Cara Montes
 
 ## Descripció
-Plataforma multiplataforma per a la gestió acadèmica, horaris dinàmics i notificacions omnicanal (Web, Mobile App i Discord).
+Plataforma web per a la gestió acadèmica, horaris dinàmics i notificacions en temps real, dissenyada per centralitzar la comunicació entre alumnes i professors.
 
 ## 📚 Documentació (entrega)
 - Índex de documentació i apartats A–J: `doc/README.md`
@@ -18,13 +18,10 @@ Plataforma multiplataforma per a la gestió acadèmica, horaris dinàmics i noti
 - Documentació tècnica (E, punt d’entrada): `doc/E-Documentacio-Tecnica/README.md`
 
 ## 🧩 Estructura del codi
-- `main/backend`: API i lògica de negoci
-- `main/frontend`: aplicació web
-- `main/expo-mobile`: aplicació mòbil
-- `main/bot-discord`: bot de Discord
+- `main/backend`: API i lògica de negoci (MongoDB + Node.js)
+- `main/frontend`: aplicació web (React + TypeScript)
 
 ## 🚀 Com començar
 1. `cd main`
 2. `node setup.js`
-3. Si necessites executar-ho tot: `npm run start-all`
-
+3. Executa `npm run start-all` per iniciar frontend i backend simultàniament.

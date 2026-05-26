@@ -5,7 +5,7 @@ The `doc/MANUAL.md` SHALL be updated to replace all placeholders with actual scr
 
 #### Scenario: User manual verification
 - **WHEN** the user reads the `MANUAL.md`
-- **THEN** they see high-quality images illustrating the features described (EduBot, Schedule Editor, etc.) instead of placeholder text.
+- **THEN** they see high-quality images illustrating the features described (Schedule Editor, Course Details, etc.) instead of placeholder text.
 
 ### Requirement: Academic Format Alignment
 The documentation structure SHALL be reorganized to match the professor's requirements: "C Disseny" (Design) and "D CodiFont" (Source Code).

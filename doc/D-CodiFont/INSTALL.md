@@ -19,9 +19,6 @@ Abans d'executar res, has de crear els fitxers `.env` basant-te en els exemples:
 PORT=3001
 MONGO_URI=mongodb://localhost:27017/educonnect
 JWT_SECRET=la_teva_clau_secreta
-DISCORD_TOKEN=token_del_teu_bot
-DISCORD_CLIENT_ID=id_del_bot
-DISCORD_GUILD_ID=id_del_servidor_discord
 ```
 
 ---
@@ -46,12 +43,6 @@ node setup.js
    cd main/frontend
    npm install
    npm run dev
-   ```
-3. **Bot de Discord**:
-   ```bash
-   cd main/bot-discord
-   npm install
-   node bot.js
    ```
 
 ---

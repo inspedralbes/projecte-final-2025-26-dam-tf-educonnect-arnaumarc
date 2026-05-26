@@ -170,11 +170,7 @@ function App() {
       case AppView.ACTIVITY_HISTORY:
         return <ActivityHistoryView user={user} />;
       case AppView.WORKSHOPS:
-        return (
-          <div className="flex items-center justify-center h-[calc(100vh-60px)]">
-            <h2 className="text-2xl text-gray-500 font-bold">Sección de Talleres en construcción</h2>
-          </div>
-        );
+        return user?.type === 'professor' ? <TeacherDashboardView user={user} /> : <TablonView user={user} />;
       default:
         return user?.type === 'professor' ? <TeacherDashboardView user={user} /> : <TablonView user={user} />;
     }
