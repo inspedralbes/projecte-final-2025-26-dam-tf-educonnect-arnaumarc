@@ -243,6 +243,9 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             setNotifications(prev => [data, ...prev]);
             setUnreadCount(prev => prev + 1);
             
+            // Skip toast for calls (NotificationBot handles the special Call Toast)
+            if (data.type === 'MEET_CALL') return;
+
             toast.custom((t) => (
                 <InteractiveToast 
                     id={t.id}
@@ -265,16 +268,6 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             if (data.sender?._id !== user?._id) {
                 toast.success(`Nuevo mensaje de ${data.sender?.nombre || 'Alguien'}`);
             }
-        });
-
-        newSocket.on('sync_notifications', (data: NotificationData[]) => {
-            // Mezclar con las actuales evitando duplicados
-            setNotifications(prev => {
-                const existingIds = new Set(prev.map(n => n._id));
-                const newOnes = data.filter(n => !existingIds.has(n._id));
-                return [...newOnes, ...prev];
-            });
-            setUnreadCount(prev => prev + data.length);
         });
 
         newSocket.on('call_failed', (data: { reason: string }) => {

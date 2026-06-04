@@ -15,18 +15,18 @@ Basat en l’estat actual del repositori i els requisits A–J, aquestes són le
 
 ## Prioritat 1 — Presentació i qualitat (format i “bona presentació”)
 
-- [ ] Corregir **encoding (UTF-8)** en documents que mostren caràcters tipus `Ã³`, `Ã¨`, etc. (s’ha detectat a `doc/PLANIFICACIO.md`, `doc/MANUAL.md`, `doc/C-Disseny/*.md`).
-- [ ] Revisar coherència de **noms i rols** (integrants, responsables, curs/cicle, etc.) a tots els documents.
+- [x] Corregir **encoding (UTF-8)** en documents que mostren caràcters tipus `Ã³`, `Ã¨`, etc. (s’ha detectat a `doc/PLANIFICACIO.md`, `doc/MANUAL.md`, `doc/C-Disseny/*.md`).
+- [x] Revisar coherència de **noms i rols** (integrants, responsables, curs/cicle, etc.) a tots els documents.
 - [ ] Afegir/organitzar una carpeta d’**assets** (logos, captures) per reutilitzar en PDFs/presentacions (p. ex. `doc/assets/` i/o `doc/A-Resum/assets/`).
 
 ## A — Presentació Resum (PDF) (`resum_2425_EduConnect.pdf`)
 
 Font actual: `doc/A-Resum/resum.md` (té diversos TODO).
 
-- [ ] Diapo 1: completar frase descriptiva, curs/cicle, i afegir logo escuela.
+- [x] Diapo 1: completar frase descriptiva, curs/cicle, i afegir logo escuela.
 - [ ] Diapo 2: afegir **captura significativa** del projecte.
-- [ ] Diapo 3: escriure **abstract** (màx. 10 línies).
-- [ ] Diapo 4: afegir **logos tecnologies** (web, backend, BD, discord, etc.).
+- [x] Diapo 3: escriure **abstract** (màx. 10 línies).
+- [x] Diapo 4: afegir **logos tecnologies** (web, backend, BD, discord, etc.).
 - [ ] Afegir 4–8 captures d’ús de l’app (flux principal) amb peu de foto.
 - [ ] Generar el PDF final i substituir `doc/resum_2425_EduConnect.pdf`.
 

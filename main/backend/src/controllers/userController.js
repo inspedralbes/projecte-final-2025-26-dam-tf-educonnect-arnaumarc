@@ -48,9 +48,6 @@ const getUser = async (req, res) => {
         });
 
         const submissionsCount = await Submission.countDocuments({ studentId: req.params.id });
-        const messagesCount = await Message.countDocuments({ 
-            $or: [{ sender: req.params.id }, { receiver: req.params.id }] 
-        });
 
         if (!user) {
             const professor = await Professor.findById(req.params.id).lean();
@@ -60,8 +57,7 @@ const getUser = async (req, res) => {
                 professor.enrolledCourses = courses;
                 professor.type = 'professor';
                 professor.stats = {
-                    submissionsCount: 0, // Professors don't submit, but maybe they receive?
-                    activityCount: messagesCount
+                    submissionsCount: 0 // Professors don't submit
                 };
                 return res.json(professor);
             }
@@ -71,8 +67,7 @@ const getUser = async (req, res) => {
             const u = user.toObject ? user.toObject() : user;
             u.type = u.type || 'alumno';
             u.stats = {
-                submissionsCount: submissionsCount,
-                activityCount: messagesCount
+                submissionsCount: submissionsCount
             };
             return res.json(u);
         }
@@ -103,12 +98,8 @@ const updateUserSettings = async (req, res) => {
 
         await user.save();
 
-        const messagesCount = await Message.countDocuments({ 
-            $or: [{ sender: req.params.id }, { receiver: req.params.id }] 
-        });
-        
         let populatedUser;
-        let stats = { activityCount: messagesCount, submissionsCount: 0 };
+        let stats = { submissionsCount: 0 };
 
         if (isAlumno) {
             populatedUser = await Alumno.findById(user._id).populate({ 

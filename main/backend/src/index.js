@@ -93,20 +93,6 @@ io.on('connection', (socket) => {
             // Enviar estados actuales al nuevo usuario
             const currentStates = Object.fromEntries(userStates);
             socket.emit('sync_user_states', currentStates);
-
-            // Sincronizar notificaciones no leÃ­das al conectar
-            try {
-                const pendingNotifications = await Notification.find({ 
-                    recipient: userId, 
-                    read: false 
-                }).sort({ createdAt: -1 });
-                
-                if (pendingNotifications.length > 0) {
-                    socket.emit('sync_notifications', pendingNotifications);
-                }
-            } catch (error) {
-                console.error('Error sincronizando notificaciones:', error);
-            }
         }
     });
 

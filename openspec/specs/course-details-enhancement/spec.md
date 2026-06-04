@@ -69,3 +69,14 @@ El frontend SHALL asegurar que al enviar el formulario de creación de recurso o
 #### Scenario: Submitting the resource creation form
 - **WHEN** el profesor pulsa "Guardar" en el modal de nuevo recurso
 - **THEN** la petición enviada a la API debe incluir `requiresSubmission: true` si el `type` es `'task'`.
+
+### Requirement: Presentación de Estadísticas de Usuario
+El perfil de usuario MUST mostrar contadores de actividad reales basados en los datos del usuario, omitiendo cualquier dependencia de datos mock o falsos.
+
+#### Scenario: Visualización de Cursos
+- **WHEN** el usuario visualiza su perfil
+- **THEN** el sistema lee el número de cursos inscritos desde el objeto usuario y presenta el contador bajo la etiqueta "Cursos".
+
+#### Scenario: Visualización de Entregas
+- **WHEN** el usuario visualiza su perfil
+- **THEN** el sistema lee el recuento de entregas desde las estadísticas del usuario y lo presenta bajo la etiqueta "Entregues".
