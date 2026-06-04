@@ -43,14 +43,20 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   }, []);
 
   const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
+    // Si no hay usuario, mostramos todo por defecto (o según prefieras)
+    if (!user) return true;
+
+    // Si es una actividad o examen, debe pertenecer a uno de los cursos del alumno
     if (ev.type === 'activity' || ev.type === 'exam') {
-      if (user?.enrolledCourses) {
-        // If user has real enrolled courses (as objects or strings)
-        const courses = user.enrolledCourses as any[];
-        return courses.some(c => (c._id || c) === ev.data.courseId);
-      }
-      return true;
+      const enrolledIds = (user.enrolledCourses || []).map((c: any) => 
+        typeof c === 'object' ? (c._id || c.id) : c
+      );
+      
+      const courseId = ev.data.courseId?._id || ev.data.courseId;
+      return enrolledIds.includes(String(courseId));
     }
+    
+    // Otros tipos (festivos, eventos generales) se muestran a todos
     return true;
   });
 

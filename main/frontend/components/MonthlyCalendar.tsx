@@ -81,40 +81,42 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-800 border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] flex flex-col h-full transition-all duration-300">
+        <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-xl shadow-gray-200/50 dark:shadow-none flex flex-col h-full transition-all duration-300 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b-2 border-black dark:border-white bg-white dark:bg-zinc-800 transition-colors">
-                <h2 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2 text-black dark:text-white">
-                    <CalendarIcon size={24} />
-                    {monthNames[month]} {year}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors">
+                <h2 className="text-xl font-bold tracking-tight flex items-center gap-3 text-gray-900 dark:text-white">
+                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <CalendarIcon size={20} />
+                    </div>
+                    {monthNames[month]} <span className="text-gray-400 font-medium">{year}</span>
                 </h2>
                 <div className="flex gap-2">
                     <button
                         onClick={prevMonth}
-                        className="p-1 border-2 border-black dark:border-white text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                        className="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all active:scale-95"
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={18} />
                     </button>
                     <button
                         onClick={nextMonth}
-                        className="p-1 border-2 border-black dark:border-white text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                        className="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all active:scale-95"
                     >
-                        <ChevronRight size={20} />
+                        <ChevronRight size={18} />
                     </button>
                 </div>
             </div>
 
             {/* Days Header */}
-            <div className="grid grid-cols-7 border-b-2 border-black dark:border-white bg-gray-50 dark:bg-zinc-700 transition-colors">
+            <div className="grid grid-cols-7 bg-gray-50 dark:bg-zinc-800/50 transition-colors">
                 {dayNames.map(day => (
-                    <div key={day} className="py-2 text-center text-xs font-bold uppercase border-r-2 last:border-r-0 border-black dark:border-white text-black dark:text-white transition-colors">
+                    <div key={day} className="py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-zinc-500">
                         {day}
                     </div>
                 ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 flex-1 min-h-[350px] bg-white dark:bg-zinc-800">
+            <div className="grid grid-cols-7 flex-1 min-h-[400px] bg-white dark:bg-zinc-900">
                 {calendarDays.map((day, index) => {
                     const dayEvents = day ? getEventsForDay(day) : [];
                     const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
@@ -123,32 +125,31 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
                         <div
                             key={index}
                             className={`
-                min-h-[60px] p-1 border-r-2 border-b-2 border-black dark:border-zinc-600 last:border-r-0 transition-colors
-                ${!day
-                                    ? 'bg-gray-100/50 dark:bg-zinc-900/50'
-                                    : isToday
-                                        ? 'bg-yellow-200 dark:bg-yellow-400/30'
-                                        : 'bg-white dark:bg-zinc-800'
-                                } 
-              `}
+                                min-h-[80px] p-2 border-r border-b border-gray-100 dark:border-zinc-800 last:border-r-0 transition-colors relative group
+                                ${!day ? 'bg-gray-50/30 dark:bg-zinc-900/50' : 'bg-white dark:bg-zinc-900'} 
+                            `}
                         >
                             {day && (
                                 <>
-                                    <div className={`text-xs font-black mb-1 transition-colors ${isToday ? 'bg-black text-white dark:bg-white dark:text-black px-1 inline-block' : 'text-black dark:text-white'}`}>
+                                    <div className={`text-xs font-bold mb-2 transition-colors flex items-center justify-center w-6 h-6 rounded-lg ${
+                                        isToday 
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                                            : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-200'
+                                    }`}>
                                         {day}
                                     </div>
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1.5 overflow-hidden">
                                         {dayEvents.map((event, i) => (
                                             <div
                                                 key={i}
                                                 title={event.data.title}
                                                 className={`
-                          text-[10px] p-0.5 border border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] leading-tight truncate transition-all rounded-sm
-                          ${getEventStyle(event.type)}
-                        `}
+                                                    text-[9px] p-1.5 border border-transparent leading-tight truncate transition-all rounded-lg font-bold flex items-center gap-1
+                                                    ${getEventStyle(event.type)}
+                                                `}
                                             >
-                                                <span className="font-bold">{getEventPrefix(event.type)}</span>
-                                                {event.data.title}
+                                                <span className="shrink-0">{getEventPrefix(event.type)}</span>
+                                                <span className="truncate">{event.data.title}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -160,26 +161,26 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
             </div>
 
             {/* Legend */}
-            <div className="p-3 border-t-2 border-black dark:border-white flex flex-wrap gap-4 text-[10px] font-black bg-white dark:bg-zinc-900 text-black dark:text-white transition-colors uppercase tracking-widest">
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-blue-100 dark:bg-blue-900/30 border border-black dark:border-white"></div>
-                    <span>Activitats</span>
+            <div className="p-4 border-t border-gray-100 dark:border-zinc-800 flex flex-wrap justify-center gap-5 bg-gray-50/50 dark:bg-zinc-900 transition-colors">
+                <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Activitats</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-rose-100 dark:bg-rose-900/30 border border-black dark:border-white"></div>
-                    <span>Exàmens</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Exàmens</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-amber-100 dark:bg-amber-900/30 border border-black dark:border-white"></div>
-                    <span>Esdeveniments</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Esdeveniments</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-green-100 dark:bg-green-900/30 border border-black dark:border-white"></div>
-                    <span>Festius</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Festius</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-zinc-100 dark:bg-zinc-800 border border-black dark:border-white"></div>
-                    <span>Vagues</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-400 shadow-[0_0_8px_rgba(161,161,170,0.5)]"></div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vagues</span>
                 </div>
             </div>
         </div>

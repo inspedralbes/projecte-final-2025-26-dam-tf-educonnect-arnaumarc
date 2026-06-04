@@ -121,8 +121,15 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
         };
     }, [user]);
 
-    // Teachers see all events for now
-    const filteredEvents = events.length > 0 ? events : MOCK_EVENTS;
+    // Teachers see events related to their courses or general events
+    const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
+        if (ev.type === 'activity' || ev.type === 'exam') {
+            const courseId = ev.data.courseId?._id || ev.data.courseId;
+            // Check if this event belongs to one of the teacher's courses
+            return teacherCourses.some(c => String(c.id || c._id) === String(courseId));
+        }
+        return true;
+    });
 
     // Filter messages by category based on if they have a course associated
     const personalMessages = messages.filter(msg => !msg.course && msg.receiver === (user?._id || (user as any)?.id));

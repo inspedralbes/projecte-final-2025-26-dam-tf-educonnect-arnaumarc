@@ -846,36 +846,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                            <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl flex flex-col gap-3">
-                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                                    <BookOpen className="text-blue-500" size={18} />
-                                    Información del Docente
-                                </h3>
-                                <div className="space-y-2">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        <span className="font-bold text-gray-900 dark:text-white mr-2">Especialidad:</span>
-                                        {typeof course.professor === 'object' ? course.professor.especialidad : 'Especialista en Educación'}
-                                    </p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        <span className="font-bold text-gray-900 dark:text-white mr-2">Contacto:</span>
-                                        {typeof course.professor === 'object' ? course.professor.email : 'contacto@educonnect.com'}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        if (typeof course.professor === 'object') {
-                                            setMessageRecipient(course.professor);
-                                            setShowMessageModal(true);
-                                        }
-                                    }}
-                                    className="mt-2 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all w-fit"
-                                >
-                                    <MessageCircle size={16} />
-                                    Enviar Mensaje Directo
-                                </button>
-                            </div>
-
+                        <div className="pt-4">
                             <div className="p-6 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Calendar className="text-indigo-500" size={18} />
