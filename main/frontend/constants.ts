@@ -40,33 +40,37 @@ export const MOCK_USER = {
   enrolledCourses: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 };
 
+const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
+
 export const MOCK_EVENTS: CalendarEvent[] = [
   {
     type: 'activity',
-    data: { id: '1', title: 'Entrega Projecte Final', dueDate: new Date(2026, 1, 18).toISOString(), courseId: '2' }
+    data: { id: '1', title: 'Entrega Projecte Final', date: new Date(currentYear, currentMonth, 18).toISOString(), courseId: '2' }
   },
   {
     type: 'activity',
-    data: { id: '2', title: 'Exercicis Unitat 3', dueDate: new Date(2026, 1, 20).toISOString(), courseId: '3' }
+    data: { id: '2', title: 'Exercicis Unitat 3', date: new Date(currentYear, currentMonth, 20).toISOString(), courseId: '3' }
   },
   {
     type: 'exam',
-    data: { id: '3', title: 'Examen IPO II', date: new Date(2026, 1, 25).toISOString(), courseId: '1' }
+    data: { id: '3', title: 'Examen IPO II', date: new Date(currentYear, currentMonth, 25).toISOString(), courseId: '1' }
   },
   {
     type: 'exam',
-    data: { id: '4', title: 'Global Accés a Dades', date: new Date(2026, 1, 27).toISOString(), courseId: '4' }
+    data: { id: '4', title: 'Global Accés a Dades', date: new Date(currentYear, currentMonth, 27).toISOString(), courseId: '4' }
   },
   {
     type: 'event',
-    data: { id: 'e5', title: 'Hackathon IA', date: new Date(2026, 2, 5).toISOString(), courseId: 'c4' }
+    data: { id: 'e5', title: 'Hackathon IA', date: new Date(currentYear, currentMonth + 1, 5).toISOString(), courseId: 'c4' }
   },
   {
     type: 'holiday',
-    data: { id: 'h1', title: 'Setmana Santa', date: new Date(2026, 3, 2).toISOString() }
+    data: { id: 'h1', title: 'Festiu Local', date: new Date(currentYear, currentMonth, 15).toISOString() }
   },
   {
     type: 'strike',
-    data: { id: 's1', title: 'Vaga Transport', date: new Date(2026, 1, 20).toISOString() }
+    data: { id: 's1', title: 'Vaga General', date: new Date(currentYear, currentMonth, 10).toISOString() }
   }
 ];

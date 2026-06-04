@@ -36,7 +36,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                             id: ev._id,
                             title: ev.title,
                             date: ev.date,
-                            courseId: ev.courseId?._id
+                            courseId: ev.courseId?._id || ev.courseId
                         }
                     }));
                     setEvents(formattedEvents);

@@ -43,12 +43,9 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
 
     const getEventsForDay = (day: number) => {
         return events.filter(event => {
-            let dateString: string;
-            if (event.type === 'activity') {
-                dateString = event.data.dueDate;
-            } else {
-                dateString = event.data.date;
-            }
+            const dateString = event.data.date || event.data.dueDate;
+            if (!dateString) return false;
+
             const eventDate = new Date(dateString);
             return (
                 eventDate.getDate() === day &&

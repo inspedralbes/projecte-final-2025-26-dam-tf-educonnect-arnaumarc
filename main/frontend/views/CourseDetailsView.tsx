@@ -411,9 +411,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 })
             });
             if (response.ok) {
+                const data = await response.json();
                 setShowAddTopicModal(false);
                 setNewTopicTitle('');
                 setNewTopicDesc('');
+                if (data && data._id) {
+                    setExpandedTopics(prev => ({ ...prev, [data._id]: true }));
+                }
                 fetchTopics();
             }
         } catch (error) {
