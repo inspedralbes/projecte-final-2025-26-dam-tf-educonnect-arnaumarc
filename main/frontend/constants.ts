@@ -40,37 +40,4 @@ export const MOCK_USER = {
   enrolledCourses: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 };
 
-const now = new Date();
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
-
-export const MOCK_EVENTS: CalendarEvent[] = [
-  {
-    type: 'activity',
-    data: { id: '1', title: 'Entrega Projecte Final', date: new Date(currentYear, currentMonth, 18).toISOString(), courseId: '2' }
-  },
-  {
-    type: 'activity',
-    data: { id: '2', title: 'Exercicis Unitat 3', date: new Date(currentYear, currentMonth, 20).toISOString(), courseId: '3' }
-  },
-  {
-    type: 'exam',
-    data: { id: '3', title: 'Examen IPO II', date: new Date(currentYear, currentMonth, 25).toISOString(), courseId: '1' }
-  },
-  {
-    type: 'exam',
-    data: { id: '4', title: 'Global Accés a Dades', date: new Date(currentYear, currentMonth, 27).toISOString(), courseId: '4' }
-  },
-  {
-    type: 'event',
-    data: { id: 'e5', title: 'Hackathon IA', date: new Date(currentYear, currentMonth + 1, 5).toISOString(), courseId: 'c4' }
-  },
-  {
-    type: 'holiday',
-    data: { id: 'h1', title: 'Festiu Local', date: new Date(currentYear, currentMonth, 15).toISOString() }
-  },
-  {
-    type: 'strike',
-    data: { id: 's1', title: 'Vaga General', date: new Date(currentYear, currentMonth, 10).toISOString() }
-  }
-];
+export const MOCK_EVENTS: CalendarEvent[] = [];

@@ -42,7 +42,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       .catch(err => console.error('Error fetching events:', err));
   }, []);
 
-  const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
+  const filteredEvents = events.filter(ev => {
     // Si no hay usuario, mostramos todo por defecto (o según prefieras)
     if (!user) return true;
 

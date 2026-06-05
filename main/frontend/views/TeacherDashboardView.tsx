@@ -122,7 +122,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     }, [user]);
 
     // Teachers see events related to their courses or general events
-    const filteredEvents = (events.length > 0 ? events : MOCK_EVENTS).filter(ev => {
+    const filteredEvents = events.filter(ev => {
         if (ev.type === 'activity' || ev.type === 'exam') {
             const courseId = ev.data.courseId?._id || ev.data.courseId;
             // Check if this event belongs to one of the teacher's courses

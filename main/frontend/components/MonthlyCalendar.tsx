@@ -42,16 +42,16 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({ events }) => {
     }
 
     const getEventsForDay = (day: number) => {
+        // Construimos el string YYYY-MM-DD para el día actual de la cuadrícula
+        const targetStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
         return events.filter(event => {
             const dateString = event.data.date || event.data.dueDate;
             if (!dateString) return false;
 
-            const eventDate = new Date(dateString);
-            return (
-                eventDate.getDate() === day &&
-                eventDate.getMonth() === month &&
-                eventDate.getFullYear() === year
-            );
+            // Extraemos solo la parte de la fecha YYYY-MM-DD
+            const eventDatePart = dateString.split('T')[0];
+            return eventDatePart === targetStr;
         });
     };
 
