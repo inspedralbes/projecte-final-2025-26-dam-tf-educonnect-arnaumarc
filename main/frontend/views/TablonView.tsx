@@ -272,8 +272,8 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         <div className="p-6 min-h-[200px]">
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-              {activeTab === 'personal' && <Bell size={20} className="text-blue-500" />}
-              {activeTab === 'clase' && <BookOpen size={20} className="text-amber-500" />}
+              {activeTab === 'personal' && <Bell size={20} className="text-violet-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.75)]" />}
+              {activeTab === 'clase' && <BookOpen size={20} className="text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.75)]" />}
               {activeTab === 'general' && <Building size={20} className="text-indigo-500" />}
               {activeTab === 'personal' ? 'Notificaciones Personales' : activeTab === 'clase' ? 'Avisos de Clase' : 'Avisos de la Escuela'}
             </h2>
