@@ -1,7 +1,7 @@
 import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../config';
-import { AppView, NotificationData } from '../types';
-import { useSocket } from '../src/context/SocketContext';
+import { AppView } from '../types';
+import { useSocket, NotificationData } from '../src/context/SocketContext';
 import toast from 'react-hot-toast';
 
 interface NotificationPanelProps {
@@ -17,23 +17,39 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
         if (!notif.read) {
             markNotificationAsRead(notif._id);
         }
-        
-        if (notif.link && setView) {
-            // Parse link: /asignaturas?courseId=ID&topicId=ID&resourceId=ID
-            const url = new URL(notif.link, window.location.origin);
-            const courseId = url.searchParams.get('courseId');
-            const topicId = url.searchParams.get('topicId');
-            const resourceId = url.searchParams.get('resourceId');
-            const eventId = url.searchParams.get('eventId');
 
-            if (courseId) {
-                localStorage.setItem('selectedCourse', courseId);
-                if (topicId || resourceId || eventId) {
-                    localStorage.setItem('deepLinkData', JSON.stringify({ topicId, resourceId, eventId }));
+        if (notif.link && setView) {
+            try {
+                // Parse link: /asignaturas?courseId=ID&topicId=ID&resourceId=ID
+                const url = new URL(notif.link, window.location.origin);
+                const path = url.pathname;
+
+                if (path.includes('asignaturas')) {
+                    const courseId = url.searchParams.get('courseId');
+                    const topicId = url.searchParams.get('topicId');
+                    const resourceId = url.searchParams.get('resourceId');
+                    const eventId = url.searchParams.get('eventId');
+
+                    if (courseId) {
+                        localStorage.setItem('selectedCourse', courseId);
+                        if (topicId || resourceId || eventId) {
+                            localStorage.setItem('deepLinkData', JSON.stringify({ topicId, resourceId, eventId }));
+                        }
+                    }
+                    setView(AppView.ASIGNATURAS);
+                } else if (path.includes('perfil')) {
+                    setView(AppView.PROFILE);
+                } else if (path.includes('meet')) {
+                    setView(AppView.MEET);
+                } else if (path.includes('tablon')) {
+                    setView(AppView.TABLON);
+                } else if (path.includes('historial')) {
+                    setView(AppView.ACTIVITY_HISTORY);
                 }
-                setView(AppView.ASIGNATURAS);
+                onClose();
+            } catch (e) {
+                console.error('Error handling notification click', e);
             }
-            onClose();
         }
     };
 
@@ -74,7 +90,65 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
     };
 
     const getTypeDetails = (notif: NotificationData) => {
-// ... getTypeDetails implementation ...
+        switch (notif.type) {
+            case 'COURSE_INVITE':
+                return {
+                    icon: <UserPlus size={18} className="text-indigo-500" />,
+                    label: 'Invitación',
+                    color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+                    border: 'border-indigo-500'
+                };
+            case 'MATERIAL':
+                return {
+                    icon: <BookOpen size={18} className="text-blue-500" />,
+                    label: 'Material',
+                    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    border: 'border-blue-500'
+                };
+            case 'EXAM':
+                return {
+                    icon: <GraduationCap size={18} className="text-red-500" />,
+                    label: 'Examen',
+                    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                    border: 'border-red-500'
+                };
+            case 'MESSAGE':
+            case 'MEET_MESSAGE':
+                return {
+                    icon: <MessageSquare size={18} className="text-green-500" />,
+                    label: 'Mensaje',
+                    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    border: 'border-green-500'
+                };
+            case 'MEET_CALL':
+                return {
+                    icon: <Phone size={18} className="text-green-500 animate-bounce" />,
+                    label: 'Llamada',
+                    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    border: 'border-green-500'
+                };
+            case 'PROFESSOR_ADVISORY':
+                return {
+                    icon: <Award size={18} className="text-amber-500" />,
+                    label: 'Aviso Prof.',
+                    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                    border: 'border-amber-500'
+                };
+            case 'ANNOUNCEMENT':
+                return {
+                    icon: <Info size={18} className="text-blue-500" />,
+                    label: 'Anuncio',
+                    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    border: 'border-blue-500'
+                };
+            default:
+                return {
+                    icon: <Bell size={18} className="text-gray-500" />,
+                    label: 'Notificación',
+                    color: 'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-400',
+                    border: 'border-gray-400'
+                };
+        }
     };
 
     return (
