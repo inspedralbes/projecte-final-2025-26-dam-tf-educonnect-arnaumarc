@@ -40,7 +40,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
           handled = true;
 
           if (data.success) {
-            onLogin({ ...data.user, type: data.type });
+            onLogin({ user: data.user, type: data.type, token: data.token });
           } else {
             setError(data.message || 'Email o contraseña incorrectos');
           }

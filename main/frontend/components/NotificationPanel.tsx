@@ -1,4 +1,4 @@
-import { Bell, Check, Clock, X, ExternalLink, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
+import { Bell, Check, Clock, X, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { AppView, NotificationData } from '../types';
 import { useSocket } from '../src/context/SocketContext';
@@ -241,17 +241,6 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                     <Clock size={10} />
                                                     {new Date(notif.createdAt).toLocaleDateString()}
                                                 </div>
-                                                {notif.link && (
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleNotificationClick(notif);
-                                                        }}
-                                                        className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:underline"
-                                                    >
-                                                        Ir <ExternalLink size={10} />
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                     </div>

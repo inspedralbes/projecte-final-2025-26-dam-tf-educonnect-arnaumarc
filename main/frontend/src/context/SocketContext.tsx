@@ -251,7 +251,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
                     id={t.id}
                     title={data.title}
                     content={data.content}
-                    onMarkAsRead={() => markNotificationAsRead(data._id)}
+                    onMarkAsRead={() => deleteNotification(data._id)}
                 />
             ), { duration: 5000 });
         });

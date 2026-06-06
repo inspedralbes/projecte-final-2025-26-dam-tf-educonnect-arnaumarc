@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
           onClick={() => setView(AppView.MEET)}
           className={getTabClass(AppView.MEET)}
         >
-          Meet
+          Chat
           {currentView === AppView.MEET && (
             <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
           )}

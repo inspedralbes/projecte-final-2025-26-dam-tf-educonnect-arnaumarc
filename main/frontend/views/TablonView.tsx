@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, User as UserIcon, BookOpen, Building, Trash2, ChevronDown, ChevronRight, Clock, Phone, MessageSquare, GraduationCap } from 'lucide-react';
+import { Bell, User as UserIcon, BookOpen, Building, Trash2, ChevronDown, ChevronRight, Clock, MessageSquare, GraduationCap } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { MOCK_EVENTS } from '../constants';
 import { User } from '../types';
@@ -133,33 +133,6 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
             type: item.type,
             courseId: item.courseId,
             title: `${groupItems.length} nuevos ${item.type === 'MATERIAL' ? 'materiales' : 'avisos'} de clase`,
-            date: item.date
-          });
-          groupItems.forEach(gi => processedIds.add(gi.id));
-          return;
-        }
-      }
-
-      // Nueva agrupación para eventos de Meet del mismo remitente y mismo día
-      if (item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE') {
-        const sameSenderAndDay = items.filter(other => 
-          other.id !== item.id &&
-          !processedIds.has(other.id) &&
-          (other.type === 'MEET_CALL' || other.type === 'MEET_MESSAGE') &&
-          other.sender?._id === item.sender?._id &&
-          new Date(other.date).toDateString() === new Date(item.date).toDateString()
-        );
-
-        if (sameSenderAndDay.length > 0) {
-          const groupItems = [item, ...sameSenderAndDay];
-          const groupId = `group-meet-${item.sender?._id}-${new Date(item.date).toDateString()}`;
-          groups.push({
-            isGroup: true,
-            id: groupId,
-            items: groupItems,
-            type: 'MEET_GROUP',
-            courseId: '',
-            title: `Actividad reciente en Meet de ${item.sender?.nombre || 'Profesor'} ${item.sender?.apellidos || ''}`,
             date: item.date
           });
           groupItems.forEach(gi => processedIds.add(gi.id));
@@ -316,7 +289,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                       >
                         <div className="flex items-center gap-3 text-gray-900 dark:text-white font-bold">
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                            {item.type === 'MATERIAL' ? <BookOpen size={16} /> : (item.type === 'MEET_GROUP' ? <Phone size={16} /> : <Bell size={16} />)}
+                            {item.type === 'MATERIAL' ? <BookOpen size={16} /> : <Bell size={16} />}
                           </div>
                           {item.title}
                           <span className="ml-2 text-xs font-medium text-gray-400">({item.items.length})</span>

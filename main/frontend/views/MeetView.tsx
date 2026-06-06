@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, Phone, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, PhoneOff, PhoneIncoming, MessageSquare } from 'lucide-react';
+import { Video, User as UserIcon, X, Mic, MicOff, VideoOff, MonitorUp, MessageSquare } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { User } from '../types';
 import toast from 'react-hot-toast';
@@ -298,10 +298,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                             <div className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{incomingCall.fromName}</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-8 flex items-center gap-2">
-                            <PhoneIncoming size={16} className="animate-bounce" />
-                            Llamada entrante...
-                        </p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8">Missatge entrant...</p>
                         <div className="flex gap-4 w-full">
                             <button 
                                 onClick={rejectCall}
@@ -313,7 +310,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 onClick={acceptCall}
                                 className="flex-1 bg-green-500 text-white hover:bg-green-600 py-3 rounded-2xl font-bold shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2"
                             >
-                                <Video size={20} /> Aceptar
+                                <MessageSquare size={20} />
                             </button>
                         </div>
                     </div>
@@ -325,14 +322,14 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 backdrop-blur-[2px] animate-in fade-in duration-300">
                     <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl flex flex-col items-center animate-in zoom-in-95 duration-500">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-                            <Phone className="text-blue-500 animate-pulse" size={32} />
+                            <MessageSquare size={32} className="text-blue-500 animate-pulse" />
                         </div>
                         <p className="text-gray-900 dark:text-white font-bold mb-4">Llamando a {activeCallUser?.nombre}...</p>
                         <button 
                             onClick={endCall}
                             className="bg-red-500 text-white p-4 rounded-full hover:bg-red-600 transition-all"
                         >
-                            <PhoneOff size={24} />
+                            <X size={24} />
                         </button>
                     </div>
                 </div>
@@ -395,17 +392,6 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                         >
                                             <MessageSquare size={16} />
                                         </button>
-                                        <button
-                                            onClick={() => startCall(u)}
-                                            disabled={isInCall || isCalling || !!incomingCall || isBusy || isOffline}
-                                            className={`p-2.5 rounded-full transition-all ${!isInCall && !isCalling && !incomingCall && !isBusy && !isOffline
-                                                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
-                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600'
-                                                }`}
-                                            title={isBusy ? "Ocupado" : isOffline ? "Desconectado" : "Llamada de video"}
-                                        >
-                                            <Video size={16} />
-                                        </button>
                                     </div>
                                 </div>
                             );
@@ -415,7 +401,15 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             </div>
 
             {/* Main Area - Call Interface */}
-            <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-8 relative">
+            <div className="flex-1 flex flex-col lg:flex-row items-stretch gap-4 p-2 md:p-4 relative overflow-hidden">
+                <div className={`${isChatOpen ? 'flex' : 'hidden lg:flex'} order-1 w-full lg:flex-[1.25] min-w-0 h-full`}>
+                    <ChatPanel
+                        currentUser={user}
+                        targetUser={activeChatUser}
+                        onClose={() => setIsChatOpen(false)}
+                    />
+                </div>
+                <div className="order-2 w-full lg:flex-[0.85] min-w-0 flex flex-col items-center justify-center p-2 md:p-6 relative">
                 {isInCall && activeCallUser ? (
                     <div className="w-full h-full max-w-6xl bg-black rounded-3xl overflow-hidden shadow-2xl relative flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
                         {/* Remote Video */}
@@ -511,7 +505,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 className="p-4 md:p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/40 active:scale-95"
                                 title="Colgar"
                             >
-                                <PhoneOff size={28} />
+                                <X size={28} />
                             </button>
                         </div>
                     </div>
@@ -534,22 +528,16 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div>
                             <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{activeChatUser.nombre} {activeChatUser.apellidos}</h3>
                             <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 font-medium">
-                                <MessageSquare size={18} />
                                 <span>Chateando ahora</span>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-3">
                             <button 
-                                onClick={() => startCall(activeChatUser)}
-                                disabled={(userStates[activeChatUser._id] || 'OFFLINE') !== 'ONLINE'}
-                                className={`w-full py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 ${
-                                    (userStates[activeChatUser._id] || 'OFFLINE') === 'ONLINE' 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20' 
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600 shadow-none'
-                                }`}
+                                onClick={() => setIsChatOpen(true)}
+                                className="w-full py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
                             >
-                                <Video size={22} /> Iniciar Videollamada
+                                <MessageSquare size={22} />
                             </button>
                             <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold pt-2">
                                 {activeChatUser.type === 'professor' ? 'Teacher' : 'Student'} • {userStates[activeChatUser._id] || 'OFFLINE'}
@@ -559,28 +547,18 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 ) : (
                     <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         <div className="w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-500 shadow-inner">
-                            <Video size={64} />
+                            <MessageSquare size={64} />
                         </div>
                         <div>
-                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3">EduConnect Meet</h2>
+                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3">EduConnect Chat</h2>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-lg">
-                                Colabora en tiempo real con alumnos y profesores. Selecciona un contacto para iniciar una videollamada o chatear.
+                                Colabora en tiempo real con alumnos y profesores. Selecciona un contacto para iniciar un chat.
                             </p>
                         </div>
                     </div>
                 )}
-            </div>
-
-            {/* Chat Panel */}
-            {isChatOpen && (
-                <div className="absolute lg:relative right-0 top-0 bottom-0 z-40 w-full lg:w-80 h-full shadow-2xl">
-                    <ChatPanel 
-                        currentUser={user} 
-                        targetUser={activeChatUser}
-                        onClose={() => setIsChatOpen(false)}
-                    />
                 </div>
-            )}
+            </div>
         </div>
     );
 };

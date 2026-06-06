@@ -79,13 +79,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 shadow-xl w-80 animate-in slide-in-from-right duration-300">
+        <div className="flex flex-col h-full min-h-0 w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl shadow-xl overflow-hidden animate-in fade-in duration-300">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
-                <div className="flex items-center gap-2">
-                    <MessageSquare size={18} className="text-blue-500" />
-                    <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-tight text-sm">Chat de Meet</h3>
-                </div>
+                <MessageSquare size={18} className="text-blue-500" aria-label="Chat" />
                 {onClose && (
                     <button onClick={onClose} className="p-1 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-400">
                         <X size={18} />
