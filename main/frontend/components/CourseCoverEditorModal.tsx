@@ -112,7 +112,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-      <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6 md:p-8 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Cambiar portada</h2>

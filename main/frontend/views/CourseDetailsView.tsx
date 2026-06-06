@@ -1382,7 +1382,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal Añadir Tema */}
             {showAddTopicModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
                                 <BookOpen className="text-indigo-500" size={28} />
@@ -1433,7 +1433,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal Añadir Recurso */}
             {showAddResourceModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
                                 <Plus className="text-blue-500" size={28} />
@@ -1629,7 +1629,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal Invitar Alumno (solo profesores) */}
             {isInviteStudentModalOpen && userRole === 'TEACHER' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-6 md:p-8">
                             <div className="flex items-start justify-between gap-4 mb-6">
                                 <div>
@@ -1726,7 +1726,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal de Notificación Masiva */}
             {isNotifyClassModalOpen && (
                 <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <Send size={24} className="text-blue-600 dark:text-blue-400" />
@@ -1812,7 +1812,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal Añadir Evento de Agenda */}
             {showAddEventModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
                                 <Calendar className="text-pink-500" size={28} />
@@ -1953,7 +1953,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             {/* Modal de Entrega (Alumno) */}
             {showSubmissionModal && selectedActivity && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
                                 <Send className="text-blue-500" size={28} />

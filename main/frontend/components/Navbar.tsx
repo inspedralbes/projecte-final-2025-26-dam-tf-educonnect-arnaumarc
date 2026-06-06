@@ -18,32 +18,45 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
 
   const getTabClass = (view: AppView) => {
     const isActive = currentView === view;
-    return `px-6 py-4 cursor-pointer font-semibold transition-all duration-300 border-r border-gray-200 dark:border-zinc-800 relative flex items-center justify-center ${isActive ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`;
+    return `px-8 py-5 cursor-pointer font-bold text-xs uppercase tracking-widest transition-all duration-300 relative flex items-center justify-center gap-2 ${
+      isActive 
+        ? 'text-blue-600 dark:text-blue-400' 
+        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+    }`;
   };
 
   return (
-    <div className="w-full border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300 shadow-sm backdrop-blur-sm">
-      <div className="flex overflow-x-auto no-scrollbar">
+    <div className="w-full border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-between items-center z-50 transition-colors duration-300 shadow-sm shrink-0 h-16 md:h-20">
+      <div className="flex h-full overflow-x-auto no-scrollbar">
         <button
           onClick={() => setView(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
           className={getTabClass(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
         >
           {user?.type === 'professor' ? 'Panel Docente' : 'Tablón'}
+          {currentView === (user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON) && (
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
+          )}
         </button>
         <button
           onClick={() => setView(AppView.ASIGNATURAS)}
           className={getTabClass(AppView.ASIGNATURAS)}
         >
           Asignaturas
+          {currentView === AppView.ASIGNATURAS && (
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
+          )}
         </button>
         <button
           onClick={() => setView(AppView.MEET)}
           className={getTabClass(AppView.MEET)}
         >
           Meet
+          {currentView === AppView.MEET && (
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
+          )}
         </button>
       </div>
-      <div className="px-4 flex items-center space-x-3">
+      <div className="px-6 flex items-center space-x-4">
         {/* Notification Bell */}
         <div className="relative">
           <button
