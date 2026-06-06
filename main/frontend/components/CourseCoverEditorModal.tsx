@@ -68,7 +68,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
         body: JSON.stringify({ professorId, presetId: selectedPresetId })
       });
       const data = await res.json();
-      if (!res.ok || !data?.success) throw new Error(data?.message || 'No se pudo actualizar la portada');
+      if (!res.ok || !data?.success) throw new Error(data?.message || 'No s\'ha pogut actualitzar la portada');
 
       onUpdated(data.course);
       onClose();
@@ -97,7 +97,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
         body: form
       });
       const data = await res.json();
-      if (!res.ok || !data?.success) throw new Error(data?.message || 'No se pudo subir la portada');
+      if (!res.ok || !data?.success) throw new Error(data?.message || 'No s\'ha pogut pujar la portada');
 
       onUpdated(data.course);
       onClose();
@@ -123,7 +123,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
             className="px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800 transition-colors font-semibold"
             disabled={saving}
           >
-            Cerrar
+            Tancar
           </button>
         </div>
 
@@ -137,7 +137,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
           <div className="space-y-3">
             <h3 className="text-sm font-black uppercase tracking-wide text-gray-900 dark:text-white">Predeterminadas</h3>
             {loadingPresets ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Cargando…</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Carregant…</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {presets.map(p => (
@@ -174,7 +174,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-black uppercase tracking-wide text-gray-900 dark:text-white">Subir archivo</h3>
+            <h3 className="text-sm font-black uppercase tracking-wide text-gray-900 dark:text-white">Pujar fitxer</h3>
             <input
               type="file"
               accept="image/*"
@@ -192,7 +192,7 @@ export const CourseCoverEditorModal: React.FC<CourseCoverEditorModalProps> = ({
                 disabled={saving || !uploadFile}
                 className="px-5 py-3 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 transition-colors"
               >
-                {saving ? 'Subiendo…' : 'Subir portada'}
+                {saving ? 'Pujant…' : 'Pujar portada'}
               </button>
             </div>
           </div>

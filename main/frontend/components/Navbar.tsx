@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AppView, User } from '../types';
 import { LogOut, UserCircle, Bell } from 'lucide-react';
 import { useSocket } from '../src/context/SocketContext';
@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
           onClick={() => setView(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
           className={getTabClass(user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON)}
         >
-          {user?.type === 'professor' ? 'Panel Docente' : 'Tablón'}
+          {user?.type === 'professor' ? 'Panell docent' : 'Tauler'}
           {currentView === (user?.type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON) && (
             <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
           )}
@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
           onClick={() => setView(AppView.ASIGNATURAS)}
           className={getTabClass(AppView.ASIGNATURAS)}
         >
-          Asignaturas
+          Assignatures
           {currentView === AppView.ASIGNATURAS && (
             <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
           )}
@@ -96,3 +96,4 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView, onLogout, 
     </div>
   );
 };
+

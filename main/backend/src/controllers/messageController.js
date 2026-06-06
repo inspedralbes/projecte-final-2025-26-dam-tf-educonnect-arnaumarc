@@ -26,8 +26,8 @@ const sendMessage = async (req, res) => {
                 recipientModel: receiverModel || 'Alumno', 
                 sender,
                 senderModel: senderModel || (req.user?.type === 'professor' ? 'Professor' : 'Alumno'),
-                type: title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'MESSAGE',
-                title: title === 'Mensaje de Meet' ? 'Chat de Meet' : 'Nuevo Mensaje: ' + title,
+                type: title === 'Missatge de xat' ? 'MEET_MESSAGE' : 'MESSAGE',
+                title: title === 'Missatge de xat' ? 'Xat' : 'Nou missatge: ' + title,
                 content: content,
                 link: '/perfil',
                 sourceId: message._id // Vincular notificación al mensaje
@@ -80,13 +80,13 @@ const deleteMessage = async (req, res) => {
         const { messageId } = req.params;
         const deletedMessage = await Message.findByIdAndDelete(messageId);
         if (!deletedMessage) {
-            return res.status(404).json({ success: false, message: 'Mensaje no encontrado' });
+            return res.status(404).json({ success: false, message: 'Missatge no trobat' });
         }
 
         // Eliminar notificación vinculada
         await Notification.deleteMany({ sourceId: messageId });
 
-        res.json({ success: true, message: 'Mensaje eliminado' });
+        res.json({ success: true, message: 'Missatge eliminat' });
     } catch (error) {
         console.error('Error deleting message:', error);
         res.status(500).json({ success: false, message: 'Error eliminando mensaje' });

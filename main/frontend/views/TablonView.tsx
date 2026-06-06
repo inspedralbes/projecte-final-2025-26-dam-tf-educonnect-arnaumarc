@@ -43,7 +43,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
   }, []);
 
   const filteredEvents = events.filter(ev => {
-    // Si no hay usuario, mostramos todo por defecto (o según prefieras)
+    // Si no hi ha usuari, mostrem tot per defecte
     if (!user) return true;
 
     // Si es una actividad o examen, debe pertenecer a uno de los cursos del alumno
@@ -70,7 +70,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     return diffDays > 7;
   };
 
-  // Filtrar por tab y luego aplicar agrupación
+  // Filtrar per pestanya i després aplicar agrupació
   const getCategorizedFeed = () => {
     if (activeTab === 'personal') {
       return feed.filter(item => {
@@ -79,7 +79,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         const isProfessorAdvisory = item.type === 'PROFESSOR_ADVISORY';
         const isMeetEvent = item.type === 'MEET_CALL' || item.type === 'MEET_MESSAGE';
         
-        // Exclude messages sent by the current user to avoid self-notifications/activity
+        // Exclou els missatges enviats per l'usuari actual
         const itemSenderId = typeof item.sender === 'string' ? item.sender : item.sender?._id;
         if (itemSenderId === user?._id) return false;
 
@@ -96,7 +96,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
                !isOld(item.date);
       });
     } else {
-      // General: Avisos institucionales (sin curso y de System/Admin) o tipo SYSTEM
+      // General: avisos institucionals (sense curs i de System/Admin) o tipus SYSTEM
       return feed.filter(item => {
         const isInstitutional = (item.raw as any).senderModel === 'System' || (item.raw as any).senderModel === 'Admin';
         const isSystemType = item.type === 'SYSTEM';
@@ -113,7 +113,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
     items.forEach((item) => {
       if (processedIds.has(item.id)) return;
 
-      // Solo agrupar notificaciones de material/aviso del mismo curso en 48h
+      // Agrupa només notificacions de material/avís del mateix curs en 48 h
       if (item.source === 'notification' && (item.type === 'MATERIAL' || item.type === 'ANNOUNCEMENT') && item.courseId) {
         const sameTypeAndCourse = items.filter(other => 
           other.id !== item.id &&
@@ -132,7 +132,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
             items: groupItems,
             type: item.type,
             courseId: item.courseId,
-            title: `${groupItems.length} nuevos ${item.type === 'MATERIAL' ? 'materiales' : 'avisos'} de clase`,
+            title: `${groupItems.length} nous ${item.type === 'MATERIAL' ? 'materials' : 'avisos'} de classe`,
             date: item.date
           });
           groupItems.forEach(gi => processedIds.add(gi.id));
@@ -203,7 +203,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
             <p className="font-semibold text-gray-900 dark:text-white text-base">{item.title}</p>
             {isHighPriority && (
               <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-widest rounded-md animate-pulse">
-                Urgente
+                Urgent
               </span>
             )}
           </div>
@@ -224,7 +224,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
         <button
           onClick={(e) => handleDeleteItem(item, e)}
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
-          title={item.source === 'message' ? 'Eliminar mensaje' : 'Eliminar notificación'}
+          title={item.source === 'message' ? 'Eliminar missatge' : 'Eliminar notificació'}
         >
           <Trash2 size={18} />
         </button>
@@ -237,7 +237,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
       <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
         INS PEDRALBES
       </h1>
-      <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Proyecto Educativo Conectado</p>
+      <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Projecte educatiu connectat</p>
 
       <div className="mb-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 transition-all">
         {/* Tabs Header */}
@@ -255,7 +255,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
             className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'clase' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
             <BookOpen size={18} className={activeTab === 'clase' ? 'text-blue-600 dark:text-blue-400' : ''} />
-            Clase
+            Classe
             {activeTab === 'clase' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
           </button>
           <button
@@ -275,7 +275,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
               {activeTab === 'personal' && <Bell size={20} className="text-violet-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.75)]" />}
               {activeTab === 'clase' && <BookOpen size={20} className="text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.75)]" />}
               {activeTab === 'general' && <Building size={20} className="text-indigo-500" />}
-              {activeTab === 'personal' ? 'Notificaciones Personales' : activeTab === 'clase' ? 'Avisos de Clase' : 'Avisos de la Escuela'}
+              {activeTab === 'personal' ? 'Avisos personals' : activeTab === 'clase' ? 'Avisos de classe' : 'Avisos del centre'}
             </h2>
             <ul className="space-y-4">
               {groupedFeed.length > 0 ? groupedFeed.map((item, idx) => {
@@ -308,7 +308,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
               }) : (
                 <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
                   <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                  <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hay nuevos avisos en esta categoría.</p>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No hi ha nous avisos en aquesta categoria.</p>
                 </li>
               )}
             </ul>
@@ -322,7 +322,7 @@ export const TablonView: React.FC<TablonViewProps> = ({ user }) => {
           <span className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-lg flex items-center justify-center -rotate-3 shadow-md">
             <BookOpen size={20} />
           </span>
-          Calendario Académico
+          Calendari acadèmic
         </h3>
         <div className="h-[600px]">
           <MonthlyCalendar events={filteredEvents} />

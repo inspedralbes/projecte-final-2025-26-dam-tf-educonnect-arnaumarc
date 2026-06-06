@@ -120,7 +120,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         })),
         ...messages.map(m => ({
             id: m._id,
-            type: (m.title === 'Mensaje de Meet' ? 'MEET_MESSAGE' : 'DIRECT_MESSAGE') as 'MEET_MESSAGE' | 'DIRECT_MESSAGE',
+            type: (m.title === 'Missatge de xat' ? 'MEET_MESSAGE' : 'DIRECT_MESSAGE') as 'MEET_MESSAGE' | 'DIRECT_MESSAGE',
             title: m.title,
             content: m.content,
             date: m.date,
@@ -132,7 +132,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
         }))
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    // Cargar notificaciones iniciales vía API
+    // Carrega les notificacions inicials via API
     const fetchNotifications = async (userId: string) => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/notifications/${userId}`);
@@ -267,12 +267,12 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
             
             // Only show toast if it's not from the current user
             if (data.sender?._id !== user?._id) {
-                toast.success(`Nuevo mensaje de ${data.sender?.nombre || 'Alguien'}`);
+            toast.success(`Nou missatge de ${data.sender?.nombre || 'Algú'}`);
             }
         });
 
         newSocket.on('call_failed', (data: { reason: string }) => {
-            toast.error(`Llamada fallida: ${data.reason}`);
+            toast.error(`Trucada fallida: ${data.reason}`);
             setIsCalling(false);
             setActiveCallUser(null);
         });
@@ -366,17 +366,17 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
                     setUnreadCount(prev => Math.max(0, prev - 1));
                 }
                 
-                toast.success('Notificación eliminada');
+                toast.success('Notificació eliminada');
             } else {
                 // Si la API falla (ej. 404), eliminamos de todos modos localmente para limpiar la UI
                 setNotifications(prev => prev.filter(n => n._id !== id));
-                toast.success('Notificación eliminada');
+                toast.success('Notificació eliminada');
             }
         } catch (error) {
             console.error('Error deleting notification:', error);
             // Cleanup local state anyway on error to maintain UI flow
             setNotifications(prev => prev.filter(n => n._id !== id));
-            toast.success('Notificación eliminada');
+            toast.success('Notificació eliminada');
         }
     };
 
@@ -389,7 +389,7 @@ export const SocketProvider: React.FC<{ user: User | null, children: React.React
 
             if (response.ok) {
                 setNotifications(prev => prev.filter(n => !n.read));
-                toast.success('Historial de leídos limpiado');
+                toast.success('Historial de llegits netejat');
             }
         } catch (error) {
             console.error('Error clearing read notifications:', error);

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `profesores` (
   `especialidad` VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Crear tabla de Alumnos
+-- Crear taula d'alumnes
 CREATE TABLE IF NOT EXISTS `alumnos` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `nombre` VARCHAR(50) NOT NULL,

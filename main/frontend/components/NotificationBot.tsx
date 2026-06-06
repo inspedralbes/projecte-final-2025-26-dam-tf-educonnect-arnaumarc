@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { User, AppView } from '../types';
 import { Video, X } from 'lucide-react';
@@ -31,7 +31,7 @@ export const NotificationBot: React.FC<NotificationBotProps> = ({ user, currentV
                         <Video className="text-white" size={24} />
                     </div>
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest opacity-70">Llamada entrante</p>
+                        <p className="text-xs font-bold uppercase tracking-widest opacity-70">Trucada entrant</p>
                         <p className="text-lg font-black">{incomingCall.fromName}</p>
                     </div>
                 </div>
@@ -52,7 +52,7 @@ export const NotificationBot: React.FC<NotificationBotProps> = ({ user, currentV
                         }}
                         className="bg-white text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:bg-gray-100 transition-all active:scale-95"
                     >
-                        Responder
+                        Respondre
                     </button>
                 </div>
                 {/* Animated background bar */}
@@ -64,3 +64,4 @@ export const NotificationBot: React.FC<NotificationBotProps> = ({ user, currentV
 
     return null;
 };
+

@@ -45,7 +45,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [invitingStudentId, setInvitingStudentId] = useState<string | null>(null);
     const [inviteStatus, setInviteStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-    // Nuevos estados para notificar a la clase
+    // Nous estats per notificar a la classe
     const [isNotifyClassModalOpen, setIsNotifyClassModalOpen] = useState(false);
     const [notifyTitle, setNotifyTitle] = useState('');
     const [notifyContent, setNotifyContent] = useState('');
@@ -379,16 +379,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             const data = await res.json();
 
             if (!res.ok || !data?.success) {
-                setInviteStatus({ type: 'error', message: data?.message || 'No se pudo invitar al alumno' });
+                setInviteStatus({ type: 'error', message: data?.message || "No s'ha pogut convidar l'alumne" });
                 return;
             }
 
             // Invitation is pending: do NOT enroll the student here.
             setAvailableStudents(prev => prev.filter(s => String(s._id || s.id) !== String(studentId)));
-            setInviteStatus({ type: 'success', message: data?.message || 'Invitación enviada' });
+                setInviteStatus({ type: 'success', message: data?.message || 'Convit enviat' });
         } catch (error) {
             console.error('Error inviting student:', error);
-            setInviteStatus({ type: 'error', message: 'Error invitando alumno' });
+            setInviteStatus({ type: 'error', message: "Error convidant l'alumne" });
         } finally {
             setInvitingStudentId(null);
         }
@@ -538,7 +538,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
         if (e) e.preventDefault();
         if (!selectedActivity) return;
 
-        // Tarea 6.4: Verificar si ya existe entrega para pedir confirmación
+        // Tasca 6.4: Verificar si ja existeix una entrega per demanar confirmació
         const existing = getSubmissionForActivity(selectedActivity.id);
         if (existing && !showConfirmOverwrite) {
             setShowConfirmOverwrite(true);
@@ -585,7 +585,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteTopic = async (topicId: string) => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar este tema y todos sus recursos?')) return;
+        if (!window.confirm('Segur que vols eliminar aquest tema i tots els seus recursos?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -595,7 +595,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     };
 
     const handleDeleteResource = async (topicId: string, resourceId: string) => {
-        if (!resourceId || !window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) return;
+        if (!resourceId || !window.confirm('Segur que vols eliminar aquest recurs?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/topics/${topicId}/resources/${resourceId}`, { method: 'DELETE' });
             if (response.ok) fetchTopics();
@@ -631,7 +631,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     sender: user?._id || user?.id,
-                    senderModel: userRole === 'TEACHER' ? 'Professor' : 'Alumno',
+                    senderModel: userRole === 'TEACHER' ? 'Professor' : 'Alumne',
                     receiver: messageRecipient._id || messageRecipient.id,
                     course: course._id || course.id,
                     title: messageTitle,
@@ -676,7 +676,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             const data = await response.json();
             if (response.ok && data.success) {
-                setNotifyStatus({ type: 'success', message: data.message || 'Notificación enviada correctamente.' });
+                setNotifyStatus({ type: 'success', message: data.message || 'Notificació enviada correctament.' });
                 setTimeout(() => {
                     setIsNotifyClassModalOpen(false);
                     setNotifyTitle('');
@@ -684,10 +684,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     setNotifyStatus(null);
                 }, 2000);
             } else {
-                setNotifyStatus({ type: 'error', message: data.message || 'Error al enviar la notificación.' });
+                setNotifyStatus({ type: 'error', message: data.message || 'Error en enviar la notificació.' });
             }
         } catch (error) {
-            setNotifyStatus({ type: 'error', message: 'Error de conexión del servidor.' });
+            setNotifyStatus({ type: 'error', message: 'Error de connexió del servidor.' });
         } finally {
             setIsSubmittingNotify(false);
         }
@@ -703,7 +703,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     className="flex items-center text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors gap-2 font-medium bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-xl focus:outline-none w-fit"
                 >
                     <ArrowLeft size={18} />
-                    Volver a Asignaturas
+                    Tornar a assignatures
                 </button>
 
                 {userRole === 'STUDENT' && (
@@ -736,7 +736,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         {course.title}
                     </h1>
                     <p className="text-xl text-blue-300 font-medium tracking-wide">
-                        {typeof course.professor === 'object' ? `${course.professor.nombre} ${course.professor.apellidos}` : (course.professor || 'Profesor')}
+                        {typeof course.professor === 'object' ? `${course.professor.nombre} ${course.professor.apellidos}` : (course.professor || 'Professor')}
                     </p>
                 </div>
             </div>
@@ -768,7 +768,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
               ${activeTab === 'students' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
                     <Users size={18} className={activeTab === 'students' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                    Alumnos ({displayStudents.length})
+                    Alumnes ({displayStudents.length})
                     {activeTab === 'students' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
                 <button
@@ -777,7 +777,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
             ${activeTab === 'resources' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800/50'}`}
                 >
                     <Calendar size={18} className={activeTab === 'resources' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                    Recursos & Agenda
+                    Recursos i agenda
                     {activeTab === 'resources' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                 </button>
             </div>
@@ -801,10 +801,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Calendar className="text-blue-500" size={18} />
-                                    Horarios
+                                    Horaris
                                 </h3>
                                 {loadingSchedule ? (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">Cargando horarios...</p>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">Carregant horaris...</p>
                                 ) : courseSchedule.length > 0 ? (
                                     courseSchedule.map((s, idx) => (
                                         <div key={s._id || idx} className="mb-1 last:mb-0">
@@ -815,13 +815,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">No hay horarios programados.</p>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">No hi ha horaris programats.</p>
                                 )}
                             </div>
                             <div className="p-6 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl flex flex-col gap-2">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Users className="text-blue-500" size={18} />
-                                    Miembros de la Clase
+                                    Membres de la classe
                                 </h3>
                                 <div className="flex items-center gap-4 mt-2">
                                     <div className="flex -space-x-3 overflow-hidden">
@@ -838,7 +838,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     </div>
                                     <div className="text-sm font-medium">
                                         <span className="text-blue-600 dark:text-blue-400">{loadingStudents ? '...' : displayStudents.length}</span>
-                                        <span className="text-gray-500 dark:text-gray-400 ml-1">alumnos matriculados</span>
+                                        <span className="text-gray-500 dark:text-gray-400 ml-1">alumnes matriculats</span>
                                     </div>
                                 </div>
                                 <button
@@ -854,7 +854,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="p-6 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-2xl flex flex-col gap-3">
                                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                     <Calendar className="text-indigo-500" size={18} />
-                                    Carga Académica
+                                    Càrrega acadèmica
                                 </h3>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between bg-white dark:bg-zinc-800 p-3 rounded-xl border border-indigo-50 dark:border-zinc-700">
@@ -862,7 +862,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{course.totalWeeklyHours || 4}h</span>
                                     </div>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                                        * Las horas incluyen clases presenciales y tiempo estimado de trabajo autónomo.
+                                        * Les hores inclouen classes presencials i el temps estimat de treball autònom.
                                     </p>
                                 </div>
                             </div>
@@ -875,7 +875,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                  <Users className="text-blue-500" size={24} />
-                                 Lista de Alumnos
+                                 Llista d'alumnes
                              </h2>
                              {userRole === 'TEACHER' && (
                                  <div className="flex flex-wrap gap-3">
@@ -887,14 +887,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                                      >
                                          <UserPlus size={18} />
-                                         Invitar nuevo Alumno
+                                         Convidar nou alumne
                                      </button>
                                      <button
                                          onClick={() => setIsNotifyClassModalOpen(true)}
                                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                                      >
                                          <Send size={18} />
-                                         Notificar a Toda la Clase
+                                         Notificar tota la classe
                                      </button>
                                  </div>
                              )}
@@ -902,7 +902,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
                             {loadingStudents ? (
                                 <div className="col-span-full py-12 text-center text-gray-500 font-medium animate-pulse">
-                                    Cargando lista de alumnos...
+                                    Carregant la llista d'alumnes...
                                 </div>
                             ) : displayStudents.length > 0 ? (
                                 displayStudents.map(student => (
@@ -920,7 +920,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                 setShowMessageModal(true);
                                             }}
                                             className="p-2.5 ml-2 text-gray-400 bg-white dark:bg-zinc-900 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-full shadow-sm border border-gray-100 dark:border-zinc-700 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
-                                            title="Enviar mensaje"
+                                            title="Enviar missatge"
                                         >
                                             <MessageCircle size={18} />
                                         </button>
@@ -929,7 +929,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             ) : (
                                 <div className="col-span-full py-16 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/20">
                                     <Users size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
-                                    <p className="text-gray-600 dark:text-gray-300 font-medium">No hay alumnos inscritos en esta asignatura.</p>
+                                    <p className="text-gray-600 dark:text-gray-300 font-medium">No hi ha alumnes inscrits en aquesta assignatura.</p>
                                 </div>
                             )}
                         </div>
@@ -950,18 +950,18 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                                     >
                                         <Plus size={18} />
-                                        Añadir Tema
+                                        Afegir tema
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Eventos sin clasificar (Migración/Generales) */}
+                        {/* Esdeveniments sense classificar (migració/generals) */}
                 {getUnassignedEvents().length > 0 && (
                     <div className="mb-8 p-6 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/30 dark:bg-zinc-900/20">
                         <h3 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <AlertCircle size={14} />
-                            Eventos Generales / Sin Clasificar
+                            Esdeveniments generals / sense classificar
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {getUnassignedEvents().map(event => (
@@ -974,7 +974,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     : 'bg-white border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-800'
                                 } group`}>
                                     <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-xl p-2 min-w-[50px] shadow-sm border border-gray-100 dark:border-zinc-700">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase">{new Date(event.date).toLocaleDateString('ca-ES', { month: 'short' })}</span>
                                         <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -982,11 +982,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
                                                 event.modality === 'paper' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
                                             }`}>
-                                                {event.modality === 'paper' ? 'Papel' : 'Digital'}
+                                                {event.modality === 'paper' ? 'Paper' : 'Digital'}
                                             </span>
                                             {event.status !== 'scheduled' && (
                                                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase bg-green-100 text-green-600`}>
-                                                    {event.status === 'done' ? 'Realizado' : 'Calificado'}
+                                                    {event.status === 'done' ? 'Realitzat' : 'Avaluat'}
                                                 </span>
                                             )}
                                         </div>
@@ -1021,7 +1021,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <button 
                                                 onClick={() => handleDeleteEvent(event._id)}
                                                 className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
-                                                title="Eliminar evento"
+                                                title="Eliminar esdeveniment"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -1052,14 +1052,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                         <button
                                                             onClick={() => { setSelectedTopicId(topic._id); setShowAddResourceModal(true); }}
                                                             className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all"
-                                                            title="Añadir recurso"
+                                                            title="Afegir recurs"
                                                         >
                                                             <Plus size={20} />
                                                         </button>
                                                         <button
                                                             onClick={() => { setNewEvent({ ...newEvent, topicId: topic._id }); setShowAddEventModal(true); }}
                                                             className="p-2 text-pink-600 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-xl transition-all"
-                                                            title="Añadir hito (Examen/Entrega)"
+                                                            title="Afegir fita (examen/entrega)"
                                                         >
                                                             <Calendar size={20} />
                                                         </button>
@@ -1089,7 +1089,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <FileText size={14} />
-                                                        Materiales y Recursos
+                                                        Materials i recursos
                                                     </h4>
                                                     <div className="space-y-3">
                                                         {topic.resources && topic.resources.length > 0 ? (
@@ -1109,10 +1109,10 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                 <div className="min-w-0 flex-1">
                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                         <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">
-                                                                                            {resource.title || 'Recurso sin título'}
+                                                                                            {resource.title || 'Recurs sense títol'}
                                                                                         </h4>
                                                                                         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase ${resource.type === 'task' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                                                            {resource.type === 'task' ? 'Tarea' : 'Material'}
+                                                                                            {resource.type === 'task' ? 'Tasca' : 'Material'}
                                                                                         </span>
                                                                                     </div>
                                                                                     
@@ -1135,19 +1135,19 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                         )}
                                                                                         {resource.dueDate && (
                                                                                             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-pink-600 bg-pink-50 dark:bg-pink-900/20 px-3 py-1.5 rounded-lg">
-                                                                                                <Clock size={12} /> ENTREGA: {new Date(resource.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                                        <Clock size={12} /> LLIURAMENT: {new Date(resource.dueDate).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long' })}
                                                                                             </div>
                                                                                         )}
                                                                                     </div>
 
-                                                                                    {/* Estado de entrega para Alumnos */}
+                                                                                    {/* Estat de lliurament per a alumnes */}
                                                                                     {userRole === 'STUDENT' && (resource.requiresSubmission || resource.type === 'task') && (
                                                                                         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 space-y-3">                                                                                            <div className="flex items-center justify-between">
                                                                                                 {getSubmissionForActivity(resource._id!) ? (
                                                                                                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">
                                                                                                         <CheckCircle2 size={16} />
-                                                                                                        Tarea Entregada {getSubmissionForActivity(resource._id!)?.status === 'TARDE' && (
-                                                                                                            <span className="text-orange-500">(FUERA DE PLAZO)</span>
+                                                                                                        Tasca lliurada {getSubmissionForActivity(resource._id!)?.status === 'TARDE' && (
+                                                                                                            <span className="text-orange-500">(FORA DE TERMINI)</span>
                                                                                                         )}
                                                                                                     </div>
                                                                                                 ) : (
@@ -1170,7 +1170,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                                             setSelectedActivity({
                                                                                                                 id: resource._id!,
                                                                                                                 type: 'resource',
-                                                                                                                title: resource.title || 'Tarea',
+                                                                                                                title: resource.title || 'Tasca',
                                                                                                                 submissionType: resource.submissionType || 'done'
                                                                                                             });
                                                                                                             setShowSubmissionModal(true);
@@ -1205,7 +1205,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                         <button
                                                                                             onClick={() => handleEditResource(topic._id, resource)}
                                                                                             className="p-2 text-gray-400 hover:text-amber-500 transition-all hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg"
-                                                                                            title="Editar recurso"
+                                                                                            title="Editar recurs"
                                                                                         >
                                                                                             <Pencil size={18} />
                                                                                         </button>
@@ -1220,7 +1220,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                                                 setSelectedActivity({
                                                                                                     id: resource._id!,
                                                                                                     type: 'resource',
-                                                                                                    title: resource.title || 'Tarea',
+                                                                                                    title: resource.title || 'Tasca',
                                                                                                     submissionType: resource.submissionType || 'done'
                                                                                                 });
                                                                                                 setShowTrackerModal(true);
@@ -1236,16 +1236,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                     </div>
                                                                 ))
                                                         ) : (
-                                                            <p className="text-sm text-gray-400 italic py-2">No hay materiales en este tema.</p>
+                                                            <p className="text-sm text-gray-400 italic py-2">No hi ha materials en aquest tema.</p>
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                {/* Sección de Hitos (Agenda) del Tema */}
+                                                        {/* Secció de fites (agenda) del tema */}
                                                 <div>
                                                     <h4 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <Calendar size={14} />
-                                                        Hitos y Evaluación
+                                                        Fites i avaluació
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {getTopicEvents(topic._id).length > 0 ? (
@@ -1259,7 +1259,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                     : 'bg-pink-50/30 border-pink-100 dark:bg-pink-900/10 dark:border-pink-900/20'
                                                                 }`}>
                                                                     <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-800 rounded-xl p-2 min-w-[50px] shadow-sm border border-pink-100 dark:border-zinc-700">
-                                                                        <span className="text-[10px] font-black text-pink-500 uppercase">{new Date(event.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                                                        <span className="text-[10px] font-black text-pink-500 uppercase">{new Date(event.date).toLocaleDateString('ca-ES', { month: 'short' })}</span>
                                                                         <span className="text-lg font-black text-gray-900 dark:text-white leading-none">{new Date(event.date).getDate()}</span>
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
@@ -1267,11 +1267,11 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                             <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
                                                                                 event.modality === 'paper' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
                                                                             }`}>
-                                                                                {event.modality === 'paper' ? 'Papel' : 'Digital'}
+                                                                                {event.modality === 'paper' ? 'Paper' : 'Digital'}
                                                                             </span>
                                                                             {event.status !== 'scheduled' && (
                                                                                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase bg-green-100 text-green-600`}>
-                                                                                    {event.status === 'done' ? 'Realizado' : 'Calificado'}
+                                                                                    {event.status === 'done' ? 'Realitzat' : 'Avaluat'}
                                                                                 </span>
                                                                             )}
                                                                         </div>
@@ -1283,12 +1283,12 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                             />
                                                                         )}
 
-                                                                        {/* Estado de entrega para Alumnos en Eventos */}
+                                                                        {/* Estat de lliurament per a alumnes en esdeveniments */}
                                                                         {userRole === 'STUDENT' && (event.requiresSubmission || event.type === 'activity' || event.type === 'exam') && (
                                                                             <div className="mt-3 pt-3 border-t border-pink-100 dark:border-pink-900/30 flex items-center justify-between gap-4">                                                                                {getSubmissionForActivity(event._id!) ? (
                                                                                     <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-bold text-[10px] uppercase">
                                                                                         <CheckCircle2 size={14} />
-                                                                                        Entregado
+                                                                                        Lliurat
                                                                                     </div>
                                                                                 ) : (
                                                                                     <div className="flex items-center gap-1.5 text-pink-600 font-bold text-[10px] uppercase">
@@ -1339,7 +1339,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                             <button 
                                                                                 onClick={() => handleDeleteEvent(event._id)}
                                                                                 className="p-1.5 text-gray-400 hover:text-red-600 bg-white dark:bg-zinc-800 rounded-lg border border-gray-100 dark:border-zinc-700 transition-all"
-                                                                                title="Eliminar evento"
+                                                                                title="Eliminar esdeveniment"
                                                                             >
                                                                                 <Trash2 size={16} />
                                                                             </button>
@@ -1348,7 +1348,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                                 </div>
                                                             ))
                                                         ) : (
-                                                            <p className="text-sm text-gray-400 italic col-span-full">No hay hitos programados para este tema.</p>
+                                                            <p className="text-sm text-gray-400 italic col-span-full">No hi ha fites programades per a aquest tema.</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -1359,8 +1359,8 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             ) : (
                                 <div className="text-center py-20 border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-[2.5rem] bg-gray-50/50 dark:bg-zinc-900/30">
                                     <BookOpen size={64} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4" />
-                                    <p className="text-gray-600 dark:text-gray-400 text-lg font-bold">No hay temas definidos para esta asignatura.</p>
-                                    <p className="text-gray-500 text-sm mt-1">Planifica los bloques de ejercicios, apuntes y actividades.</p>
+                                    <p className="text-gray-600 dark:text-gray-400 text-lg font-bold">No hi ha temes definits per a aquesta assignatura.</p>
+                                    <p className="text-gray-500 text-sm mt-1">Planifica els blocs d'exercicis, apunts i activitats.</p>
                                     {userRole === 'TEACHER' && (
                                         <button
                                             onClick={() => setShowAddTopicModal(true)}
@@ -1379,25 +1379,25 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             {/* Modals */}
 
-            {/* Modal Añadir Tema */}
+            {/* Modal afegir tema */}
             {showAddTopicModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
                                 <BookOpen className="text-indigo-500" size={28} />
-                                Nuevo Tema / Bloque
+                                Nou tema / bloc
                             </h2>
                             <form onSubmit={handleCreateTopic} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Título del Tema</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Títol del tema</label>
                                     <input
                                         type="text"
                                         required
                                         value={newTopicTitle}
                                         onChange={(e) => setNewTopicTitle(e.target.value)}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                                        placeholder="Ej: Tema 1: Introducción a la algoritmia"
+                                        placeholder="Ex.: Tema 1: introducció a l'algorísmia"
                                     />
                                 </div>
                                 <div>
@@ -1430,14 +1430,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Añadir Recurso */}
+            {/* Modal afegir recurs */}
             {showAddResourceModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
                                 <Plus className="text-blue-500" size={28} />
-                                Nuevo Material o Tarea
+                                Nou material o tasca
                             </h2>
                             <form onSubmit={handleAddResource} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
@@ -1447,7 +1447,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'material' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <BookOpen className={newResource.type === 'material' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Material / Teoría</span>
+                                        <span className="text-xs font-bold uppercase">Material / teoria</span>
                                     </button>
                                     <button
                                         type="button"
@@ -1455,7 +1455,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${newResource.type === 'task' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-zinc-800'}`}
                                     >
                                         <ClipboardList className={newResource.type === 'task' ? 'text-blue-500' : 'text-gray-400'} />
-                                        <span className="text-xs font-bold uppercase">Tarea / Ejercicio</span>
+                                        <span className="text-xs font-bold uppercase">Tasca / exercici</span>
                                     </button>
                                 </div>
 
@@ -1507,7 +1507,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                     <Clock size={14} className="text-pink-500" />
-                                                    Configuración de Entrega
+                                                    Configuració de l'entrega
                                                 </label>
                                                 <div className="grid grid-cols-3 gap-3">
                                                     <button
@@ -1537,7 +1537,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                     <Clock size={14} className="text-pink-500" />
-                                                    Fecha Límite de Entrega (Opcional)
+                                                    Data límit de l'entrega (opcional)
                                                 </label>
                                                 <input
                                                     type="date"
@@ -1571,14 +1571,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Mensaje */}
+            {/* Modal de missatge */}
             {showMessageModal && messageRecipient && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 md:p-8">
                             <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
                                 <MessageCircle className="text-blue-500" size={24} />
-                                Enviar Mensaje
+                                Enviar missatge
                             </h2>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 flex items-center gap-2 bg-gray-50 dark:bg-zinc-800 p-3 rounded-xl border border-gray-100 dark:border-zinc-700">
                                 Para: <span className="font-semibold text-gray-900 dark:text-white">{messageRecipient.nombre || messageRecipient.name}</span>
@@ -1592,7 +1592,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={messageTitle}
                                         onChange={(e) => setMessageTitle(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe un título..."
+                                        placeholder="Escriu un títol..."
                                     />
                                 </div>
                                 <div>
@@ -1602,7 +1602,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={messageContent}
                                         onChange={(e) => setMessageContent(e.target.value)}
                                         className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                        placeholder="Escribe tu mensaje aquí..."
+                                        placeholder="Escriu el teu missatge aquí..."
                                     ></textarea>
                                 </div>
                                 <div className="flex gap-3 pt-2">
@@ -1611,13 +1611,13 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         onClick={() => setShowMessageModal(false)}
                                         className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                                     >
-                                        Cancelar
+                                        Cancel·lar
                                     </button>
                                     <button
                                         type="submit"
                                         className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
                                     >
-                                        Enviar Mensaje
+                                        Enviar missatge
                                     </button>
                                 </div>
                             </form>
@@ -1626,7 +1626,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Invitar Alumno (solo profesores) */}
+            {/* Modal convidar alumne (només professors) */}
             {isInviteStudentModalOpen && userRole === 'TEACHER' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
@@ -1635,16 +1635,16 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                         <UserPlus className="text-indigo-600 dark:text-indigo-400" size={24} />
-                                        Invitar nuevo Alumno
+                                        Convidar nou alumne
                                     </h2>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Solo aparecen alumnos que no están inscritos en esta asignatura.
+                                        Només apareixen els alumnes que no estan inscrits en aquesta assignatura.
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => setIsInviteStudentModalOpen(false)}
                                     className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full"
-                                    title="Cerrar"
+                                    title="Tancar"
                                 >
                                     <X size={20} />
                                 </button>
@@ -1676,7 +1676,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="max-h-[55vh] overflow-auto pr-1">
                                 {loadingAvailableStudents ? (
                                     <div className="py-10 text-center text-gray-500 font-medium animate-pulse">
-                                        Cargando alumnos...
+                                        Carregant alumnes...
                                     </div>
                                 ) : availableStudents.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1704,7 +1704,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                                             : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md hover:-translate-y-0.5'
                                                             }`}
                                                     >
-                                                        {isInviting ? 'Invitando...' : 'Invitar'}
+                                                        {isInviting ? 'Convidant...' : 'Convidar'}
                                                     </button>
                                                 </div>
                                             );
@@ -1713,8 +1713,8 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 ) : (
                                     <div className="py-14 text-center border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-3xl bg-gray-50/50 dark:bg-zinc-800/20">
                                         <Users size={48} className="mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
-                                        <p className="text-gray-700 dark:text-gray-200 font-semibold">No hay alumnos disponibles para invitar.</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Todos los alumnos ya están inscritos o no hay alumnos en la base de datos.</p>
+                                        <p className="text-gray-700 dark:text-gray-200 font-semibold">No hi ha alumnes disponibles per convidar.</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tots els alumnes ja estan inscrits o no hi ha alumnes a la base de dades.</p>
                                     </div>
                                 )}
                             </div>
@@ -1723,14 +1723,14 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal de Notificación Masiva */}
+            {/* Modal de notificació massiva */}
             {isNotifyClassModalOpen && (
                 <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <Send size={24} className="text-blue-600 dark:text-blue-400" />
-                                Nueva notificación a la clase
+                                Nova notificació a la classe
                             </h2>
                             <button
                                 onClick={() => setIsNotifyClassModalOpen(false)}
@@ -1753,7 +1753,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                         <form onSubmit={handleNotifyClass} className="space-y-5">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    Asignatura
+                                    Assignatura
                                 </label>
                                 <div className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-gray-50 dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400 cursor-not-allowed">
                                     {course.title}
@@ -1767,7 +1767,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                 <input
                                     type="text"
                                     className="w-full p-3.5 border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
-                                    placeholder="Ej: Recordatorio de Examen, Cambio de Aula..."
+                                    placeholder="Ex.: Recordatori d'examen, canvi d'aula..."
                                     value={notifyTitle}
                                     onChange={(e) => setNotifyTitle(e.target.value)}
                                     required
@@ -1776,12 +1776,12 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    Mensaje
+                                    Missatge
                                 </label>
                                 <RichTextEditor
                                     content={notifyContent}
                                     onChange={(html) => setNotifyContent(html)}
-                                    placeholder="Escribe el mensaje para toda la clase aquí..."
+                                    placeholder="Escriu el missatge per a tota la classe aquí..."
                                 />
                             </div>
 
@@ -1791,7 +1791,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                     onClick={() => setIsNotifyClassModalOpen(false)}
                                     className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                                 >
-                                    Cancelar
+                                    Cancel·lar
                                 </button>
                                 <button
                                     type="submit"
@@ -1801,7 +1801,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5'
                                         }`}
                                 >
-                                    {isSubmittingNotify ? 'Enviando...' : 'Enviar a toda la clase'}
+                                    {isSubmittingNotify ? 'Enviant...' : 'Enviar a tota la classe'}
                                 </button>
                             </div>
                         </form>
@@ -1809,17 +1809,17 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 </div>
             )}
 
-            {/* Modal Añadir Evento de Agenda */}
+            {/* Modal afegir esdeveniment d'agenda */}
             {showAddEventModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
                                 <Calendar className="text-pink-500" size={28} />
-                                Nuevo Hito / Evento
+                                Nova fita / esdeveniment
                             </h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                                Vinculado a: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{topics.find(t => t._id === newEvent.topicId)?.title || 'General'}</span>
+                                Vinculat a: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{topics.find(t => t._id === newEvent.topicId)?.title || 'General'}</span>
                             </p>
                             <form onSubmit={handleCreateEvent} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
@@ -1834,9 +1834,9 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             }}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
-                                            <option value="activity">Actividad</option>
+                                            <option value="activity">Activitat</option>
                                             <option value="exam">Examen</option>
-                                            <option value="event">Evento</option>
+                                            <option value="event">Esdeveniment</option>
                                         </select>
                                     </div>
                                     <div>
@@ -1851,7 +1851,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all font-bold"
                                         >
                                             <option value="digital">Digital</option>
-                                            <option value="paper">Papel / Físico</option>
+                                            <option value="paper">Paper / físic</option>
                                         </select>
                                     </div>
 
@@ -1859,7 +1859,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         <div className="col-span-2">
                                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide flex items-center gap-2">
                                                 <Clock size={14} className="text-pink-500" />
-                                                Configuración de Entrega
+                                                    Configuració de l'entrega
                                             </label>
                                             <div className="grid grid-cols-3 gap-3">
                                                 <button
@@ -1895,7 +1895,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         value={newEvent.title}
                                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                         className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                                        placeholder="Ej: Entrega Práctica Temas 1 y 2"
+                                        placeholder="Ex.: Entrega pràctica temes 1 i 2"
                                     />
                                 </div>
                                 <div>
@@ -1950,23 +1950,23 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                 />
             )}
 
-            {/* Modal de Entrega (Alumno) */}
+            {/* Modal d'entrega (alumne) */}
             {showSubmissionModal && selectedActivity && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="p-8">
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center gap-3">
                                 <Send className="text-blue-500" size={28} />
-                                Realizar Entrega
+                                Fer entrega
                             </h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                                Actividad: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{selectedActivity.title}</span>
+                                Activitat: <span className="text-blue-600 dark:text-blue-400 font-bold uppercase">{selectedActivity.title}</span>
                             </p>
 
                             <form onSubmit={handleSubmission} className="space-y-6">
                                 {selectedActivity.submissionType === 'file' && (
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">URL del Archivo / Enlace Entrega</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">URL del fitxer / enllaç d'entrega</label>
                                         <input
                                             type="text"
                                             required
@@ -1986,7 +1986,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                             value={submissionContent}
                                             onChange={(e) => setSubmissionContent(e.target.value)}
                                             className="w-full p-4 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white h-32 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                            placeholder="Escribe aquí tu respuesta o confirmación..."
+                                            placeholder="Escriu aquí la teva resposta o confirmació..."
                                         ></textarea>
                                     </div>
                                 )}
@@ -2012,7 +2012,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                                         disabled={isSubmitting}
                                         className="flex-1 py-4 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1"
                                     >
-                                        {isSubmitting ? 'ENVIANDO...' : 'ENTREGAR AHORA'}
+                                        {isSubmitting ? 'ENVIANT...' : 'LLIURAR ARA'}
                                     </button>
                                 </div>
                             </form>
@@ -2029,7 +2029,7 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                             <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">¿Sobrescribir Entrega?</h2>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Vols sobreescriure l'entrega?</h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
                                 Ya has realizado una entrega para esta actividad. Al enviar una nueva, la anterior será reemplazada permanentemente.
                             </p>

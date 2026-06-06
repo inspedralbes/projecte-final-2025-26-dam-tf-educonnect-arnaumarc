@@ -42,7 +42,7 @@ async function seedData() {
             courseIds = courses.map(c => c._id);
         }
 
-        // 3. Ensure Alumnos exist and are updated
+        // 3. Assegura que els alumnes existeixen i s'actualitzen
         const alumnosData = [
             { nombre: 'Arnau', apellidos: 'Perera Ganuza', email: 'a24arnpergan@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24arnpergan' },
             { nombre: 'Marc', apellidos: 'Cara Montes', email: 'a24marcarmon@inspedralbes.cat', profileImage: 'https://i.pravatar.cc/150?u=a24marcarmon' },

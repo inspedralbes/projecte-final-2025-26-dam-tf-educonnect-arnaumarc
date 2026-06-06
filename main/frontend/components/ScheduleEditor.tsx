@@ -184,7 +184,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ courses, onSched
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-200 dark:border-zinc-700">
                 <div className="flex flex-wrap items-center gap-6">
                     <div className="flex items-center gap-3">
-                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">Asignatura:</label>
+                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">Assignatura:</label>
                         <select
                             value={selectedCourseId}
                             onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -211,7 +211,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ courses, onSched
 
                 <div className="flex items-center gap-4">
                     <div className="text-sm">
-                        <span className="text-gray-500">Horas Semanales:</span>
+                        <span className="text-gray-500">Hores setmanals:</span>
                         <span className="ml-2 font-bold text-blue-600">{remainingHours.total}h</span>
                     </div>
                     <div className="text-sm">
@@ -267,7 +267,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ courses, onSched
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <span className="text-[10px] font-black truncate leading-none uppercase">
-                                                        {courses.find(c => c.id === session.courseId)?.title || 'Ocupado'}
+                                                        {courses.find(c => c.id === session.courseId)?.title || 'Ocupat'}
                                                     </span>
                                                     {courses.some(c => c.id === session.courseId) && (
                                                         <button
@@ -286,7 +286,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ courses, onSched
                                             <button
                                                 onClick={() => handleAddSession(day, timeStr)}
                                                 className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 text-blue-500 transition-all transform scale-90 group-hover:scale-100"
-                                                title="Añadir sesión"
+                                                title="Afegir sessió"
                                             >
                                                 <Plus size={16} />
                                             </button>

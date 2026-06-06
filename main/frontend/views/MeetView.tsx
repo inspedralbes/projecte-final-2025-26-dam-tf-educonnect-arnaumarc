@@ -104,12 +104,12 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
         };
 
         const handleCallRejected = () => {
-            toast.error("Llamada rechazada");
+            toast.error("Trucada rebutjada");
             cleanupCall();
         };
 
         const handleCallEnded = () => {
-            toast("Llamada finalizada");
+            toast("Trucada finalitzada");
             cleanupCall();
         };
 
@@ -207,7 +207,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
             signalStartCall(targetUser, offer);
         } catch (error) {
             console.error("Error starting call:", error);
-            toast.error("No se pudo acceder a la cámara o micrófono");
+            toast.error("No s'ha pogut accedir a la càmera o al micròfon");
         }
     };
 
@@ -304,7 +304,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 onClick={rejectCall}
                                 className="flex-1 bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
                             >
-                                <X size={20} /> Rechazar
+                                <X size={20} /> Rebutjar
                             </button>
                             <button 
                                 onClick={acceptCall}
@@ -324,7 +324,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
                             <MessageSquare size={32} className="text-blue-500 animate-pulse" />
                         </div>
-                        <p className="text-gray-900 dark:text-white font-bold mb-4">Llamando a {activeCallUser?.nombre}...</p>
+                        <p className="text-gray-900 dark:text-white font-bold mb-4">Trucant a {activeCallUser?.nombre}...</p>
                         <button 
                             onClick={endCall}
                             className="bg-red-500 text-white p-4 rounded-full hover:bg-red-600 transition-all"
@@ -340,7 +340,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 <div className="p-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <UserIcon className="text-blue-500" size={20} />
-                        Usuarios
+                        Usuaris
                     </h2>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-400">
                         <X size={20} />
@@ -348,9 +348,9 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {isLoading ? (
-                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">Cargando usuarios...</div>
+                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">Carregant usuaris...</div>
                     ) : users.length === 0 ? (
-                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">No hay otros usuarios disponibles.</div>
+                        <div className="text-center p-4 text-gray-500 dark:text-gray-400">No hi ha altres usuaris disponibles.</div>
                     ) : (
                         users.map((u) => {
                             const isSelectedForChat = u._id === activeChatUser?._id;
@@ -378,7 +378,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                         </div>
                                         <div>
                                             <p className="font-semibold text-sm text-gray-900 dark:text-white">{u.nombre} {u.apellidos}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{u.type === 'professor' ? 'Teacher' : 'Student'} • {state.toLowerCase()}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{u.type === 'professor' ? 'Professor' : 'Alumne'} • {state.toLowerCase()}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                                 setIsChatOpen(true);
                                             }}
                                             className="p-2.5 rounded-full transition-all bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-800 dark:text-gray-400 dark:hover:bg-zinc-700"
-                                            title="Chatear"
+                                            title="Xatejar"
                                         >
                                             <MessageSquare size={16} />
                                         </button>
@@ -464,7 +464,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 <button
                                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                                     className={`p-3 md:p-4 rounded-full transition-all ${isSidebarOpen ? 'bg-blue-500 text-white' : 'bg-transparent hover:bg-white/10 text-white'}`}
-                                    title="Usuarios"
+                                    title="Usuaris"
                                 >
                                     <UserIcon size={24} />
                                 </button>
@@ -472,7 +472,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 <button
                                     onClick={toggleMute}
                                     className={`p-3 md:p-4 rounded-full transition-all ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
-                                    title={isMuted ? "Activar Micro" : "Mutear"}
+                                    title={isMuted ? "Activar micròfon" : "Silenciar"}
                                 >
                                     {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
                                 </button>
@@ -480,7 +480,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 <button
                                     onClick={toggleVideo}
                                     className={`p-3 md:p-4 rounded-full transition-all ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg' : 'bg-transparent hover:bg-white/10 text-white'}`}
-                                    title={isVideoOff ? "Activar Cámara" : "Apagar Cámara"}
+                                    title={isVideoOff ? "Activar càmera" : "Apagar càmera"}
                                 >
                                     {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
                                 </button>
@@ -503,7 +503,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                             <button
                                 onClick={endCall}
                                 className="p-4 md:p-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 shadow-xl shadow-red-900/40 active:scale-95"
-                                title="Colgar"
+                                title="Penjar"
                             >
                                 <X size={28} />
                             </button>
@@ -528,7 +528,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                         <div>
                             <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{activeChatUser.nombre} {activeChatUser.apellidos}</h3>
                             <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 font-medium">
-                                <span>Chateando ahora</span>
+                                <span>Xatejant ara</span>
                             </div>
                         </div>
 
@@ -540,7 +540,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                 <MessageSquare size={22} />
                             </button>
                             <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold pt-2">
-                                {activeChatUser.type === 'professor' ? 'Teacher' : 'Student'} • {userStates[activeChatUser._id] || 'OFFLINE'}
+                                {activeChatUser.type === 'professor' ? 'Professor' : 'Alumne'} • {userStates[activeChatUser._id] || 'OFFLINE'}
                             </p>
                         </div>
                     </div>
@@ -550,9 +550,9 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                             <MessageSquare size={64} />
                         </div>
                         <div>
-                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3">EduConnect Chat</h2>
+                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3">Xat d'EduConnect</h2>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-lg">
-                                Colabora en tiempo real con alumnos y profesores. Selecciona un contacto para iniciar un chat.
+                                Col·labora en temps real amb alumnes i professors. Selecciona un contacte per iniciar un xat.
                             </p>
                         </div>
                     </div>

@@ -90,7 +90,7 @@ const updateUserSettings = async (req, res) => {
         }
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+            return res.status(404).json({ success: false, message: 'Usuari no trobat' });
         }
 
         if (profileImage !== undefined) user.profileImage = profileImage;

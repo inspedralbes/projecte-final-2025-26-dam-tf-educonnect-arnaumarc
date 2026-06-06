@@ -117,7 +117,7 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
             }
         } catch (error) {
             console.error('Error updating theme:', error);
-            toast.error('No se pudo guardar la preferencia de tema');
+            toast.error('No s\'ha pogut desar la preferència del tema');
         }
     };
 

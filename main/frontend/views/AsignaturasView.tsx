@@ -46,7 +46,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       .map(c => ({
         id: c._id || c.id,
         _id: c._id,
-        title: c.title || 'Asignatura',
+        title: c.title || 'Assignatura',
         description: c.description || '',
         professor: c.professor,
         image: c.image || 'https://picsum.photos/300/200',
@@ -138,10 +138,10 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-12 md:space-y-16 transition-colors duration-300">
       <div className="text-center mb-10 md:mb-12">
         <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 uppercase tracking-tight mb-4 transition-colors">
-          Gestión Académica
+          Gestió acadèmica
         </h1>
         <div className="inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors shadow-sm">
-          <span>{enrolledCoursesList.length} Asignaturas Activas</span>
+          <span>{enrolledCoursesList.length} assignatures actives</span>
         </div>
       </div>
 
@@ -151,7 +151,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
             <BookOpen size={24} />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
-            Mis Asignaturas
+            Les meves assignatures
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
@@ -176,7 +176,7 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
             <CalendarIcon size={24} />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
-            Horario de Clases
+            Horari de classes
           </h2>
         </div>
         <div className="bg-white dark:bg-zinc-800/90 rounded-3xl p-6 shadow-lg shadow-gray-200/50 dark:shadow-none border border-gray-200 dark:border-zinc-700">

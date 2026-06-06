@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { toast } from 'react-hot-toast';
 import { Check, Bell, X } from 'lucide-react';
 
@@ -37,7 +37,7 @@ export const InteractiveToast: React.FC<InteractiveToastProps> = ({ id, title, c
                     }}
                     className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors uppercase tracking-widest"
                 >
-                    <Check size={16} className="mr-1" /> Leído
+                    <Check size={16} className="mr-1" /> Llegit
                 </button>
                 <button
                     onClick={() => toast.dismiss(id)}
@@ -49,3 +49,4 @@ export const InteractiveToast: React.FC<InteractiveToastProps> = ({ id, title, c
         </div>
     );
 };
+

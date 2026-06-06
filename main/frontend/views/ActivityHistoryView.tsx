@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
 import { User } from '../types';
 import { Bell, Search, Filter, Clock, CheckCircle2, AlertCircle, MessageSquare, Phone, BookOpen, Calendar, Info, Trash2, XCircle } from 'lucide-react';
@@ -50,7 +50,7 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                             <Clock className="text-blue-600" size={32} />
                             Historial
                         </h1>
-                        <p className="text-gray-500 dark:text-zinc-400 font-medium">Gestiona todos tus avisos y eventos recientes.</p>
+                        <p className="text-gray-500 dark:text-zinc-400 font-medium">Gestiona tots els teus avisos i esdeveniments recents.</p>
                     </div>
                     <div className="flex gap-2">
                         {unreadCount > 0 && (
@@ -59,20 +59,20 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
                             >
                                 <CheckCircle2 size={20} />
-                                Leer todo
+                                Marcar-ho tot com a llegit
                             </button>
                         )}
                         {hasReadNotifications && (
                             <button 
                                 onClick={() => {
-                                    if (window.confirm('¿Eliminar todas las notificaciones leídas?')) {
+                                    if (window.confirm('Vols eliminar totes les notificacions llegides?')) {
                                         deleteAllReadNotifications();
                                     }
                                 }}
                                 className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2"
                             >
                                 <Trash2 size={20} />
-                                Limpiar leídos
+                                Netejar llegits
                             </button>
                         )}
                     </div>
@@ -84,7 +84,7 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input 
                             type="text" 
-                            placeholder="Buscar en notificaciones..."
+                            placeholder="Cerca en les notificacions..."
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -101,7 +101,7 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                                         : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200'
                                 }`}
                             >
-                                {f === 'ALL' ? 'Todo' : f === 'UNREAD' ? 'Pendientes' : f === 'ACADEMIC' ? 'Académico' : 'Meet'}
+                                {f === 'ALL' ? 'Tot' : f === 'UNREAD' ? 'Pendents' : f === 'ACADEMIC' ? 'Acadèmic' : 'Xat'}
                             </button>
                         ))}
                     </div>
@@ -143,7 +143,7 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                                         <button 
                                             onClick={() => deleteNotification(notif._id)}
                                             className="text-gray-400 hover:text-red-500 transition-colors"
-                                            title="Eliminar permanentemente"
+                                            title="Eliminar permanentment"
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -152,7 +152,7 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                                                 onClick={() => markNotificationAsRead(notif._id)}
                                                 className="text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest hover:underline"
                                             >
-                                                Leer
+                                                Llegir
                                             </button>
                                         )}
                                     </div>
@@ -164,8 +164,8 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
                             <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300 dark:text-zinc-700">
                                 <AlertCircle size={40} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Sin resultados</h3>
-                            <p className="text-gray-500 dark:text-gray-400">No se encontraron notificaciones con los filtros actuales.</p>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Sense resultats</h3>
+                            <p className="text-gray-500 dark:text-gray-400">No s'han trobat notificacions amb els filtres actuals.</p>
                         </div>
                     )}
                 </div>
@@ -173,3 +173,4 @@ export const ActivityHistoryView: React.FC<ActivityHistoryViewProps> = ({ user }
         </div>
     );
 };
+

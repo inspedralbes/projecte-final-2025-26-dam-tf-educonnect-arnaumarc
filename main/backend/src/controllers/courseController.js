@@ -27,7 +27,7 @@ const requireCourseOwner = async ({ courseId, professorId }) => {
 
     const course = await Course.findById(courseId);
     if (!course) {
-        const err = new Error('Asignatura no encontrada');
+        const err = new Error('Assignatura no trobada');
         err.status = 404;
         throw err;
     }
@@ -125,7 +125,7 @@ const inviteStudentToCourse = async (req, res) => {
 
         const course = await Course.findById(courseId).lean();
         if (!course) {
-            return res.status(404).json({ success: false, message: 'Asignatura no encontrada' });
+            return res.status(404).json({ success: false, message: 'Assignatura no trobada' });
         }
 
         // Minimal authorization check: only the course owner can invite students
@@ -135,7 +135,7 @@ const inviteStudentToCourse = async (req, res) => {
 
         const student = await Alumno.findById(studentId).lean();
         if (!student) {
-            return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
+            return res.status(404).json({ success: false, message: 'Alumne no trobat' });
         }
 
         // If already enrolled, don't create a new invite
@@ -197,7 +197,7 @@ const notifyAllStudents = async (req, res) => {
         }
 
         if (students.length === 0) {
-            return res.status(404).json({ success: false, message: 'No se han encontrado estudiantes en esta asignatura' });
+            return res.status(404).json({ success: false, message: 'No s\'han trobat estudiants en aquesta assignatura' });
         }
 
         // Create a message for each student
@@ -219,7 +219,7 @@ const notifyAllStudents = async (req, res) => {
             sender: senderId,
             senderModel: 'Professor',
             type: 'ANNOUNCEMENT',
-            title: 'Aviso de Clase: ' + title,
+            title: 'Avís de classe: ' + title,
             content: content,
             link: '/asignaturas',
             meta: { courseId: req.params.courseId }
@@ -237,7 +237,7 @@ const notifyAllStudents = async (req, res) => {
             }
         });
 
-        res.json({ success: true, message: `Notificación enviada a ${students.length} estudiantes (${sentCount} en línea)` });
+        res.json({ success: true, message: `Notificació enviada a ${students.length} estudiants (${sentCount} en línia)` });
     } catch (error) {
         console.error('Error enviando notificación a toda la clase:', error);
         res.status(500).json({ success: false, message: 'Error enviando notificación', error: error.message });
@@ -260,7 +260,7 @@ const unenrollStudent = async (req, res) => {
         );
 
         if (!result) {
-            return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
+            return res.status(404).json({ success: false, message: 'Alumne no trobat' });
         }
 
         res.json({ success: true, message: 'Te has desapuntado de la asignatura correctamente' });

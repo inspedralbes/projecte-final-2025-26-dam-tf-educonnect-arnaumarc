@@ -80,7 +80,7 @@ const broadcastUserState = (userId, state) => {
 };
 
 io.on('connection', (socket) => {
-    console.log(`Usuario conectado al socket: ${socket.id}`);
+    console.log(`Usuari connectat al socket: ${socket.id}`);
 
     // Register user ID with their socket
     socket.on('register_user', async (userId) => {
@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
             connectedUsers.set(String(userId), socket.id);
             userStates.set(String(userId), 'ONLINE');
             broadcastUserState(String(userId), 'ONLINE');
-            console.log(`Usuario registrado en sala: ${userId} (socket: ${socket.id})`);
+            console.log(`Usuari registrat a la sala: ${userId} (socket: ${socket.id})`);
 
             // Enviar estados actuales al nuevo usuario
             const currentStates = Object.fromEntries(userStates);
@@ -98,7 +98,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log(`Usuario desconectado: ${socket.id}`);
+        console.log(`Usuari desconnectat: ${socket.id}`);
         // Remove from connected users
         for (const [userId, socketId] of connectedUsers.entries()) {
             if (socketId === socket.id) {
@@ -142,7 +142,7 @@ io.on('connection', (socket) => {
                 sender: from,
                 senderModel: senderIsProfessor ? 'Professor' : 'Alumno',
                 type: 'MEET_CALL',
-                title: 'Llamada de Meet',
+                title: 'Trucada de xat',
                 content: `${fromName} te está llamando...`,
                 link: '/meet'
             });
@@ -306,17 +306,17 @@ server.listen(port, () => {
 // --- Automatización de Limpieza de Notificaciones ---
 
 /**
- * Elimina notificaciones de Meet (llamadas y mensajes) con más de 24 horas.
+ * Elimina notificacions de xat (trucades i missatges) amb més de 24 hores.
  /**
   * Mantenimiento de notificaciones:
-  * 1. Elimina notificaciones de Meet de más de 24h.
+  * 1. Elimina notificacions de xat de més de 24 h.
   * 2. Elimina cualquier notificación de más de 30 días.
   */
  const cleanOldNotifications = async () => {
      try {
          console.log('[Cleanup] Iniciando mantenimiento de notificaciones...');
 
-         // 1. Notificaciones de Meet (24h)
+         // 1. Notificacions de xat (24 h)
          const meetLimit = new Date(Date.now() - 24 * 60 * 60 * 1000);
          const meetResult = await Notification.deleteMany({
              type: { $in: ['MEET_CALL', 'MEET_MESSAGE'] },
@@ -331,7 +331,7 @@ server.listen(port, () => {
 
          const totalDeleted = meetResult.deletedCount + generalResult.deletedCount;
          if (totalDeleted > 0) {
-             console.log(`[Cleanup] Mantenimiento completado. Eliminadas: ${meetResult.deletedCount} de Meet, ${generalResult.deletedCount} antiguas.`);
+             console.log(`[Cleanup] Manteniment completat. Eliminades: ${meetResult.deletedCount} de xat, ${generalResult.deletedCount} antigues.`);
          }
      } catch (error) {
          console.error('[Cleanup] Error en el mantenimiento de notificaciones:', error);

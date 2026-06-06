@@ -52,7 +52,7 @@ const gradeSubmission = async (req, res) => {
 
         await notification.save();
 
-        // Notificación en tiempo real si el alumno está conectado
+        // Notificació en temps real si l'alumne està connectat
         const socketId = connectedUsers?.get(String(submission.studentId));
         if (socketId && io) {
             io.to(socketId).emit('new_notification', notification);
@@ -169,7 +169,7 @@ const sendBulkReminders = async (req, res) => {
         const Notification = require('../models/Notification');
 
         if (!pendingStudentIds || pendingStudentIds.length === 0) {
-            return res.json({ success: true, message: 'No hay alumnos pendientes' });
+            return res.json({ success: true, message: 'No hi ha alumnes pendents' });
         }
 
         const notifications = pendingStudentIds.map(studentId => ({

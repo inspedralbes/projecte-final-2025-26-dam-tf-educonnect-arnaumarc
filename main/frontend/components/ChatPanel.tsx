@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Send, User as UserIcon, X, MessageSquare, Info } from 'lucide-react';
 import { useSocket, MessageData } from '../src/context/SocketContext';
 import { User } from '../types';
@@ -51,7 +51,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             senderModel: currentUser?.type === 'professor' ? 'Professor' : 'Alumno',
             receiver: targetId,
             receiverModel: receiverModel,
-            title: 'Mensaje de Meet',
+            title: 'Missatge de xat',
             content: message.trim(),
             isPrivate: true
         };
@@ -94,7 +94,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
             {targetUser && (
                 <div className="px-4 py-2 bg-blue-50/50 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-900/20">
                     <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                        <UserIcon size={10} /> Hablando con {(targetUser as any).nombre} {(targetUser as any).apellidos}
+                        <UserIcon size={10} /> Parlant amb {(targetUser as any).nombre} {(targetUser as any).apellidos}
                     </p>
                 </div>
             )}
@@ -123,8 +123,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-40">
                         <MessageSquare size={32} className="mb-2" />
-                        <p className="text-xs font-bold uppercase tracking-widest">No hay mensajes todavía</p>
-                        <p className="text-[10px] mt-1">Envía un mensaje para empezar la conversación</p>
+                        <p className="text-xs font-bold uppercase tracking-widest">No hi ha missatges encara</p>
+                        <p className="text-[10px] mt-1">Envia un missatge per començar la conversa</p>
                     </div>
                 )}
             </div>
@@ -136,7 +136,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Escribe un mensaje..."
+                        placeholder="Escriu un missatge..."
                         className="flex-1 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:text-white"
                         disabled={!targetUser}
                     />
@@ -152,3 +152,4 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ currentUser, targetUser, o
         </div>
     );
 };
+

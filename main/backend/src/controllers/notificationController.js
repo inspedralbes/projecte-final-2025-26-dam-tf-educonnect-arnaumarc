@@ -74,7 +74,7 @@ const markAsRead = async (req, res) => {
         const userId = req.user?.id;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+            return res.status(401).json({ success: false, message: 'Usuari no autenticat' });
         }
 
         if (ids && Array.isArray(ids)) {
@@ -82,7 +82,7 @@ const markAsRead = async (req, res) => {
                 { _id: { $in: ids }, recipient: userId },
                 { read: true }
             );
-            return res.json({ success: true, message: 'Notificaciones marcadas como leídas' });
+            return res.json({ success: true, message: 'Notificacions marcades com a llegides' });
         }
 
         const notification = await Notification.findOneAndUpdate(
@@ -91,7 +91,7 @@ const markAsRead = async (req, res) => {
             { new: true }
         );
         if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notificación no encontrada o acceso denegado' });
+            return res.status(404).json({ success: false, message: 'Notificació no trobada o accés denegat' });
         }
         res.json({ success: true, notification });
     } catch (error) {
@@ -112,7 +112,7 @@ const markAllAsRead = async (req, res) => {
             { recipient: userId, read: false },
             { read: true }
         );
-        res.json({ success: true, message: 'Todas las notificaciones marcadas como leídas' });
+        res.json({ success: true, message: 'Totes les notificacions marcades com a llegides' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error al actualizar las notificaciones', error: error.message });
     }
@@ -125,19 +125,19 @@ const deleteNotification = async (req, res) => {
         const userId = req.user?.id;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+            return res.status(401).json({ success: false, message: 'Usuari no autenticat' });
         }
 
         if (ids && Array.isArray(ids)) {
             await Notification.deleteMany({ _id: { $in: ids }, recipient: userId });
-            return res.json({ success: true, message: 'Notificaciones eliminadas' });
+            return res.json({ success: true, message: 'Notificacions eliminades' });
         }
 
         const notification = await Notification.findOneAndDelete({ _id: notificationId, recipient: userId });
         if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notificación no encontrada o acceso denegado' });
+            return res.status(404).json({ success: false, message: 'Notificació no trobada o accés denegat' });
         }
-        res.json({ success: true, message: 'Notificación eliminada' });
+        res.json({ success: true, message: 'Notificació eliminada' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error al eliminar la notificación', error: error.message });
     }
@@ -153,7 +153,7 @@ const deleteAllReadNotifications = async (req, res) => {
         }
 
         await Notification.deleteMany({ recipient: userId, read: true });
-        res.json({ success: true, message: 'Historial de notificaciones leídas eliminado' });
+        res.json({ success: true, message: 'Historial de notificacions llegides eliminat' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error al eliminar las notificaciones', error: error.message });
     }
@@ -181,7 +181,7 @@ module.exports = {
 
             const notification = await Notification.findById(notificationId);
             if (!notification) {
-                return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
+                return res.status(404).json({ success: false, message: 'Notificació no trobada' });
             }
 
             if (String(notification.recipient) !== String(userId)) {

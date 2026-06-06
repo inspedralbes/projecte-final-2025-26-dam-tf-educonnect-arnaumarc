@@ -1,4 +1,4 @@
-import { Bell, Check, Clock, X, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
+﻿import { Bell, Check, Clock, X, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { AppView } from '../types';
 import { useSocket, NotificationData } from '../src/context/SocketContext';
@@ -56,7 +56,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
     const handleInviteAction = async (notifId: string, action: 'accept' | 'reject') => {
         if (!user) return;
         
-        const loadingToast = toast.loading(action === 'accept' ? 'Aceptando invitación...' : 'Rechazando invitación...');
+        const loadingToast = toast.loading(action === 'accept' ? 'Acceptant la invitació...' : 'Rebutjant la invitació...');
         
         try {
             const res = await fetch(`${API_BASE_URL}/api/notifications/${notifId}/respond`, {
@@ -74,17 +74,17 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
             if (res.ok && data?.success) {
                 markNotificationAsReadLocal(notifId);
                 if (action === 'accept') {
-                    toast.success(data.message || '¡Inscripción completada con éxito!');
+                    toast.success(data.message || 'Inscripció completada amb èxit!');
                     // Trigger a refresh or redirect if needed
                 } else {
-                    toast.success(data.message || 'Invitación rechazada');
+                    toast.success(data.message || 'Invitació rebutjada');
                 }
             } else {
-                toast.error(data.message || 'Error al procesar la invitación');
+                toast.error(data.message || 'Error en processar la invitació');
             }
         } catch (e) {
             toast.dismiss(loadingToast);
-            toast.error('Error de conexión al procesar la invitación');
+            toast.error('Error de connexió en processar la invitació');
             console.error('Error handling invite', e);
         }
     };
@@ -94,7 +94,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
             case 'COURSE_INVITE':
                 return {
                     icon: <UserPlus size={18} className="text-indigo-500" />,
-                    label: 'Invitación',
+                    label: 'Invitació',
                     color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
                     border: 'border-indigo-500'
                 };
@@ -116,35 +116,35 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
             case 'MEET_MESSAGE':
                 return {
                     icon: <MessageSquare size={18} className="text-green-500" />,
-                    label: 'Mensaje',
+                    label: 'Missatge',
                     color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                     border: 'border-green-500'
                 };
             case 'MEET_CALL':
                 return {
                     icon: <Phone size={18} className="text-green-500 animate-bounce" />,
-                    label: 'Llamada',
+                    label: 'Trucada',
                     color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                     border: 'border-green-500'
                 };
             case 'PROFESSOR_ADVISORY':
                 return {
                     icon: <Award size={18} className="text-amber-500" />,
-                    label: 'Aviso Prof.',
+                    label: 'Avís prof.',
                     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
                     border: 'border-amber-500'
                 };
             case 'ANNOUNCEMENT':
                 return {
                     icon: <Info size={18} className="text-blue-500" />,
-                    label: 'Anuncio',
+                    label: 'Anunci',
                     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
                     border: 'border-blue-500'
                 };
             default:
                 return {
                     icon: <Bell size={18} className="text-gray-500" />,
-                    label: 'Notificación',
+                    label: 'Notificació',
                     color: 'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-400',
                     border: 'border-gray-400'
                 };
@@ -156,9 +156,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
             {/* Header */}
             <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
                 <div>
-                    <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Notificaciones</h3>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Notificacions</h3>
                     <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-0.5">
-                        {unreadCount} sin leer
+                        {unreadCount} sense llegir
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                         <button 
                             onClick={() => markAllNotificationsAsRead()}
                             className="p-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"
-                            title="Marcar todo como leído"
+                            title="Marcar-ho tot com a llegit"
                         >
                             <Check size={18} />
                         </button>
@@ -229,7 +229,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                             deleteNotification(notif._id);
                                                         }}
                                                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                                        title="Eliminar notificación"
+                                                        title="Eliminar notificació"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
@@ -245,13 +245,13 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                                         onClick={() => handleInviteAction(notif._id, 'accept')}
                                                         className="flex-1 py-2 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors text-xs uppercase tracking-wider"
                                                     >
-                                                        Aceptar
+                                                        Acceptar
                                                     </button>
                                                     <button
                                                         onClick={() => handleInviteAction(notif._id, 'reject')}
                                                         className="flex-1 py-2 rounded-xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors text-xs uppercase tracking-wider"
                                                     >
-                                                        Rechazar
+                                                        Rebutjar
                                                     </button>
                                                 </div>
                                             )}
@@ -273,7 +273,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                         <div className="w-16 h-16 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300 dark:text-zinc-700">
                             <Bell size={32} />
                         </div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Todo al día</p>
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Tot al dia</p>
                     </div>
                 )}
             </div>
@@ -284,9 +284,10 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                     onClick={onViewHistory}
                     className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
-                    Ver historial completo
+                    Veure historial complet
                 </button>
             </div>
         </div>
     );
 };
+

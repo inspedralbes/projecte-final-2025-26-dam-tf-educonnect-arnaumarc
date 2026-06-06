@@ -53,7 +53,7 @@ export const SubmissionTracker: React.FC<SubmissionTrackerProps> = ({
     // Filtrar entregas para esta actividad específica
     const currentSubmissions = activitySubmissions.filter(s => String(s.activityId || (s as any).activityId) === String(activity.id));
 
-    // Categorizar alumnos
+    // Categoritza els alumnes
     const completed = allStudents.filter(student => 
         currentSubmissions.some(s => String(s.studentId?._id || s.studentId) === String(student._id))
     ).map(student => ({
@@ -134,7 +134,7 @@ export const SubmissionTracker: React.FC<SubmissionTrackerProps> = ({
                             {activity.title}
                         </h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">
-                            {allStudents.length} alumnos en total • {completed.length} entregados • {pending.length} pendientes
+                            {allStudents.length} alumnes en total • {completed.length} lliurats • {pending.length} pendents
                         </p>
                     </div>
                     <button 
@@ -162,7 +162,7 @@ export const SubmissionTracker: React.FC<SubmissionTrackerProps> = ({
                                     className="flex items-center gap-2 text-[10px] font-black bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all"
                                 >
                                     <Send size={12} />
-                                    {isSendingReminders ? 'ENVIANDO...' : reminderStatus || 'RECORDAR A TODOS'}
+                                    {isSendingReminders ? 'ENVIANT...' : reminderStatus || 'RECORDAR TOTHOM'}
                                 </button>
                             )}
                         </div>
@@ -205,7 +205,7 @@ export const SubmissionTracker: React.FC<SubmissionTrackerProps> = ({
                                                     {submission.status}
                                                 </span>
                                                 <span className="text-[10px] text-gray-400 font-medium">
-                                                    {new Date(submission.submittedAt).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(submission.submittedAt).toLocaleString('ca-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </div>

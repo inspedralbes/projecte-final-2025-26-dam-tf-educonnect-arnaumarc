@@ -55,12 +55,12 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
           handled = true;
 
           if (data.success) {
-            setSuccess('¡Registro completado! Redirigiendo al login...');
+            setSuccess('Registre completat! Redirigint al login...');
             setTimeout(() => {
               onNavigateToLogin();
             }, 2000);
           } else {
-            setError(data.message || 'Error en el registro');
+            setError(data.message || 'Error en el registre');
           }
           break;
         } catch (requestError) {
@@ -99,7 +99,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-center mb-6 text-black uppercase tracking-widest">Registro</h2>
+          <h2 className="text-xl font-bold text-center mb-6 text-black uppercase tracking-widest">Registre</h2>
 
           {error && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mb-4 text-sm font-bold animate-pulse">
@@ -156,7 +156,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
               <input
                 type="text"
                 name="clase"
-                placeholder="Clase (Ej: 2DAM)"
+                placeholder="Classe (Ex.: 2DAM)"
                 className="w-full border-2 border-black p-2 font-semibold text-black focus:outline-none focus:border-cyan-500 transition-colors placeholder-gray-500"
                 value={formData.clase}
                 onChange={handleChange}
@@ -181,7 +181,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
           </form>
 
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-gray-600 mb-2 font-medium">¿Ya tienes cuenta?</p>
+            <p className="text-gray-600 mb-2 font-medium">Ja tens compte?</p>
             <button
               onClick={onNavigateToLogin}
               className="text-cyan-500 font-bold hover:text-cyan-600 transition-colors uppercase tracking-wider"
@@ -210,7 +210,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onNavigat
           >
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Hosting</p>
             <h3 className="text-xl font-black text-black mt-1">cdmon</h3>
-            <p className="text-sm text-gray-700 mt-2">Gestiona dominio, DNS y servicios web.</p>
+            <p className="text-sm text-gray-700 mt-2">Gestiona el domini, el DNS i els serveis web.</p>
           </a>
         </div>
       </div>

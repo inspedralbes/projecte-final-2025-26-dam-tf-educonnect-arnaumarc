@@ -153,7 +153,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) =
           >
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Hosting</p>
             <h3 className="text-xl font-black text-black mt-1">cdmon</h3>
-            <p className="text-sm text-gray-700 mt-2">Gestiona dominio, DNS y servicios web.</p>
+            <p className="text-sm text-gray-700 mt-2">Gestiona el domini, el DNS i els serveis web.</p>
           </a>
         </div>
       </div>

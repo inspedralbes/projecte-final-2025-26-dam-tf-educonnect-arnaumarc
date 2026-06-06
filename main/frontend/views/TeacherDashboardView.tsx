@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Bell, BookOpen, Building, User as UserIcon, Calendar as CalendarIcon } from 'lucide-react';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { ScheduleEditor } from '../components/ScheduleEditor';
@@ -108,9 +108,9 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     return (
         <div className="p-8 max-w-6xl mx-auto transition-colors duration-300">
             <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-                INS PEDRALBES - DOCENCIA
+                INS PEDRALBES - DOCÈNCIA
             </h1>
-            <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Portal del Profesorado</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 mb-12 font-medium tracking-wide uppercase text-sm">Portal del professorat</p>
 
             <div className="mb-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-200 dark:border-zinc-800 transition-all">
                 {/* Tabs Header */}
@@ -128,7 +128,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'clase' ? 'text-pink-600 dark:text-pink-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
                         <BookOpen size={18} className={activeTab === 'clase' ? 'text-pink-600 dark:text-pink-400' : ''} />
-                        Clase
+                        Classe
                         {activeTab === 'clase' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pink-600 dark:bg-pink-400" />}
                     </button>
                     <button
@@ -136,7 +136,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'centro' ? 'text-cyan-600 dark:text-cyan-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
                         <Building size={18} className={activeTab === 'centro' ? 'text-cyan-600 dark:text-cyan-400' : ''} />
-                        Centro
+                        Centre
                         {activeTab === 'centro' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-600 dark:bg-cyan-400" />}
                     </button>
                     <button
@@ -144,7 +144,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 font-semibold text-center transition-all duration-300 relative ${activeTab === 'horario' ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
                         <CalendarIcon size={18} className={activeTab === 'horario' ? 'text-blue-600 dark:text-blue-400' : ''} />
-                        Horario
+                        Horari
                         {activeTab === 'horario' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400" />}
                     </button>
                 </div>
@@ -155,7 +155,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                                 <CalendarIcon size={20} className="text-blue-500" />
-                                Gestión de Horarios y Aulas
+                                Gestió d'horaris i aules
                             </h2>
                             <ScheduleEditor 
                                 courses={teacherCourses} 
@@ -169,7 +169,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                                 <Bell size={20} className="text-indigo-500" />
-                                Avisos Personales
+                                Avisos personals
                             </h2>
                             <ul className="space-y-4">
                                 {loadingMessages ? (
@@ -195,7 +195,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                 )) : (
                                     <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
                                         <Bell className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No tienes nuevas notificaciones personales.</p>
+                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">No tens notificacions personals noves.</p>
                                     </li>
                                 )}
                             </ul>
@@ -206,7 +206,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                                 <BookOpen size={20} className="text-pink-500" />
-                                Avisos de Clase
+                                Avisos de classe
                             </h2>
                             <ul className="space-y-4">
                                 {loadingMessages ? (
@@ -225,14 +225,14 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                             <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{msg.content}</p>
                                             <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-50 dark:border-zinc-700/50 flex items-center gap-1">
                                                 <UserIcon size={12} />
-                                                De: {msg.sender?.nombre || 'Alumno'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
+                                                De: {msg.sender?.nombre || 'Alumne'} {msg.sender?.apellidos || ''} {msg.course?.title ? `(${msg.course.title})` : ''}
                                             </p>
                                         </div>
                                     </li>
                                 )) : (
                                     <li className="flex flex-col items-center justify-center p-12 bg-gray-50/80 dark:bg-zinc-800/20 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl">
                                         <BookOpen className="text-gray-300 dark:text-zinc-600 mb-3" size={32} />
-                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">Todavía no hay nuevas entregas de la clase.</p>
+                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-center">Encara no hi ha noves entregues de la classe.</p>
                                     </li>
                                 )}
                             </ul>
@@ -243,7 +243,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                                 <Building size={20} className="text-cyan-500" />
-                                Avisos del Centro
+                                Avisos del centre
                             </h2>
                             <ul className="space-y-4">
                                 {generalMessages.length > 0 ? generalMessages.map((msg, idx) => (
@@ -261,8 +261,8 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                         <div className="w-16 h-16 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 rounded-full flex items-center justify-center mb-4">
                                             <Building size={32} />
                                         </div>
-                                        <p className="text-gray-900 dark:text-white font-bold text-lg mb-1">Sin avisos institucionales</p>
-                                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-xs">No hay comunicados oficiales de la dirección o secretaría en este momento.</p>
+                                        <p className="text-gray-900 dark:text-white font-bold text-lg mb-1">Sense avisos institucionals</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-xs">No hi ha comunicats oficials de la direcció o secretaria en aquest moment.</p>
                                     </li>
                                 )}
                             </ul>
@@ -277,7 +277,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                     <span className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-600 text-white rounded-lg flex items-center justify-center -rotate-3 shadow-md">
                         <BookOpen size={20} />
                     </span>
-                    Agenda Docente
+                    Agenda docent
                 </h3>
                 <div className="h-[600px]">
                     <MonthlyCalendar events={filteredCalendarEvents} />
@@ -286,3 +286,4 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
         </div>
     );
 };
+
