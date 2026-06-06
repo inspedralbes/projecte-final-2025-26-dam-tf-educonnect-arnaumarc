@@ -14,9 +14,10 @@ export type UserRole = 'STUDENT' | 'TEACHER';
 
 export interface Course {
   id: string;
+  _id?: string;
   title: string;
   description: string;
-  professor: any;
+  professor: string | User;
   image: string;
   totalWeeklyHours?: number;
 }
@@ -40,7 +41,10 @@ export interface User {
   profileImage?: string | null;
   theme?: 'light' | 'dark';
   type: 'alumno' | 'professor';
-  enrolledCourses?: any[];
+  enrolledCourses?: (string | Course)[];
+  stats?: {
+    submissionsCount?: number;
+  };
 }
 
 export interface Activity {

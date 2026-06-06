@@ -3,8 +3,10 @@ import { Bell, BookOpen, Building, User as UserIcon, Calendar as CalendarIcon } 
 import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { ScheduleEditor } from '../components/ScheduleEditor';
+import { MessageSkeleton } from '../components/Skeleton';
 import { MOCK_EVENTS } from '../constants';
-import { User, Course } from '../types';
+import { User, Course, Event } from '../types';
+import { MessageData } from '../src/context/SocketContext';
 
 import { API_BASE_URL } from '../config';
 
@@ -20,8 +22,9 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     React.useEffect(() => {
         localStorage.setItem('teacherActiveTab', activeTab);
     }, [activeTab]);
-    const [events, setEvents] = useState<any[]>([]);
-    const [messages, setMessages] = useState<any[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [messages, setMessages] = useState<MessageData[]>([]);
+    const [loadingMessages, setLoadingMessages] = useState(true);
     const [teacherCourses, setTeacherCourses] = useState<Course[]>([]);
     const socketRef = useRef<Socket | null>(null);
 
@@ -30,14 +33,17 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
-                    const formattedEvents = data.map((ev: any) => ({
+                    const formattedEvents: Event[] = data.map((ev: any) => ({
+                        _id: ev._id,
+                        id: ev._id,
+                        title: ev.title,
+                        date: ev.date,
                         type: ev.type,
-                        data: {
-                            id: ev._id,
-                            title: ev.title,
-                            date: ev.date,
-                            courseId: ev.courseId?._id || ev.courseId
-                        }
+                        courseId: ev.courseId?._id || ev.courseId,
+                        modality: ev.modality,
+                        status: ev.status,
+                        requiresSubmission: ev.requiresSubmission,
+                        submissionType: ev.submissionType
                     }));
                     setEvents(formattedEvents);
                 } else {
@@ -55,14 +61,14 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             .then(res => res.json())
             .then(data => {
                 const userId = (user?._id || (user as any)?.id)?.toString();
-                console.log('[DEBUG] Current User ID:', userId);
                 
                 if (Array.isArray(data)) {
-                    const filtered = data.filter((c: any) => {
+                    const filtered: Course[] = data.filter((c: any) => {
                         const courseProfId = (c.professor?._id || c.professor)?.toString();
                         return courseProfId === userId;
                     }).map((c: any) => ({
                             id: c._id,
+                            _id: c._id,
                             title: c.title,
                             description: c.description,
                             professor: c.professor,
@@ -70,7 +76,6 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                             totalWeeklyHours: c.totalWeeklyHours
                         }));
                     
-                    console.log('[DEBUG] Filtered Teacher Courses:', filtered);
                     setTeacherCourses(filtered);
                 } else {
                     setTeacherCourses([]);
@@ -87,13 +92,17 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
         const userId = (user?._id || (user as any)?.id)?.toString();
         if (!userId) return;
 
+        setLoadingMessages(true);
         // 1. Fetch initial messages sent BY this teacher or TO this teacher
         fetch(`${API_BASE_URL}/api/users/${userId}/messages`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) setMessages(data);
             })
-            .catch(err => console.error('Error fetching messages:', err));
+            .catch(err => console.error('Error fetching messages:', err))
+            .finally(() => {
+                setTimeout(() => setLoadingMessages(false), 600);
+            });
 
         // 2. Setup Socket.io connection for this view
         socketRef.current = io(API_BASE_URL || window.location.origin);
@@ -103,14 +112,17 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
             socket.emit('register_user', userId);
         });
 
-        socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
-            const newMessage = {
-                _id: Date.now().toString(),
+        socket.on('new_notification', (data: { _id?: string, title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
+            const newMessage: MessageData = {
+                _id: data._id || Date.now().toString(),
                 title: data.title,
                 content: data.content,
                 course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined,
-                sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
-                date: new Date().toISOString()
+                sender: { nombre: 'Nuevo', apellidos: 'Aviso', type: 'professor' } as User,
+                receiver: userId,
+                date: new Date().toISOString(),
+                read: false,
+                isPrivate: data.isPrivate || false
             };
 
             setMessages((prevMessages) => [newMessage, ...prevMessages]);
@@ -124,7 +136,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     // Teachers see events related to their courses or general events
     const filteredEvents = events.filter(ev => {
         if (ev.type === 'activity' || ev.type === 'exam') {
-            const courseId = ev.data.courseId?._id || ev.data.courseId;
+            const courseId = ev.courseId?._id || ev.courseId;
             // Check if this event belongs to one of the teacher's courses
             return teacherCourses.some(c => String(c.id || c._id) === String(courseId));
         }
@@ -132,7 +144,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     });
 
     // Filter messages by category based on if they have a course associated
-    const personalMessages = messages.filter(msg => !msg.course && msg.receiver === (user?._id || (user as any)?.id));
+    const personalMessages = messages.filter(msg => !msg.course && (typeof msg.receiver === 'string' ? msg.receiver === user?._id : msg.receiver?._id === user?._id));
 
     // Class messages (Entregas): The professor will only see notifications when students submit a task
     const classMessages = messages.filter(msg => !!msg.course && msg.type === 'task_submission');
@@ -207,7 +219,13 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                 Avisos Personales
                             </h2>
                             <ul className="space-y-4">
-                                {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
+                                {loadingMessages ? (
+                                    <>
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                    </>
+                                ) : personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
                                     <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
                                         <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
                                             <Bell size={16} />
@@ -238,7 +256,13 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                 Avisos de Clase
                             </h2>
                             <ul className="space-y-4">
-                                {classMessages.length > 0 ? classMessages.map((msg, idx) => (
+                                {loadingMessages ? (
+                                    <>
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                    </>
+                                ) : classMessages.length > 0 ? classMessages.map((msg, idx) => (
                                     <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
                                         <div className="flex-shrink-0 mt-1 p-2 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full group-hover:bg-pink-100 dark:group-hover:bg-pink-900/50 transition-colors">
                                             <BookOpen size={16} />

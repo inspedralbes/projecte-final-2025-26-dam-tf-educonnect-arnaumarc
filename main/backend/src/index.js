@@ -19,6 +19,7 @@ const topicRoutes = require('./routes/topicRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const Notification = require('./models/Notification');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const server = http.createServer(app);
@@ -274,6 +275,8 @@ app.use('/api', scheduleRoutes);
 app.use('/api', topicRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+app.use(errorHandler);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.

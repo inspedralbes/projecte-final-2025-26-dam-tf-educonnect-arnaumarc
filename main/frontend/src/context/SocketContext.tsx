@@ -33,14 +33,15 @@ export interface NotificationData {
 
 export interface MessageData {
     _id: string;
-    sender: any; // Can be string ID or populated User object
-    receiver: any; // Can be string ID or populated User object
-    course?: any;
+    sender: User;
+    receiver: string | User;
+    course?: string | { _id: string, title: string };
     title: string;
     content: string;
     date: string;
     read: boolean;
     isPrivate: boolean;
+    type?: string;
 }
 
 export type FeedItem = {
@@ -52,7 +53,7 @@ export type FeedItem = {
     source: 'notification' | 'message';
     raw: NotificationData | MessageData;
     courseId?: string;
-    sender?: any;
+    sender?: User;
     read: boolean;
     count?: number; // Added for grouping
     isGrouped?: boolean; // Added for grouping

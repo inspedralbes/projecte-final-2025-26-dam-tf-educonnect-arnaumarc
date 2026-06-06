@@ -103,17 +103,21 @@ const PreferencesDropdown = ({ user, onUpdateUser }: { user: UserType | null, on
         try {
             const response = await fetch(`${API_BASE_URL}/api/user/${user._id}/settings`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
                 body: JSON.stringify({ theme: newTheme })
             });
             const data = await response.json();
-            if (data.success && data.user) {
-                onUpdateUser(data.user);
-            } else if (data.success) {
-                onUpdateUser({ ...user, theme: newTheme });
+            if (data.success || !data.error) {
+                const updatedUser = data.user || { ...user, theme: newTheme };
+                onUpdateUser(updatedUser);
+                toast.success(`Modo ${newTheme === 'dark' ? 'oscuro' : 'claro'} activado`);
             }
         } catch (error) {
             console.error('Error updating theme:', error);
+            toast.error('No se pudo guardar la preferencia de tema');
         }
     };
 
