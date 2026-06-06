@@ -105,10 +105,15 @@ function App() {
     });
   };
 
-  const handleLogin = async (userData: User) => {
-    const type = userData.type;
+  const handleLogin = async (userData: any) => {
+    const { user: baseUser, type, token } = userData;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user/${userData._id}`);
+      // Refresh user data from API
+      const response = await fetch(`${API_BASE_URL}/api/user/${baseUser._id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const fullUserData = await response.json();
       const userWithRole = { ...fullUserData, type };
       setUser(userWithRole);
@@ -118,16 +123,19 @@ function App() {
 
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('user', JSON.stringify(userWithRole));
+      localStorage.setItem('token', token);
       localStorage.setItem('currentView', initialView);
     } catch (error) {
       console.error('Error fetching full user data:', error);
-      setUser(userData);
+      const userWithRole = { ...baseUser, type };
+      setUser(userWithRole);
       setIsLoggedIn(true);
       const initialView = type === 'professor' ? AppView.TEACHER_DASHBOARD : AppView.TABLON;
       setCurrentView(initialView);
 
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userWithRole));
+      localStorage.setItem('token', token);
       localStorage.setItem('currentView', initialView);
     }
   };
@@ -138,6 +146,7 @@ function App() {
     setCurrentView(AppView.LOGIN);
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     localStorage.removeItem('currentView');
   };
 
