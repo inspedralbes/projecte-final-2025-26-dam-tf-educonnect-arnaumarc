@@ -114,7 +114,12 @@ function App() {
           'Authorization': `Bearer ${token}`
         }
       });
-      const fullUserData = await response.json();
+      
+      let fullUserData = baseUser;
+      if (response.ok) {
+        fullUserData = await response.json();
+      }
+      
       const userWithRole = { ...fullUserData, type };
       setUser(userWithRole);
       setIsLoggedIn(true);

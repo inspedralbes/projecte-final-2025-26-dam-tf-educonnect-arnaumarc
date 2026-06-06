@@ -2,7 +2,7 @@ const Alumno = require('../models/Alumno');
 const Professor = require('../models/Professor');
 const jwt = require('jsonwebtoken');
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     const { email, password } = req.body;
     try {
         // Find user by email first
@@ -28,25 +28,27 @@ const login = async (req, res) => {
 
             res.json({ success: true, user, type, token });
         } else {
-            res.status(401).json({ success: false, message: 'Email o contraseña incorrectos' });
+            const error = new Error('Email o contraseña incorrectos');
+            error.statusCode = 401;
+            throw error;
         }
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Error en el servidor' });
+        next(error);
     }
 };
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     const { nombre, apellidos, email, password, clase, tipo_horario } = req.body;
     try {
         const existingAlumno = await Alumno.findOne({ email });
         const existingProfessor = await Professor.findOne({ email });
         
         if (existingAlumno || existingProfessor) {
-            return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+            const error = new Error('El email ya está registrado');
+            error.statusCode = 400;
+            throw error;
         }
 
-        // The password will be hashed automatically by the pre-save hook in the model
         const newAlumno = await Alumno.create({
             nombre,
             apellidos,
@@ -58,8 +60,7 @@ const register = async (req, res) => {
 
         res.json({ success: true, alumno: newAlumno });
     } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({ success: false, message: 'Error al registrar el alumno' });
+        next(error);
     }
 };
 

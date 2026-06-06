@@ -1,7 +1,8 @@
 import { Bell, Check, Clock, X, Calendar, BookOpen, MessageSquare, Info, UserPlus, Phone, GraduationCap, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../config';
-import { AppView, NotificationData } from '../types';
-import { useSocket } from '../src/context/SocketContext';
+import { AppView } from '../types';
+import { useSocket, NotificationData } from '../src/context/SocketContext';
+import toast from 'react-hot-toast';
 
 interface NotificationPanelProps {
     onClose: () => void;
@@ -16,90 +17,137 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
         if (!notif.read) {
             markNotificationAsRead(notif._id);
         }
-        
-        if (notif.link && setView) {
-            // Parse link: /asignaturas?courseId=ID&topicId=ID&resourceId=ID
-            const url = new URL(notif.link, window.location.origin);
-            const courseId = url.searchParams.get('courseId');
-            const topicId = url.searchParams.get('topicId');
-            const resourceId = url.searchParams.get('resourceId');
-            const eventId = url.searchParams.get('eventId');
 
-            if (courseId) {
-                localStorage.setItem('selectedCourse', courseId);
-                if (topicId || resourceId || eventId) {
-                    localStorage.setItem('deepLinkData', JSON.stringify({ topicId, resourceId, eventId }));
+        if (notif.link && setView) {
+            try {
+                // Parse link: /asignaturas?courseId=ID&topicId=ID&resourceId=ID
+                const url = new URL(notif.link, window.location.origin);
+                const path = url.pathname;
+
+                if (path.includes('asignaturas')) {
+                    const courseId = url.searchParams.get('courseId');
+                    const topicId = url.searchParams.get('topicId');
+                    const resourceId = url.searchParams.get('resourceId');
+                    const eventId = url.searchParams.get('eventId');
+
+                    if (courseId) {
+                        localStorage.setItem('selectedCourse', courseId);
+                        if (topicId || resourceId || eventId) {
+                            localStorage.setItem('deepLinkData', JSON.stringify({ topicId, resourceId, eventId }));
+                        }
+                    }
+                    setView(AppView.ASIGNATURAS);
+                } else if (path.includes('perfil')) {
+                    setView(AppView.PROFILE);
+                } else if (path.includes('meet')) {
+                    setView(AppView.MEET);
+                } else if (path.includes('tablon')) {
+                    setView(AppView.TABLON);
+                } else if (path.includes('historial')) {
+                    setView(AppView.ACTIVITY_HISTORY);
                 }
-                setView(AppView.ASIGNATURAS);
+                onClose();
+            } catch (e) {
+                console.error('Error handling notification click', e);
             }
-            onClose();
+        }
+    };
+
+    const handleInviteAction = async (notifId: string, action: 'accept' | 'reject') => {
+        if (!user) return;
+        
+        const loadingToast = toast.loading(action === 'accept' ? 'Aceptando invitación...' : 'Rechazando invitación...');
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/notifications/${notifId}/respond`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ action, userId: user._id })
+            });
+            const data = await res.json();
+            
+            toast.dismiss(loadingToast);
+            
+            if (res.ok && data?.success) {
+                markNotificationAsReadLocal(notifId);
+                if (action === 'accept') {
+                    toast.success(data.message || '¡Inscripción completada con éxito!');
+                    // Trigger a refresh or redirect if needed
+                } else {
+                    toast.success(data.message || 'Invitación rechazada');
+                }
+            } else {
+                toast.error(data.message || 'Error al procesar la invitación');
+            }
+        } catch (e) {
+            toast.dismiss(loadingToast);
+            toast.error('Error de conexión al procesar la invitación');
+            console.error('Error handling invite', e);
         }
     };
 
     const getTypeDetails = (notif: NotificationData) => {
-        const { type } = notif;
-        switch (type) {
-            case 'EXAM': return { 
-                icon: <Calendar size={18} className="text-rose-500" />, 
-                label: 'Examen', 
-                color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
-                border: 'border-rose-500'
-            };
-            case 'MATERIAL': return { 
-                icon: <BookOpen size={18} className="text-blue-500" />, 
-                label: 'Material', 
-                color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-                border: 'border-blue-500'
-            };
-            case 'MESSAGE': return { 
-                icon: <MessageSquare size={18} className="text-green-500" />, 
-                label: 'Mensaje', 
-                color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-                border: 'border-green-500'
-            };
-            case 'ANNOUNCEMENT': return { 
-                icon: <Info size={18} className="text-amber-500" />, 
-                label: 'Aviso', 
-                color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-                border: 'border-amber-500'
-            };
-            case 'COURSE_INVITE': return {
-                icon: <UserPlus size={18} className="text-indigo-500" />,
-                label: 'Invitación',
-                color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-                border: 'border-indigo-500'
-            };
-            case 'MEET_CALL': return {
-                icon: <Phone size={18} className="text-blue-600" />,
-                label: 'Llamada Meet',
-                color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-                border: 'border-blue-600'
-            };
-            case 'MEET_MESSAGE': return {
-                icon: <MessageSquare size={18} className="text-blue-600" />,
-                label: 'Chat Meet',
-                color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-                border: 'border-blue-600'
-            };
-            case 'PROFESSOR_ADVISORY': return {
-                icon: <GraduationCap size={18} className="text-indigo-600" />,
-                label: 'Aviso Profesor',
-                color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-                border: 'border-indigo-600'
-            };
-            case 'GRADE': return {
-                icon: <Award size={18} className="text-emerald-500" />,
-                label: 'Nota',
-                color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-                border: 'border-emerald-500'
-            };
-            case 'SYSTEM':
-            default: return { 
-                icon: <Bell size={18} className="text-gray-500" />, 
-                label: notif.senderModel === 'Admin' ? 'Admin' : 'Sistema', 
-                color: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400',
-                border: notif.senderModel === 'Admin' ? 'border-gray-800' : 'border-gray-500'
-            };
+        switch (notif.type) {
+            case 'COURSE_INVITE':
+                return {
+                    icon: <UserPlus size={18} className="text-indigo-500" />,
+                    label: 'Invitación',
+                    color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+                    border: 'border-indigo-500'
+                };
+            case 'MATERIAL':
+                return {
+                    icon: <BookOpen size={18} className="text-blue-500" />,
+                    label: 'Material',
+                    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    border: 'border-blue-500'
+                };
+            case 'EXAM':
+                return {
+                    icon: <GraduationCap size={18} className="text-red-500" />,
+                    label: 'Examen',
+                    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                    border: 'border-red-500'
+                };
+            case 'MESSAGE':
+            case 'MEET_MESSAGE':
+                return {
+                    icon: <MessageSquare size={18} className="text-green-500" />,
+                    label: 'Mensaje',
+                    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    border: 'border-green-500'
+                };
+            case 'MEET_CALL':
+                return {
+                    icon: <Phone size={18} className="text-green-500 animate-bounce" />,
+                    label: 'Llamada',
+                    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    border: 'border-green-500'
+                };
+            case 'PROFESSOR_ADVISORY':
+                return {
+                    icon: <Award size={18} className="text-amber-500" />,
+                    label: 'Aviso Prof.',
+                    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                    border: 'border-amber-500'
+                };
+            case 'ANNOUNCEMENT':
+                return {
+                    icon: <Info size={18} className="text-blue-500" />,
+                    label: 'Anuncio',
+                    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    border: 'border-blue-500'
+                };
+            default:
+                return {
+                    icon: <Bell size={18} className="text-gray-500" />,
+                    label: 'Notificación',
+                    color: 'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-400',
+                    border: 'border-gray-400'
+                };
         }
     };
 
@@ -194,41 +242,13 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose, o
                                             {notif.type === 'COURSE_INVITE' && !notif.read && user && (
                                                 <div className="flex gap-2 mb-2" onClick={(e) => e.stopPropagation()}>
                                                     <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                const res = await fetch(`${API_BASE_URL}/api/notifications/${notif._id}/respond`, {
-                                                                    method: 'POST',
-                                                                    headers: { 'Content-Type': 'application/json' },
-                                                                    body: JSON.stringify({ action: 'accept', userId: user._id })
-                                                                });
-                                                                const data = await res.json();
-                                                                if (res.ok && data?.success) {
-                                                                    markNotificationAsReadLocal(notif._id);
-                                                                }
-                                                            } catch (e) {
-                                                                console.error('Error accepting invite', e);
-                                                            }
-                                                        }}
+                                                        onClick={() => handleInviteAction(notif._id, 'accept')}
                                                         className="flex-1 py-2 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors text-xs uppercase tracking-wider"
                                                     >
                                                         Aceptar
                                                     </button>
                                                     <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                const res = await fetch(`${API_BASE_URL}/api/notifications/${notif._id}/respond`, {
-                                                                    method: 'POST',
-                                                                    headers: { 'Content-Type': 'application/json' },
-                                                                    body: JSON.stringify({ action: 'reject', userId: user._id })
-                                                                });
-                                                                const data = await res.json();
-                                                                if (res.ok && data?.success) {
-                                                                    markNotificationAsReadLocal(notif._id);
-                                                                }
-                                                            } catch (e) {
-                                                                console.error('Error rejecting invite', e);
-                                                            }
-                                                        }}
+                                                        onClick={() => handleInviteAction(notif._id, 'reject')}
                                                         className="flex-1 py-2 rounded-xl font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors text-xs uppercase tracking-wider"
                                                     >
                                                         Rechazar

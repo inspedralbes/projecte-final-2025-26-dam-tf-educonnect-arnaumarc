@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bell, BookOpen, Building, User as UserIcon, Calendar as CalendarIcon } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
 import { MonthlyCalendar } from '../components/MonthlyCalendar';
 import { ScheduleEditor } from '../components/ScheduleEditor';
-import { MOCK_EVENTS } from '../constants';
-import { User, Course } from '../types';
+import { MessageSkeleton } from '../components/Skeleton';
+import { User, Course, Event } from '../types';
+import { useSocket } from '../src/context/SocketContext';
 
 import { API_BASE_URL } from '../config';
 
@@ -13,6 +13,8 @@ interface TeacherDashboardViewProps {
 }
 
 export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user }) => {
+    const { messages: allMessages } = useSocket();
+    
     const [activeTab, setActiveTab] = React.useState<'personal' | 'clase' | 'centro' | 'horario'>(() => {
         return (localStorage.getItem('teacherActiveTab') as any) || 'personal';
     });
@@ -20,124 +22,87 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
     React.useEffect(() => {
         localStorage.setItem('teacherActiveTab', activeTab);
     }, [activeTab]);
-    const [events, setEvents] = useState<any[]>([]);
-    const [messages, setMessages] = useState<any[]>([]);
+
+    const [events, setEvents] = useState<Event[]>([]);
     const [teacherCourses, setTeacherCourses] = useState<Course[]>([]);
-    const socketRef = useRef<Socket | null>(null);
+    const [loadingEvents, setLoadingEvents] = useState(true);
+    const loadingMessages = false;
 
     useEffect(() => {
+        setLoadingEvents(true);
         fetch(`${API_BASE_URL}/api/events`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
-                    const formattedEvents = data.map((ev: any) => ({
+                    const formattedEvents: Event[] = data.map((ev: any) => ({
+                        _id: ev._id,
+                        id: ev._id,
+                        title: ev.title,
+                        date: ev.date,
                         type: ev.type,
-                        data: {
-                            id: ev._id,
-                            title: ev.title,
-                            date: ev.date,
-                            courseId: ev.courseId?._id || ev.courseId
-                        }
+                        courseId: ev.courseId?._id || ev.courseId,
+                        modality: ev.modality,
+                        status: ev.status,
+                        requiresSubmission: ev.requiresSubmission,
+                        submissionType: ev.submissionType
                     }));
                     setEvents(formattedEvents);
-                } else {
-                    setEvents([]);
                 }
             })
-            .catch(err => {
-                console.error('Error fetching events:', err);
-                setEvents([]);
-            });
+            .catch(err => console.error('Error fetching events:', err))
+            .finally(() => setLoadingEvents(false));
     }, []);
 
     useEffect(() => {
+        if (!user?._id) return;
+        
         fetch(`${API_BASE_URL}/api/courses`)
             .then(res => res.json())
             .then(data => {
-                const userId = (user?._id || (user as any)?.id)?.toString();
-                console.log('[DEBUG] Current User ID:', userId);
-                
+                const userId = user._id.toString();
                 if (Array.isArray(data)) {
-                    const filtered = data.filter((c: any) => {
+                    const filtered: Course[] = data.filter((c: any) => {
                         const courseProfId = (c.professor?._id || c.professor)?.toString();
                         return courseProfId === userId;
                     }).map((c: any) => ({
                             id: c._id,
+                            _id: c._id,
                             title: c.title,
                             description: c.description,
                             professor: c.professor,
                             image: c.image,
                             totalWeeklyHours: c.totalWeeklyHours
                         }));
-                    
-                    console.log('[DEBUG] Filtered Teacher Courses:', filtered);
                     setTeacherCourses(filtered);
-                } else {
-                    setTeacherCourses([]);
                 }
             })
-            .catch(err => {
-                console.error('Error fetching courses:', err);
-                setTeacherCourses([]);
-            });
-    }, [user]);
+            .catch(err => console.error('Error fetching courses:', err));
+    }, [user?._id]);
 
-    // Fetch initial messages and Setup Socket.io for Real-time Updates
-    useEffect(() => {
-        const userId = (user?._id || (user as any)?.id)?.toString();
-        if (!userId) return;
-
-        // 1. Fetch initial messages sent BY this teacher or TO this teacher
-        fetch(`${API_BASE_URL}/api/users/${userId}/messages`)
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) setMessages(data);
-            })
-            .catch(err => console.error('Error fetching messages:', err));
-
-        // 2. Setup Socket.io connection for this view
-        socketRef.current = io(API_BASE_URL || window.location.origin);
-        const socket = socketRef.current;
-
-        socket.on('connect', () => {
-            socket.emit('register_user', userId);
-        });
-
-        socket.on('new_notification', (data: { title: string, content: string, courseId?: string, isPrivate?: boolean, sender?: any }) => {
-            const newMessage = {
-                _id: Date.now().toString(),
-                title: data.title,
-                content: data.content,
-                course: data.courseId ? { _id: data.courseId, title: "Curso" } : undefined,
-                sender: { nombre: 'Nuevo', apellidos: 'Aviso' },
-                date: new Date().toISOString()
-            };
-
-            setMessages((prevMessages) => [newMessage, ...prevMessages]);
-        });
-
-        return () => {
-            socket.disconnect();
-        };
-    }, [user]);
-
-    // Teachers see events related to their courses or general events
-    const filteredEvents = events.filter(ev => {
+    // Use messages from global SocketContext
+    const filteredCalendarEvents = events.filter(ev => {
         if (ev.type === 'activity' || ev.type === 'exam') {
-            const courseId = ev.data.courseId?._id || ev.data.courseId;
-            // Check if this event belongs to one of the teacher's courses
+            const courseId = ev.courseId?._id || ev.courseId;
             return teacherCourses.some(c => String(c.id || c._id) === String(courseId));
         }
         return true;
-    });
+    }).map(ev => ({
+        type: ev.type,
+        data: ev
+    }));
 
-    // Filter messages by category based on if they have a course associated
-    const personalMessages = messages.filter(msg => !msg.course && msg.receiver === (user?._id || (user as any)?.id));
+    // Filter messages by category
+    const personalMessages = (allMessages || []).filter(msg => 
+        !msg.course && 
+        (typeof msg.receiver === 'string' ? msg.receiver === user?._id : msg.receiver?._id === user?._id)
+    );
 
-    // Class messages (Entregas): The professor will only see notifications when students submit a task
-    const classMessages = messages.filter(msg => !!msg.course && msg.type === 'task_submission');
+    const classMessages = (allMessages || []).filter(msg => 
+        !!msg.course && 
+        msg.type === 'task_submission'
+    );
 
-    const generalMessages: any[] = []; // Currently no general messages implemented in DB
+    const generalMessages: any[] = [];
 
 
     return (
@@ -207,7 +172,13 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                 Avisos Personales
                             </h2>
                             <ul className="space-y-4">
-                                {personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
+                                {loadingMessages ? (
+                                    <>
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                    </>
+                                ) : personalMessages.length > 0 ? personalMessages.map((msg, idx) => (
                                     <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
                                         <div className="flex-shrink-0 mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
                                             <Bell size={16} />
@@ -238,7 +209,13 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                                 Avisos de Clase
                             </h2>
                             <ul className="space-y-4">
-                                {classMessages.length > 0 ? classMessages.map((msg, idx) => (
+                                {loadingMessages ? (
+                                    <>
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                        <MessageSkeleton />
+                                    </>
+                                ) : classMessages.length > 0 ? classMessages.map((msg, idx) => (
                                     <li key={msg._id || idx} className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
                                         <div className="flex-shrink-0 mt-1 p-2 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full group-hover:bg-pink-100 dark:group-hover:bg-pink-900/50 transition-colors">
                                             <BookOpen size={16} />
@@ -303,7 +280,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ user
                     Agenda Docente
                 </h3>
                 <div className="h-[600px]">
-                    <MonthlyCalendar events={filteredEvents} />
+                    <MonthlyCalendar events={filteredCalendarEvents} />
                 </div>
             </div>
         </div>

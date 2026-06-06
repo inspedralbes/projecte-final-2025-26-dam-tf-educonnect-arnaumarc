@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CourseCard } from '../components/CourseCard';
+import { CourseCardSkeleton } from '../components/Skeleton';
 import { WeeklyCalendar } from '../components/WeeklyCalendar';
 import { MOCK_COURSES, MOCK_SCHEDULE, MOCK_USER } from '../constants';
-import { User } from '../types';
+import { User, Course } from '../types';
 import { CourseDetailsView } from './CourseDetailsView';
 import { BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 import { API_BASE_URL } from '../config';
@@ -12,13 +13,13 @@ interface AsignaturasViewProps {
 }
 
 export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [schedule, setSchedule] = useState<any[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const hasRestored = React.useRef(false);
 
-  const realCoursesIds = (user?.enrolledCourses as any[] || []).map(c => typeof c === 'object' ? (c._id || c.id) : c);
+  const realCoursesIds = (user?.enrolledCourses || []).map(c => typeof c === 'object' ? (c._id || c.id) : c);
 
   useEffect(() => {
     setLoading(true);
@@ -26,22 +27,30 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setCourses(data);
+          setCourses(data.map((c: any) => ({
+            ...c,
+            id: c._id || c.id
+          })));
         }
       })
       .catch(err => console.error('Error fetching courses:', err))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        // Simular un poco de carga para que se vea el skeleton (opcional, pero ayuda a la fluidez)
+        setTimeout(() => setLoading(false), 500);
+      });
   }, []);
 
-  const enrolledCoursesList = React.useMemo(() => {
+  const enrolledCoursesList: Course[] = React.useMemo(() => {
     return courses
       .filter(c => realCoursesIds.includes(c._id || c.id))
       .map(c => ({
         id: c._id || c.id,
+        _id: c._id,
         title: c.title || 'Asignatura',
         description: c.description || '',
         professor: c.professor,
-        image: c.image || 'https://picsum.photos/300/200'
+        image: c.image || 'https://picsum.photos/300/200',
+        totalWeeklyHours: c.totalWeeklyHours
       }));
   }, [courses, realCoursesIds]);
 
@@ -146,9 +155,18 @@ export const AsignaturasView: React.FC<AsignaturasViewProps> = ({ user }) => {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {enrolledCoursesList.map((course) => (
-            <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
-          ))}
+          {loading ? (
+            <>
+              <CourseCardSkeleton />
+              <CourseCardSkeleton />
+              <CourseCardSkeleton />
+              <CourseCardSkeleton />
+            </>
+          ) : (
+            enrolledCoursesList.map((course) => (
+              <CourseCard key={course.id} course={course} onClick={() => setSelectedCourse(course)} />
+            ))
+          )}
         </div>
       </section>
 
