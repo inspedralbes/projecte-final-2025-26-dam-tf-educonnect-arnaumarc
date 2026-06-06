@@ -70,8 +70,8 @@ const getUserNotifications = async (req, res) => {
 const markAsRead = async (req, res) => {
     try {
         const { notificationId } = req.params;
-        const { ids } = req.body || {}; // Soporta una lista de IDs para notificaciones agrupadas
-        const userId = req.user?._id;
+        const { ids } = req.body || {}; 
+        const userId = req.user?.id;
 
         if (!userId) {
             return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
@@ -91,18 +91,18 @@ const markAsRead = async (req, res) => {
             { new: true }
         );
         if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notification not found or access denied' });
+            return res.status(404).json({ success: false, message: 'Notificación no encontrada o acceso denegado' });
         }
         res.json({ success: true, notification });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error updating notification', error: error.message });
+        res.status(500).json({ success: false, message: 'Error al actualizar la notificación', error: error.message });
     }
 };
 
 const markAllAsRead = async (req, res) => {
     try {
         const { userId } = req.params;
-        const authenticatedUserId = req.user?._id;
+        const authenticatedUserId = req.user?.id;
 
         if (!authenticatedUserId || String(authenticatedUserId) !== String(userId)) {
             return res.status(403).json({ success: false, message: 'No autorizado para realizar esta acción' });
@@ -112,17 +112,17 @@ const markAllAsRead = async (req, res) => {
             { recipient: userId, read: false },
             { read: true }
         );
-        res.json({ success: true, message: 'All notifications marked as read' });
+        res.json({ success: true, message: 'Todas las notificaciones marcadas como leídas' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error updating notifications', error: error.message });
+        res.status(500).json({ success: false, message: 'Error al actualizar las notificaciones', error: error.message });
     }
 };
 
 const deleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.params;
-        const { ids } = req.body || {}; // Soporta una lista de IDs para notificaciones agrupadas
-        const userId = req.user?._id;
+        const { ids } = req.body || {}; 
+        const userId = req.user?.id;
 
         if (!userId) {
             return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
@@ -135,27 +135,27 @@ const deleteNotification = async (req, res) => {
 
         const notification = await Notification.findOneAndDelete({ _id: notificationId, recipient: userId });
         if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notification not found or access denied' });
+            return res.status(404).json({ success: false, message: 'Notificación no encontrada o acceso denegado' });
         }
         res.json({ success: true, message: 'Notificación eliminada' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error deleting notification', error: error.message });
+        res.status(500).json({ success: false, message: 'Error al eliminar la notificación', error: error.message });
     }
 };
 
 const deleteAllReadNotifications = async (req, res) => {
     try {
         const { userId } = req.params;
-        const authenticatedUserId = req.user?._id;
+        const authenticatedUserId = req.user?.id;
 
         if (!authenticatedUserId || String(authenticatedUserId) !== String(userId)) {
             return res.status(403).json({ success: false, message: 'No autorizado para realizar esta acción' });
         }
 
         await Notification.deleteMany({ recipient: userId, read: true });
-        res.json({ success: true, message: 'All read notifications deleted' });
+        res.json({ success: true, message: 'Historial de notificaciones leídas eliminado' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error deleting notifications', error: error.message });
+        res.status(500).json({ success: false, message: 'Error al eliminar las notificaciones', error: error.message });
     }
 };
 
@@ -169,29 +169,34 @@ module.exports = {
         try {
             const { notificationId } = req.params;
             const { action, userId } = req.body || {};
+            const authenticatedUserId = req.user?.id;
 
             if (!userId || (action !== 'accept' && action !== 'reject')) {
-                return res.status(400).json({ success: false, message: 'userId y action (accept/reject) son obligatorios' });
+                return res.status(400).json({ success: false, message: 'ID de usuario y acción (accept/reject) son obligatorios' });
+            }
+
+            if (!authenticatedUserId || String(authenticatedUserId) !== String(userId)) {
+                return res.status(403).json({ success: false, message: 'No autorizado para realizar esta acción' });
             }
 
             const notification = await Notification.findById(notificationId);
             if (!notification) {
-                return res.status(404).json({ success: false, message: 'Notification not found' });
+                return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
             }
 
             if (String(notification.recipient) !== String(userId)) {
-                return res.status(403).json({ success: false, message: 'No autorizado' });
+                return res.status(403).json({ success: false, message: 'Esta notificación no te pertenece' });
             }
 
             if (notification.type !== 'COURSE_INVITE') {
-                return res.status(400).json({ success: false, message: 'Notificación no es una invitación' });
+                return res.status(400).json({ success: false, message: 'La notificación no es una invitación a curso' });
             }
 
             const courseId = notification?.meta?.courseId;
             if (!courseId) {
                 notification.read = true;
                 await notification.save();
-                return res.status(400).json({ success: false, message: 'Invitación inválida (courseId missing)' });
+                return res.status(400).json({ success: false, message: 'Invitación inválida (falta el ID del curso)' });
             }
 
             if (action === 'accept') {
@@ -199,7 +204,7 @@ module.exports = {
                 if (!course) {
                     notification.read = true;
                     await notification.save();
-                    return res.status(404).json({ success: false, message: 'Asignatura no encontrada' });
+                    return res.status(404).json({ success: false, message: 'La asignatura ya no existe' });
                 }
 
                 await Alumno.findByIdAndUpdate(
@@ -213,9 +218,14 @@ module.exports = {
             notification.read = true;
             await notification.save();
 
-            return res.json({ success: true, action, notification });
+            return res.json({ 
+                success: true, 
+                message: action === 'accept' ? '¡Te has inscrito correctamente!' : 'Invitación rechazada',
+                action, 
+                notification 
+            });
         } catch (error) {
-            res.status(500).json({ success: false, message: 'Error responding to invite', error: error.message });
+            res.status(500).json({ success: false, message: 'Error al responder a la invitación', error: error.message });
         }
     }
 };

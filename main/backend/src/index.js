@@ -307,27 +307,40 @@ server.listen(port, () => {
 
 /**
  * Elimina notificaciones de Meet (llamadas y mensajes) con más de 24 horas.
- * Se ejecuta cada hora.
- */
-const cleanExpiredMeetNotifications = async () => {
-    try {
-        const expirationLimit = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const result = await Notification.deleteMany({
-            type: { $in: ['MEET_CALL', 'MEET_MESSAGE'] },
-            createdAt: { $lt: expirationLimit }
-        });
-        if (result.deletedCount > 0) {
-            console.log(`[Cleanup] Eliminadas ${result.deletedCount} notificaciones de Meet expiradas.`);
-        }
-    } catch (error) {
-        console.error('[Cleanup] Error limpiando notificaciones de Meet:', error);
-    }
-};
+ /**
+  * Mantenimiento de notificaciones:
+  * 1. Elimina notificaciones de Meet de más de 24h.
+  * 2. Elimina cualquier notificación de más de 30 días.
+  */
+ const cleanOldNotifications = async () => {
+     try {
+         console.log('[Cleanup] Iniciando mantenimiento de notificaciones...');
 
-// Ejecutar limpieza inicial y luego cada hora
-cleanExpiredMeetNotifications();
-setInterval(cleanExpiredMeetNotifications, 60 * 60 * 1000);
+         // 1. Notificaciones de Meet (24h)
+         const meetLimit = new Date(Date.now() - 24 * 60 * 60 * 1000);
+         const meetResult = await Notification.deleteMany({
+             type: { $in: ['MEET_CALL', 'MEET_MESSAGE'] },
+             createdAt: { $lt: meetLimit }
+         });
 
+         // 2. Notificaciones generales (30 días)
+         const generalLimit = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+         const generalResult = await Notification.deleteMany({
+             createdAt: { $lt: generalLimit }
+         });
+
+         const totalDeleted = meetResult.deletedCount + generalResult.deletedCount;
+         if (totalDeleted > 0) {
+             console.log(`[Cleanup] Mantenimiento completado. Eliminadas: ${meetResult.deletedCount} de Meet, ${generalResult.deletedCount} antiguas.`);
+         }
+     } catch (error) {
+         console.error('[Cleanup] Error en el mantenimiento de notificaciones:', error);
+     }
+ };
+
+ // Ejecutar limpieza inicial y luego cada 12 horas
+ cleanOldNotifications();
+ setInterval(cleanOldNotifications, 12 * 60 * 60 * 1000);
 
 
 
