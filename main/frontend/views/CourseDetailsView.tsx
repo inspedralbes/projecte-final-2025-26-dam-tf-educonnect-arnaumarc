@@ -3,7 +3,6 @@ import { Course, UserRole, User, Topic, Resource } from '../types';
 import { API_BASE_URL } from '../config';
 import { MOCK_SCHEDULE } from '../constants';
 import { RichTextEditor } from '../components/RichTextEditor';
-import { CourseCoverEditorModal } from '../components/CourseCoverEditorModal';
 import { SubmissionTracker } from '../components/SubmissionTracker';
 import { useSocket } from '../src/context/SocketContext';
 import {
@@ -35,8 +34,6 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
     const [messageContent, setMessageContent] = useState('');
 
     const [loadingStudents, setLoadingStudents] = useState(false);
-
-    const [isCoverEditorOpen, setIsCoverEditorOpen] = useState(false);
 
     // Invite students (teachers only)
     const [isInviteStudentModalOpen, setIsInviteStudentModalOpen] = useState(false);
@@ -720,16 +717,6 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
 
             {/* Header */}
             <div className="relative h-64 w-full overflow-hidden rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-none group mb-8 border border-gray-200 dark:border-zinc-800">
-                {isCourseOwnerTeacher && (
-                    <button
-                        onClick={() => setIsCoverEditorOpen(true)}
-                        className="absolute top-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-gray-900 border border-white/40 shadow-md backdrop-blur-md transition-colors font-bold"
-                        title="Cambiar portada"
-                    >
-                        <Pencil size={16} />
-                        Cambiar portada
-                    </button>
-                )}
                 <img src={course.image} alt={course.title} className="w-full h-full object-cover filter brightness-50 group-hover:brightness-75 transition-all duration-700 scale-100 group-hover:scale-105" />
                 <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-2 drop-shadow-lg">
@@ -740,16 +727,6 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({ course: in
                     </p>
                 </div>
             </div>
-
-            <CourseCoverEditorModal
-                open={isCoverEditorOpen}
-                onClose={() => setIsCoverEditorOpen(false)}
-                apiBaseUrl={API_BASE_URL}
-                courseId={courseId}
-                professorId={currentUserId || ''}
-                currentImage={course.image}
-                onUpdated={(updatedCourse) => setCourse((prev: any) => ({ ...prev, ...updatedCourse }))}
-            />
 
             {/* Navigation Tabs */}
             <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 rounded-t-3xl overflow-hidden">
