@@ -22,7 +22,7 @@ Pensa en el Tauló com la porta de la teva nevera, però plena de coses útils. 
 *   **La teva Classe**: El dia a dia. Si hi ha un examen a la vista o el profe ha penjat exercicis nous, ho veuràs aquí abans que ningú.
 *   **El Centre**: Avisos importants per a tothom. Festius, vagues o esdeveniments especials.
 
-> **[Captura 1: Vista general del Tauló de l'alumne]**
+![Tauló de l'alumne](./img/manual/02-dashboard-alumne.png)
 
 ### Coneix a l'EduBot
 L'EduBot és el nostre assistent virtual. Mai dorm i t'avisarà al moment perquè no se't passi res. Fixa't en els colors, són com un semàfor:
@@ -30,7 +30,7 @@ L'EduBot és el nostre assistent virtual. Mai dorm i t'avisarà al moment perqu�
 - **Blau (Informa't)**: Avisos generals de classe.
 - **Gris/Verd (Tot OK)**: Notificacions de sistema o recordatoris tranquils.
 
-> **[Captura 2: Detall de l'EduBot amb notificacions actives]**
+![Detall de l'EduBot](./img/manual/02-dashboard-alumne.png)
 
 ### Vista del Tauló i l'EduBot
 L'EduBot t'ajudarà a prioritzar la teva feina. Aquesta és la jerarquia d'avisos que veuràs:
@@ -60,7 +60,7 @@ Al lateral del Tauló tens el teu calendari mensual. Els punts de colors t'indiq
 ### Horari Setmanal
 A la secció d'Agenda podràs veure el teu horari setmanal. Cada assignatura té el seu color i podràs veure a quina aula t'has de dirigir.
 
-> **[Captura 3: Horari setmanal amb classes programades]**
+![Horari setmanal](./img/manual/04-horari-setmanal.png)
 
 ---
 
@@ -70,10 +70,12 @@ Si ets docent, EduConnect et dóna superpoders per gestionar les teves classes e
 ### Editor d'Horaris
 Pots modificar l'horari de l'assignatura simplement arrossegant i deixant anar. El sistema et dirà si t'estàs passant de les hores setmanals permeses.
 
+![Editor d'horaris](./img/manual/05-editor-horaris.png)
+
 ### Seguiment de Tasques
 Saps qui ha entregat la feina i qui no d'un sol cop d'ull. Pots enviar recordatoris massius a aquells que s'han despistat amb un sol botó.
 
-> **[Captura 4: Panell de seguiment d'entregues amb botó de recordatori]**
+![Seguiment d'entregues](./img/manual/06-seguiment-tasques.png)
 
 ---
 
@@ -82,6 +84,8 @@ Dins de cada assignatura trobaràs el "Temari". Aquí els profes aniran penjant:
 - Documents PDF i enllaços.
 - Tasques que has d'entregar.
 - Avisos específics de la matèria.
+
+![Temari i recursos](./img/manual/08-temari-recursos.png)
 
 **Com entregar una tasca?**
 1. Entra a l'assignatura.
@@ -95,7 +99,8 @@ Dins de cada assignatura trobaràs el "Temari". Aquí els profes aniran penjant:
 ### Meet: Videollamades directes
 No necessites enllaços externs. Si el profe obre una sessió de Meet, t'apareixerà un avís i podràs entrar directament per parlar cara a cara.
 
-> **[Captura 5: Interfície de Meet dins de l'app]**
+![Interfície de Meet](./img/manual/07-interficie-meet.png)
+
 
 ---
 *EduConnect: Connectant el futur de l'educació.*

@@ -38,6 +38,7 @@ Aquest document detalla l'arquitectura, les decisions tecnològiques i la resolu
 ## Diapositiva 5: Reptes Tècnics I: Temps Real i Notificacions
 *   **El Problema:** Sincronització de l'estat global sense refrescar la pàgina (notificacions "fantasma").
 *   **La Solució:** Implementació d'un sistema basat en **Socket.io** que emet esdeveniments globalment. El `NotificationBot` i el `TablonView` consumeixen aquests esdeveniments mitjançant un `SocketContext` reactiu.
+![EduBot Reactivitat](../img/manual/02-dashboard-alumne.png)
 *   **Resultat:** Latència mínima en la recepció d'avisos crítics.
 
 ---
@@ -45,6 +46,7 @@ Aquest document detalla l'arquitectura, les decisions tecnològiques i la resolu
 ## Diapositiva 6: Reptes Tècnics II: Gestió de Col·lisions
 *   **El Problema:** Superposició horària no detectada en l'assignació de classes i aules.
 *   **La Solució:** Desenvolupament d'una lògica de validació al backend (`scheduleController.js`) que verifica interseccions en els intervals de temps abans de permetre l'escriptura a la base de dades.
+![Editor d'Horaris](../img/manual/05-editor-horaris.png)
 *   **Interfície:** Ús de la graella horària (Hourly Grid) per facilitar la visió espacial del professor.
 
 ---
