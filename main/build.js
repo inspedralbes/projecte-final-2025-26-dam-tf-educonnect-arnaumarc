@@ -14,11 +14,18 @@ if (fs.existsSync(distDir)) {
 }
 fs.mkdirSync(distDir);
 
-// 2. Build Frontend
+// 2. Ensure Frontend dependencies are installed
+const frontendNodeModules = path.join(frontendDir, 'node_modules');
+if (!fs.existsSync(frontendNodeModules)) {
+    console.log('Installing frontend dependencies...');
+    execSync('npm install', { cwd: frontendDir, stdio: 'inherit' });
+}
+
+// 3. Build Frontend
 console.log('Building Frontend...');
 execSync('npm run build', { cwd: frontendDir, stdio: 'inherit' });
 
-// 3. Copy Frontend Build to dist/public
+// 4. Copy Frontend Build to dist/public
 console.log('Copying Frontend build to dist/public...');
 const frontendBuildDir = path.join(frontendDir, 'dist');
 const distPublicDir = path.join(distDir, 'public');

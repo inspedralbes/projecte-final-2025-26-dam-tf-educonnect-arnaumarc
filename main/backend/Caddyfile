@@ -1,16 +1,19 @@
-﻿projecteeduconnect.cat
+﻿projecteeduconnect.cat, www.projecteeduconnect.cat {
+    @www host www.projecteeduconnect.cat
+    redir @www https://projecteeduconnect.cat{uri}
 
-root * /srv
+    root * /srv
 
-@api path /api/*
-reverse_proxy @api api:3005
+    @api path /api/*
+    reverse_proxy @api api:3005
 
-@socket path /socket.io/*
-reverse_proxy @socket api:3005
+    @socket path /socket.io/*
+    reverse_proxy @socket api:3005
 
-@uploads path /uploads/*
-reverse_proxy @uploads api:3005
+    @uploads path /uploads/*
+    reverse_proxy @uploads api:3005
 
-# SPA fallback
-try_files {path} /index.html
-file_server
+    # SPA fallback
+    try_files {path} /index.html
+    file_server
+}
