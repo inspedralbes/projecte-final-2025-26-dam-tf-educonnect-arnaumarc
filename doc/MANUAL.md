@@ -11,7 +11,7 @@ Anem a fer un volt per les teves eines!
 2. [No arribar tard a classe (Horaris)](#3-organitza-el-teu-temps-agenda-i-horaris)
 3. [Eines per a profes (Gestió fàcil)](#4-ets-professor-aquí-tens-el-teu-super-tauler)
 4. [Apunts i materials (Recursos)](#5-tot-el-que-necessites-per-estudiar-recursos)
-5. [Connectar amb el món (Meet i Discord)](#6-més-enllà-de-la-plataforma-meet-i-discord)
+5. [Connectar amb el món (Meet)](#6-més-enllà-de-la-plataforma-meet)
 
 ---
 
@@ -68,7 +68,7 @@ A la secció d'Agenda podràs veure el teu horari setmanal. Cada assignatura té
 Si ets docent, EduConnect et dóna superpoders per gestionar les teves classes en pocs clics.
 
 ### Editor d'Horaris
-Pots modificar l'horari de les teves assignatures simplement arrossegant i deixant anar. El sistema et dirà si t'estàs passant de les hores setmanals permeses.
+Pots modificar l'horari de l'assignatura simplement arrossegant i deixant anar. El sistema et dirà si t'estàs passant de les hores setmanals permeses.
 
 ### Seguiment de Tasques
 Saps qui ha entregat la feina i qui no d'un sol cop d'ull. Pots enviar recordatoris massius a aquells que s'han despistat amb un sol botó.
@@ -90,15 +90,12 @@ Dins de cada assignatura trobaràs el "Temari". Aquí els profes aniran penjant:
 
 ---
 
-## 6. Més enllà de la plataforma: Meet i Discord
+## 6. Més enllà de la plataforma: Meet
 
 ### Meet: Videollamades directes
 No necessites enllaços externs. Si el profe obre una sessió de Meet, t'apareixerà un avís i podràs entrar directament per parlar cara a cara.
 
 > **[Captura 5: Interfície de Meet dins de l'app]**
-
-### Discord Bot
-Si ets més de Discord, el nostre Bot enviarà els avisos més importants al servidor del centre perquè no hagis d'estar tota lona pendent de la web.
 
 ---
 *EduConnect: Connectant el futur de l'educació.*

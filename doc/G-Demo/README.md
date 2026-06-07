@@ -8,7 +8,7 @@ Arxiu requerit a `doc/`: `demo_2425_EduConnect.mp4`.
 - Horaris
 - Recursos
 - Notificacions / temps real
-- Integració Discord (si aplica)
+- Altres integracions (si aplica)
 - App mòbil (si aplica)
 
 ## Com gravar

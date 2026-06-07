@@ -28,7 +28,6 @@ classDiagram
     class NotificationHelper {
         +sendNotification(data)
         +emitToSocket(userId, notification)
-        +postToDiscord(message)
     }
 
     class Model {

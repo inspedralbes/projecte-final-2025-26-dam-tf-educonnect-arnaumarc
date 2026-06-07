@@ -9,13 +9,8 @@ activityDiagram
     :Backend rep petició POST;
     if (És vàlid?) then (sí)
         :Backend guarda notificació a DB;
-        fork
-            :Emissió via Socket.io (Web);
-            :Usuari rep Toast instantani;
-        fork again
-            :Notificació via Discord Bot;
-            :Enviament missatge al canal de classe;
-        end fork
+        :Emissió via Socket.io (Web);
+        :Usuari rep Toast instantani;
     else (no)
         :Retorna error 400;
         stop
@@ -31,9 +26,7 @@ graph TD
     A[Inici: Professor crea avís] --> B{Backend valida dades}
     B -- No --> C[Error 400]
     B -- Sí --> D[Guardar en MongoDB]
-    D --> E[Sistema de Notificació Omnicanal]
-    E --> F[Socket.io: Toast Web]
-    E --> G[Discord Bot: Missatge Canal]
+    D --> E[Socket.io: Emissió Real-time]
+    E --> F[Web: Notificació Toast]
     F --> I[Fi: Alumne informat]
-    G --> I
 ```

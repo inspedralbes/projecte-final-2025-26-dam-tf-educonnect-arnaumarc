@@ -145,20 +145,21 @@ writePdf(`comercial_2425_${projectName}.pdf`, {
   title: "Comercial",
   pages: [
     { heading: "EduConnect — Presentacio comercial", lines: ["Objectius i abast: TODO"] },
-    { heading: "Funcionalitats", lines: ["Web", "Discord", "Temps real"] },
+    { heading: "Funcionalitats", lines: ["Web", "Real-time Notifications", "Meet Integrat"] },
     { heading: "Competencia", lines: ["TODO"] },
     { heading: "Costos i requeriments", lines: ["Infraestructura: TODO", "Manteniment: TODO"] },
   ],
 });
 
-writePdf(`tecnica_2425_${projectName}.pdf`, {
+write_pdf(`tecnica_2425_${projectName}.pdf`, {
   title: "Tecnica",
   pages: [
     { heading: "EduConnect — Presentacio tecnica", lines: ["Evolucio per sprints: veure doc/PLANIFICACIO.md"] },
     { heading: "Problemes i solucions", lines: ["TODO"] },
-    { heading: "Aspectes tecnics", lines: ["Arquitectura modular", "Socket.io realtime", "Integracions"] },
+    { heading: "Aspectes tecnics", lines: ["Arquitectura modular", "Socket.io realtime", "Gestió de dades centralitzada"] },
   ],
 });
+
 
 const mp4Url = "https://samplefile.com/samples/download/video/mp4/mp4_h264_no_audio_240p_sample.mp4/?utm_campaign=file_download&utm_medium=format_page&utm_source=samplefile";
 

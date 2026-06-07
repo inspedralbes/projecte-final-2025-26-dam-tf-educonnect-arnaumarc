@@ -8,7 +8,7 @@ L'evolució del projecte ha seguit un creixement orgànic basat en la retroalime
 
 - **Sprint 1: Fonaments**: Establiment de la comunicació básica i calendari d'exàmens.
 - **Sprint 2: Intel·ligència i Automatització**: Introducció de l'EduBot i sistema d'alertes automàtiques per a professors i alumnes.
-- **Sprint 3: Gestió de Continguts**: Implementació del sistema de temaris (Moodle-like) amb suport per a fitxers i URLs, a més de la integració amb Discord.
+- **Sprint 3: Gestió de Continguts**: Implementació del sistema de temaris (Moodle-like) amb suport per a fitxers i URLs.
 - **Sprint 4: Comunicació Real-Time**: Desenvolupament del mòdul de Meet per a videollamades i millora del perfil d'usuari amb gestió d'avatars.
 - **Sprint 5: Robustesa**: Refactorització del sistema de notificacions per suportar agrupament intel·ligent i implementació de mesures de seguretat com Fail2Ban al backend.
 
@@ -30,7 +30,7 @@ L'evolució del projecte ha seguit un creixement orgànic basat en la retroalime
 - **Decisions Tècniques**:
     - **React (Frontend)**: Per la seva capacitat de gestionar estats complexos de la UI de forma eficient.
     - **MongoDB (NoSQL)**: Ideal per a l'estructura de temaris i notificacions, que pot variar en complexitat sense requerir migracions de schema rígides.
-    - **Omnicanalitat**: Decisió estratègica de no limitar la comunicació a la web, sinó portar-la on els alumnes passen més temps (Discord).
+    - **Decision Estratègica**: Enfocament en una plataforma Web-First que prioritza l'estabilitat i la facilitat d'ús.
 - **Requisits Tècnics**:
     - Node.js > 18.x
     - MongoDB instància activa.

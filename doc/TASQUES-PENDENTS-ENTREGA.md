@@ -65,7 +65,7 @@ Hi ha guia: `doc/D-CodiFont/INSTALL.md` i el codi a `main/`.
 Actualment conté molts TODO.
 
 - [ ] Completar “Configuració (env)” (BD, secrets, ports, variables).
-- [ ] Escriure l’**arquitectura** (auth/rols, realtime socket.io, notificacions omnicanal Discord + Web).
+- [ ] Escriure l’**arquitectura** (auth/rols, realtime socket.io, notificacions web).
 - [ ] Documentar l’API: endpoints clau + exemples request/response.
 - [ ] Indicar “on tocar codi primer”: fitxers d’entrada reals per:
   - [ ] backend
@@ -88,7 +88,7 @@ Font actual: `doc/F-Comercial/comercial.md` (quasi tot és TODO).
 
 Guia: `doc/G-Demo/README.md`.
 
-- [ ] Gravar demo completa (login → dashboard → horaris → recursos → notificacions → discord → responsivitat web).
+- [ ] Gravar demo completa (login → dashboard → horaris → recursos → notificacions → responsivitat web).
 - [ ] Verificar àudio/qualitat i que s’entén sense context.
 - [ ] Exportar a MP4 i substituir `doc/demo_2425_EduConnect.mp4`.
 
@@ -126,3 +126,6 @@ Guia: `doc/J-Pitch/README.md`.
 - [ ] Vídeos: funcionen a VLC, sense dependències, i amb noms exactes.
 - [ ] No hi ha caràcters corruptes (encoding) a la documentació.
 - [ ] El `README.md` de l’arrel apunta correctament a la documentació tècnica (E) i a la guia d’instal·lació (D).
+.
+� (D).
+.
