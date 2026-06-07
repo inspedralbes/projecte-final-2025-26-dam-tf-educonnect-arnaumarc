@@ -289,6 +289,16 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
 
     return (
         <div className="flex h-full w-full bg-gray-50 dark:bg-zinc-900 transition-colors duration-300 relative overflow-hidden">
+            {/* Sidebar Toggle Button (Mobile) */}
+            {!isSidebarOpen && (
+                <button 
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="lg:hidden absolute top-4 left-4 z-30 p-3 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-gray-200 dark:border-zinc-700 text-blue-500 hover:scale-105 active:scale-95 transition-all"
+                >
+                    <UserIcon size={24} />
+                </button>
+            )}
+
             {/* Incoming Call Overlay */}
             {incomingCall && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -383,10 +393,7 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => {
-                                                setActiveChatUser(u);
-                                                setIsChatOpen(true);
-                                            }}
+                                            onClick={() => startChat(u)}
                                             className="p-2.5 rounded-full transition-all bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-800 dark:text-gray-400 dark:hover:bg-zinc-700"
                                             title="Xatejar"
                                         >
@@ -402,14 +409,14 @@ export const MeetView: React.FC<MeetViewProps> = ({ user }) => {
 
             {/* Main Area - Call Interface */}
             <div className="flex-1 flex flex-col lg:flex-row items-stretch gap-4 p-2 md:p-4 relative overflow-hidden">
-                <div className={`${isChatOpen ? 'flex' : 'hidden lg:flex'} order-1 w-full lg:flex-[1.25] min-w-0 h-full`}>
+                <div className={`${isChatOpen ? 'flex' : 'hidden'} order-1 w-full lg:flex-[1.25] min-w-0 h-full`}>
                     <ChatPanel
                         currentUser={user}
                         targetUser={activeChatUser}
                         onClose={() => setIsChatOpen(false)}
                     />
                 </div>
-                <div className="order-2 w-full lg:flex-[0.85] min-w-0 flex flex-col items-center justify-center p-2 md:p-6 relative">
+                <div className={`${isChatOpen ? 'hidden lg:flex' : 'flex'} order-2 w-full lg:flex-[0.85] min-w-0 flex flex-col items-center justify-center p-2 md:p-6 relative`}>
                 {isInCall && activeCallUser ? (
                     <div className="w-full h-full max-w-6xl bg-black rounded-3xl overflow-hidden shadow-2xl relative flex flex-col ring-1 ring-white/10 animate-in zoom-in-95 duration-500">
                         {/* Remote Video */}
